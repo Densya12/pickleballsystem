@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/*
+ * "Ink & Lime" design tokens.
+ *
+ * Colors use Tailwind v4's per-utility namespaces so each token only creates
+ * the utility it is meant for:
+ *   --background-color-page  -> bg-page
+ *   --text-color-ink         -> text-ink
+ *   --border-color-default   -> border-default
+ * This keeps names semantic (no `text-page` or `bg-muted` by accident).
+ */
+@theme {
+  /* Backgrounds */
+  --background-color-page: #f6f6f3;
+  --background-color-surface: #ffffff;
+  --background-color-subtle: #f2f2ee;
+  --background-color-primary: #111412;
+  --background-color-primary-tint: #f3f6ea;
+  --background-color-accent: #c9f26b;
+  --background-color-accent-soft: #f1f9dc;
+  --background-color-success: #eef5e4;
+  --background-color-warn: #fbeedc;
+
+  /* Text */
+  --text-color-ink: #111412;
+  --text-color-muted: #5f6561;
+  /* Spec value #737975 is 4.45:1 on white; nudged to pass 4.5:1. */
+  --text-color-placeholder: #717773;
+  --text-color-on-primary: #ffffff;
+  --text-color-on-accent-soft: #2d3b0b;
+  --text-color-success: #2f5a12;
+  --text-color-warn: #8a4b08;
+  /* Not in the Phase 0 brief; added for danger-outline + form errors (6.5:1 on white). */
+  --text-color-danger: #b42318;
+
+  /* Borders */
+  --border-color-default: #ecece7;
+  --border-color-strong: #8c918d; /* form controls, >= 3:1 on white */
+  --border-color-ink: #111412;
+  --border-color-accent: #ddefa9;
+  --border-color-danger: #b42318;
+
+  /* Focus ring */
+  --outline-color-focus: #111412;
+
+  /* Shape */
+  --radius-card: 20px;
+  --radius-control: 14px;
+  --shadow-card: 0 1px 2px rgba(17, 20, 18, 0.04), 0 8px 24px -8px rgba(17, 20, 18, 0.1);
+
+  /* Layout */
+  --container-app: 430px;
+
+  /* Type */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --text-body: 1.0625rem; /* 17px */
+  --text-body--line-height: 1.5;
+
+  /* Accessibility guard: body text must be >= 16px, so remove the sub-16px sizes. */
+  --text-xs: initial;
+  --text-sm: initial;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background-color-page);
+    color: var(--text-color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+}
