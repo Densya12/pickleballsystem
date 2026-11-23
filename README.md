@@ -97,7 +97,8 @@ Components (`src/components/ui/`, import from `@/components/ui`): `Button`, `Sta
 
 Accessibility rules every component follows:
 
-- Body text is at least 16px. `text-xs` and `text-sm` are removed from the theme so they can't be used.
+- Body text is at least 16px. `text-sm` (14px) is the minimum, for chips and secondary hints only.
+  `text-xs` is removed from the theme so it can't be used.
 - Tap targets are at least 48px.
 - Every icon is `aria-hidden` and paired with visible text. Status is never shown by color alone.
 - Text contrast is at least 4.5:1, and form-control borders at least 3:1.

@@ -58,9 +58,11 @@
   --text-body: 1.0625rem; /* 17px */
   --text-body--line-height: 1.5;
 
-  /* Accessibility guard: body text must be >= 16px, so remove the sub-16px sizes. */
+  /* Accessibility guard: text-xs (12px) is removed so it can't be used. */
   --text-xs: initial;
-  --text-sm: initial;
+  /* 14px is the minimum, for chips and secondary hints only; body text uses 16px+ */
+  --text-sm: 0.875rem; /* 14px */
+  --text-sm--line-height: 1.25rem; /* 20px */
 }
 
 @layer base {
