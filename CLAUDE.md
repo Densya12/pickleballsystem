@@ -11,7 +11,9 @@ guest check-in). UI copy is Taglish; code is English.
   rules **BR1–BR21**, non-functional rules **NF1–NF14**. Cite the IDs when a change implements or
   touches one.
 - Build **one phase at a time**. Don't start the next phase's features, tables or screens early.
-- Phase 0 (Foundation) is done: design system, base components, Supabase wiring, tests, CI.
+- Phase 0 (Foundation): design system, base components, Supabase wiring, tests, CI.
+- Phase 1 (Organizers and clubs): Google + magic-link sign-in, clubs/club_staff/club_invites with
+  RLS, settings, co-organizer invites.
 
 ## Definition of done (every phase)
 
@@ -23,7 +25,12 @@ npm run typecheck
 npm run test
 npm run build
 npm run test:e2e   # also required whenever a UI flow changes
+npm run test:db    # also required whenever supabase/migrations changes (needs `npx supabase start`)
 ```
+
+Schema changes: add a new migration (never edit one already pushed to the cloud project), add
+pgTAP tests for its RLS in `supabase/tests/database/`, then `npm run db:types`. Show Kenji the SQL
+before `npx supabase db push`.
 
 Fix failures; don't skip or weaken tests to make them pass.
 
@@ -45,6 +52,8 @@ Fix failures; don't skip or weaken tests to make them pass.
 - Server code that reads Supabase cookies (`createClient` from `@/lib/supabase/server`) must render
   inside `<Suspense>`, or the route can't be prerendered.
 - Browser code uses `@/lib/supabase/client`.
+- Read the session through `@/lib/auth/dal` (`getClaims()`-based), never `getSession()` on the server.
+- Every Server Action re-checks auth and role itself; RLS is the final guard.
 
 ## Git and secrets
 

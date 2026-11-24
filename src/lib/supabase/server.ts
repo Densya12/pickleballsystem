@@ -1,19 +1,23 @@
+import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 
 /**
  * Supabase client for Server Components, Server Functions and Route Handlers.
- * Create a new client per request; do not share it across requests.
+ * Create a new client per request; never share it across requests.
  *
- * With Cache Components on, calling this reads cookies (a request-time API),
- * so wrap the component that uses it in <Suspense>.
+ * Cache Components: this reads cookies (request-time data), so any Server
+ * Component that calls it must render inside <Suspense>.
  */
 export async function createClient() {
-  const { url, anonKey } = getSupabaseEnv();
+  // Read cookies first: during prerendering this postpones the component
+  // before the env check runs, so builds work without env vars.
   const cookieStore = await cookies();
+  const { url, key } = getSupabaseEnv();
 
-  return createServerClient(url, anonKey, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -25,7 +29,7 @@ export async function createClient() {
           }
         } catch {
           // Called from a Server Component, where cookies are read-only.
-          // Safe to ignore once a proxy refreshes the session (added with auth).
+          // Safe to ignore: src/proxy.ts refreshes the session on each request.
         }
       },
     },

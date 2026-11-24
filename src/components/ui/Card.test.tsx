@@ -14,3 +14,14 @@ describe("Card", () => {
     expect(card).toHaveClass("bg-surface", "rounded-card", "shadow-card", "border-default", "gap-3");
   });
 });
+
+describe("Card padding", () => {
+  it("can drop its padding for row layouts", () => {
+    render(
+      <Card padding="none" data-testid="rows">
+        rows
+      </Card>,
+    );
+    expect(screen.getByTestId("rows")).not.toHaveClass("p-5");
+  });
+});
