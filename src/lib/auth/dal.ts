@@ -10,7 +10,7 @@ import { loginPath } from "./paths";
  * Every caller reads cookies, so render callers inside <Suspense>.
  */
 
-export type AuthUser = { id: string; email: string | null };
+export type AuthUser = { id: string; email: string | null; name: string | null };
 export type Club = Database["public"]["Tables"]["clubs"]["Row"];
 export type StaffRole = "owner" | "organizer";
 
@@ -19,7 +19,13 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   if (error || !data?.claims?.sub) return null;
-  return { id: data.claims.sub, email: (data.claims.email as string | undefined) ?? null };
+  const metadata = (data.claims.user_metadata ?? {}) as Record<string, unknown>;
+  const name = [metadata.full_name, metadata.name].find((v): v is string => typeof v === "string" && v.trim() !== "");
+  return {
+    id: data.claims.sub,
+    email: (data.claims.email as string | undefined) ?? null,
+    name: name?.trim() ?? null,
+  };
 });
 
 export async function requireUser(nextPath?: string): Promise<AuthUser> {

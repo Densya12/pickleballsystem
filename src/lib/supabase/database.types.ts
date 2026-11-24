@@ -77,6 +77,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"sessions": {
+                  Row: {
+                    "club_id": string,"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"name": string,"pay_first": boolean,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"courts_count": number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at": string,"fee": number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name": string,"pay_first"?: boolean,"points_to": number,"rotation": string,"started_at"?: string | null,"starts_at": string,"status"?: string
+                  }
+                  Update: {
+                    "club_id"?: string,"courts_count"?: number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at"?: string,"fee"?: number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"pay_first"?: boolean,"points_to"?: number,"rotation"?: string,"started_at"?: string | null,"starts_at"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sessions_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -89,10 +109,22 @@ isOneToOne: false
 "create_club":
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
                            },
+"create_session":
+{ Args: { "p_club_id": string,"p_courts_count": number,"p_ends_at": string,"p_fee"?: number,"p_name": string,"p_pay_first"?: boolean,"p_points_to"?: number,"p_rotation"?: string,"p_start"?: boolean,"p_starts_at": string }; Returns: string
+                           },
+"delete_draft_session":
+{ Args: { "p_session_id": string }; Returns: undefined
+                           },
+"end_session":
+{ Args: { "p_session_id": string }; Returns: undefined
+                           },
 "invite_preview":
 { Args: { "p_token": string }; Returns: {
               "already_staff": boolean,"club_name": string,"status": string
             }[]
+                           },
+"is_checkin_open":
+{ Args: { "p_join_code": string }; Returns: boolean
                            },
 "is_club_owner":
 { Args: { "p_club_id": string }; Returns: boolean
@@ -107,6 +139,9 @@ isOneToOne: false
                            },
 "remove_staff":
 { Args: { "p_club_id": string,"p_user_id": string }; Returns: undefined
+                           },
+"start_session":
+{ Args: { "p_session_id": string }; Returns: undefined
                            }
           }
           Enums: {

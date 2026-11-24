@@ -2,6 +2,7 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import { Button, Card, Input, Notice, PageShell, RadioGroup } from "@/components/ui";
+import { POINTS_CHOICES, ROTATION_CHOICES } from "@/lib/club/options";
 import { saveSettingsAction, signOutAction, type SettingsState } from "./actions";
 import { StaffSection } from "./StaffSection";
 
@@ -34,25 +35,6 @@ type Props = {
 };
 
 const FORM_ID = "club-settings";
-
-const POINTS = [
-  { value: "11", label: "11" },
-  { value: "15", label: "15" },
-  { value: "21", label: "21" },
-] as const;
-
-const ROTATIONS = [
-  {
-    value: "all_off",
-    label: "Lahat ng apat aalis",
-    description: "Pagkatapos ng laro, babalik sa pila ang apat na naglaro.",
-  },
-  {
-    value: "winners_stay",
-    label: "Mananatili ang nanalo",
-    description: "Maglalaro ulit ang nanalong pares laban sa susunod.",
-  },
-] as const;
 
 export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
   const [state, dispatch, pending] = useActionState<SettingsState, FormData>(saveSettingsAction, {
@@ -149,15 +131,15 @@ export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
                 legend="Points bawat laro"
                 name="default_points"
                 layout="row"
-                options={POINTS}
-                defaultValue={value("default_points") as (typeof POINTS)[number]["value"]}
+                options={POINTS_CHOICES}
+                defaultValue={value("default_points") as (typeof POINTS_CHOICES)[number]["value"]}
                 error={errors.default_points}
               />
               <RadioGroup
                 legend="Rotation"
                 name="default_rotation"
-                options={ROTATIONS}
-                defaultValue={value("default_rotation") as (typeof ROTATIONS)[number]["value"]}
+                options={ROTATION_CHOICES}
+                defaultValue={value("default_rotation") as (typeof ROTATION_CHOICES)[number]["value"]}
                 error={errors.default_rotation}
               />
             </Section>

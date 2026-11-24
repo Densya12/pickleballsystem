@@ -72,7 +72,7 @@ export function parseNewClub(form: FormLike): ParseResult<NewClubInput> {
     name: validateClubName(name),
     city: maxLength(city, CITY_MAX, MESSAGES.cityTooLong),
   };
-  return finish({ name, city }, errors);
+  return toParseResult({ name, city }, errors);
 }
 
 export type ClubSettingsInput = {
@@ -115,7 +115,7 @@ export function parseClubSettings(form: FormLike): ParseResult<ClubSettingsInput
       : MESSAGES.rotationInvalid,
   };
 
-  return finish(
+  return toParseResult(
     {
       name,
       city,
@@ -129,7 +129,8 @@ export function parseClubSettings(form: FormLike): ParseResult<ClubSettingsInput
   );
 }
 
-function finish<T>(data: T, errors: Partial<Record<keyof T, string | undefined>>): ParseResult<T> {
+/** Drops undefined messages; no messages left means the input is valid. */
+export function toParseResult<T>(data: T, errors: Partial<Record<keyof T, string | undefined>>): ParseResult<T> {
   const present = Object.fromEntries(
     Object.entries(errors).filter(([, message]) => message !== undefined),
   ) as Partial<Record<keyof T, string>>;

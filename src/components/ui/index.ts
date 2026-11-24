@@ -6,3 +6,5 @@ export { Notice, type NoticeKind, type NoticeProps } from "./Notice";
 export { PageShell, type PageShellProps } from "./PageShell";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup";
 export { StatusLabel, type StatusKind, type StatusLabelProps } from "./StatusLabel";
+export { Stepper, type StepperProps } from "./Stepper";
+export { Toggle, type ToggleProps } from "./Toggle";

@@ -6,7 +6,9 @@ export const AUTH_MESSAGES = {
   emailFailed: "Hindi naipadala ang login link. I-check ang internet mo at subukan ulit.",
   googleFailed: "Hindi mabuksan ang Google sign-in. Subukan ulit.",
   callbackFailed: "Hindi natuloy ang pag-sign in. Subukan ulit.",
-  linkExpired: "Expired o nagamit na ang login link. Humingi ng bago.",
+  /** Most often the link was opened in another browser (e.g. inside the Gmail app). */
+  linkExpired:
+    "Hindi gumana ang login link. Baka expired na, nagamit na, o binuksan sa ibang browser. Humingi ng bago at buksan ito sa parehong browser kung saan ka humingi, o gamitin ang Google sign-in.",
   /** Anonymous (player) sessions can't create or join a club as staff. */
   notOrganizerAccount:
     "Kailangan ng organizer account para dito. Mag-sign out, tapos mag-sign in gamit ang Google o email.",

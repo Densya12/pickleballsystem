@@ -45,6 +45,15 @@ sent. Google sign-in locally needs a Google OAuth client; see `[auth.external.go
 
 First-time e2e setup: `npx playwright install chromium`.
 
+The signed-in e2e flows (sessions) need the local stack (`npx supabase start`): they sign in new
+organizers through the real magic-link email, read from Mailpit. Playwright reuses a server already
+on port 3000 (for example `npm run dev`); to test a fresh production build next to it, run
+`PORT=3100 npm run test:e2e`.
+
+If login emails arrive in English ("Your sign-in link") instead of our template, the local Auth
+server lost the custom template (this can happen after `npx supabase db reset`). Run
+`npx supabase stop && npx supabase start` to reload it.
+
 CI (`.github/workflows/ci.yml`) runs two jobs on every push and pull request:
 - `check`: `npm ci → lint → typecheck → test → build`
 - `db`: starts a throwaway Postgres with all migrations, then runs `npm run test:db`
