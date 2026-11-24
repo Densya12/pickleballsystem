@@ -177,7 +177,7 @@ test("UI audit: seed a busy club and capture every screen", async ({ page: organ
   await confirmCash(organizer, thursdayUrl, ["Ana Lopez"]);
   await endSession(organizer);
 
-  const tuesdayUrl = await newSession(organizer, "Martes Open Play", { courts: 1 });
+  await newSession(organizer, "Martes Open Play", { courts: 1 });
   for (const name of MEMBERS.slice(5, 9)) await addMemberWalkIn(organizer, name);
   await addMemberWalkIn(organizer, "Karen Aquino", "Mamaya na magbabayad");
   await court(organizer, "Court 1").getByRole("button", { name: "Tawagin ang susunod" }).click();
