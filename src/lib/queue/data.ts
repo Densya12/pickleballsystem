@@ -1,0 +1,115 @@
+import "server-only";
+import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Live screen data, read as the signed-in organizer (RLS: staff of the
+ * session's club). Columns are named because device_id isn't granted.
+ */
+
+export type LivePlayer = {
+  id: string;
+  name: string;
+  level: string;
+  status: "queued" | "playing" | "paused";
+  gamesPlayed: number;
+};
+export type LiveGame = { id: string; number: number; players: { id: string; name: string }[] };
+export type LiveCourt = { id: string; number: number; label: string; game: LiveGame | null };
+export type QueueEntry = LivePlayer & { position: number };
+
+export type LiveState = {
+  courts: LiveCourt[];
+  /** Waiting players (queued and paused) in queue order (BR5). */
+  queue: QueueEntry[];
+  playingCount: number;
+  /** Players who can be called now (BR6), for "Kailangan pa ng N player". */
+  eligibleCount: number;
+};
+
+export async function getLiveState(sessionId: string): Promise<LiveState> {
+  const supabase = await createClient();
+  const [courts, games, players, eligible] = await Promise.all([
+    supabase.from("courts").select("id, number, label, current_game_id").eq("session_id", sessionId).order("number"),
+    supabase.from("games").select("id, court_id, number, player_ids").eq("session_id", sessionId).is("ended_at", null),
+    supabase
+      .from("session_players")
+      .select("id, display_name, level, status, games_played, queue_pos")
+      .eq("session_id", sessionId)
+      .neq("status", "left")
+      .order("queue_pos"),
+    supabase.rpc("session_eligible_count", { p_session_id: sessionId }),
+  ]);
+  for (const result of [courts, games, players, eligible]) {
+    if (result.error) throw new Error(`Could not load the live session: ${result.error.message}`);
+  }
+
+  const byId = new Map(
+    (players.data ?? []).map((p) => [
+      p.id,
+      {
+        id: p.id,
+        name: p.display_name,
+        level: p.level,
+        status: p.status as LivePlayer["status"],
+        gamesPlayed: p.games_played,
+      },
+    ]),
+  );
+  const gameByCourt = new Map((games.data ?? []).map((g) => [g.court_id, g]));
+
+  const liveCourts: LiveCourt[] = (courts.data ?? []).map((c) => {
+    const game = gameByCourt.get(c.id);
+    return {
+      id: c.id,
+      number: c.number,
+      label: c.label,
+      game: game
+        ? {
+            id: game.id,
+            number: game.number,
+            players: game.player_ids.map((id) => ({ id, name: byId.get(id)?.name ?? "?" })),
+          }
+        : null,
+    };
+  });
+
+  const all = [...byId.values()];
+  const queue = all
+    .filter((p) => p.status === "queued" || p.status === "paused")
+    .map((p, index) => ({ ...p, position: index + 1 }));
+
+  return {
+    courts: liveCourts,
+    queue,
+    playingCount: all.filter((p) => p.status === "playing").length,
+    eligibleCount: eligible.data ?? 0,
+  };
+}
+
+/** Names of players, in the given order. */
+export async function playerNames(ids: readonly string[]): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("session_players").select("id, display_name").in("id", [...ids]);
+  if (error) throw new Error(`Could not load players: ${error.message}`);
+  const names = new Map((data ?? []).map((p) => [p.id, p.display_name]));
+  return ids.map((id) => names.get(id) ?? "?");
+}
+
+export async function getGame(gameId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("games")
+    .select("id, number, player_ids, court:courts!games_court_id_fkey(label)")
+    .eq("id", gameId)
+    .maybeSingle();
+  if (error) throw new Error(`Could not load game: ${error.message}`);
+  return data ? { id: data.id, number: data.number, playerIds: data.player_ids, courtLabel: data.court?.label ?? "" } : null;
+}
+
+export async function getJoinCode(sessionId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("sessions").select("join_code").eq("id", sessionId).maybeSingle();
+  if (error) throw new Error(`Could not load join code: ${error.message}`);
+  return data?.join_code ?? null;
+}

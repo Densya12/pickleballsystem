@@ -77,6 +77,78 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"courts": {
+                  Row: {
+                    "current_game_id": string | null,"id": string,"label": string,"number": number,"session_id": string,"winner_streak": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "current_game_id"?: string | null,"id"?: string,"label": string,"number": number,"session_id": string,"winner_streak"?: number
+                  }
+                  Update: {
+                    "current_game_id"?: string | null,"id"?: string,"label"?: string,"number"?: number,"session_id"?: string,"winner_streak"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "courts_current_game_id_fkey"
+      columns: ["current_game_id"]
+isOneToOne: false
+      referencedRelation: "games"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "courts_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"games": {
+                  Row: {
+                    "court_id": string,"ended_at": string | null,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"winner_ids": (string)[] | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "court_id": string,"ended_at"?: string | null,"id"?: string,"number": number,"player_ids": (string)[],"session_id": string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                  }
+                  Update: {
+                    "court_id"?: string,"ended_at"?: string | null,"id"?: string,"number"?: number,"player_ids"?: (string)[],"session_id"?: string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "games_court_id_fkey"
+      columns: ["court_id"]
+isOneToOne: false
+      referencedRelation: "courts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "games_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"session_players": {
+                  Row: {
+                    "created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"queue_pos": number,"session_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"queue_pos"?: number,"session_id": string,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"queue_pos"?: number,"session_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "session_players_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"sessions": {
                   Row: {
                     "club_id": string,"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"name": string,"pay_first": boolean,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
@@ -106,6 +178,12 @@ isOneToOne: false
             "accept_invite":
 { Args: { "p_token": string }; Returns: string
                            },
+"add_walk_in":
+{ Args: { "p_display_name": string,"p_level": string,"p_session_id": string }; Returns: string
+                           },
+"call_next":
+{ Args: { "p_court_id": string }; Returns: string
+                           },
 "create_club":
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
                            },
@@ -117,6 +195,9 @@ isOneToOne: false
                            },
 "end_session":
 { Args: { "p_session_id": string }; Returns: undefined
+                           },
+"finish_game":
+{ Args: { "p_court_id": string,"p_game_id": string,"p_winner_ids"?: (string)[] }; Returns: string
                            },
 "invite_preview":
 { Args: { "p_token": string }; Returns: {
@@ -132,13 +213,28 @@ isOneToOne: false
 "is_club_staff":
 { Args: { "p_club_id": string }; Returns: boolean
                            },
+"is_session_staff":
+{ Args: { "p_session_id": string }; Returns: boolean
+                           },
 "list_club_staff":
 { Args: { "p_club_id": string }; Returns: {
               "created_at": string,"display_name": string,"email": string,"role": string,"user_id": string
             }[]
                            },
+"pause_player":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"remove_player":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
 "remove_staff":
 { Args: { "p_club_id": string,"p_user_id": string }; Returns: undefined
+                           },
+"resume_player":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"session_eligible_count":
+{ Args: { "p_session_id": string }; Returns: number
                            },
 "start_session":
 { Args: { "p_session_id": string }; Returns: undefined
