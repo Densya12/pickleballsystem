@@ -5,7 +5,9 @@ import {
   Button,
   Card,
   Input,
+  Notice,
   PageShell,
+  RadioGroup,
   StatusLabel,
   type ButtonVariant,
   type StatusKind,
@@ -159,6 +161,66 @@ export default function DesignSystemPage() {
             />
             <Input label="Club" defaultValue="Makati Picklers" disabled />
           </Card>
+        </Section>
+
+        <Section title="RadioGroup">
+          <Card className="flex flex-col gap-5">
+            <RadioGroup
+              legend="Points bawat laro"
+              name="ds-points"
+              layout="row"
+              defaultValue="11"
+              options={[
+                { value: "11", label: "11" },
+                { value: "15", label: "15" },
+                { value: "21", label: "21" },
+              ]}
+            />
+            <RadioGroup
+              legend="Rotation"
+              name="ds-rotation"
+              defaultValue="all_off"
+              options={[
+                {
+                  value: "all_off",
+                  label: "Lahat ng apat aalis",
+                  description: "Pagkatapos ng laro, babalik sa pila ang apat na naglaro.",
+                },
+                {
+                  value: "winners_stay",
+                  label: "Mananatili ang nanalo",
+                  description: "Maglalaro ulit ang nanalong pares laban sa susunod.",
+                },
+              ]}
+            />
+            <RadioGroup
+              legend="Laki ng court"
+              name="ds-error"
+              error="Pumili ng isa."
+              options={[
+                { value: "a", label: "Isang court" },
+                { value: "b", label: "Dalawang court" },
+              ]}
+            />
+            <RadioGroup
+              legend="Disabled (read-only)"
+              name="ds-disabled"
+              disabled
+              defaultValue="x"
+              options={[
+                { value: "x", label: "Hindi mapalitan" },
+                { value: "y", label: "Ibang option" },
+              ]}
+            />
+          </Card>
+        </Section>
+
+        <Section title="Notice">
+          <div className="flex flex-col gap-3">
+            <Notice kind="success">Na-save na.</Notice>
+            <Notice kind="error">Hindi maipadala ang login link ngayon. Subukan ang Google sign-in.</Notice>
+            <Notice kind="info">Ang owner lang ang pwedeng magbago nito.</Notice>
+          </div>
         </Section>
 
         <Section title="BackLink">
