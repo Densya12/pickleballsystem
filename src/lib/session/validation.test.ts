@@ -37,8 +37,23 @@ describe("parseNewSession", () => {
         rotation: "all_off",
         pay_first: false,
         fee: 150,
+        court_formats: ["doubles", "doubles", "doubles"],
       },
     });
+  });
+
+  it("reads one Doubles/Singles choice per court (missing = Doubles)", () => {
+    const result = parseNewSession(form({ courts_count: "3", court_format_1: "doubles", court_format_2: "singles" }));
+    expect(result.ok && result.data.court_formats).toEqual(["doubles", "singles", "doubles"]);
+  });
+
+  it("ignores choices for courts beyond the count", () => {
+    const result = parseNewSession(form({ courts_count: "1", court_format_1: "singles", court_format_2: "singles" }));
+    expect(result.ok && result.data.court_formats).toEqual(["singles"]);
+  });
+
+  it("refuses an unknown format", () => {
+    expect(errorsOf({ courts_count: "2", court_format_2: "triples" })).toEqual({ court_formats: SESSION_MESSAGES.courtFormatsInvalid });
   });
 
   it("reads the pay-first switch (checked sends 'on')", () => {

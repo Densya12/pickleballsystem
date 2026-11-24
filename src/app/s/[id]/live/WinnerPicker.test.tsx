@@ -47,4 +47,16 @@ describe("WinnerPicker", () => {
     await userEvent.click(screen.getByRole("button", { name: "Huwag muna" }));
     expect(onCancel).toHaveBeenCalled();
   });
+
+  it("singles: pick 1 winner from 2", async () => {
+    const onConfirm = vi.fn();
+    render(<WinnerPicker players={players.slice(0, 2)} needed={1} onConfirm={onConfirm} onCancel={() => {}} />);
+    expect(screen.getByRole("group", { name: "Sino ang nanalo?" })).toHaveAccessibleDescription("Pumili ng 1 pa.");
+    expect(screen.getAllByRole("button", { pressed: false })).toHaveLength(2);
+    await userEvent.click(screen.getByRole("button", { name: "Ana" }));
+    await userEvent.click(screen.getByRole("button", { name: "Ben" }));
+    expect(screen.getByRole("button", { name: "Ana" })).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(screen.getByRole("button", { name: "Kumpirmahin" }));
+    expect(onConfirm).toHaveBeenCalledWith(["b"]);
+  });
 });

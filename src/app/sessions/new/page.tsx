@@ -50,6 +50,7 @@ async function NewSessionContent() {
         rotation: club.default_rotation,
         pay_first: "",
         fee: String(club.default_fee),
+        court_formats: "",
       }}
       gcash={{ name: club.gcash_name, number: club.gcash_number }}
     />

@@ -7,7 +7,7 @@ import { BallIcon, PauseIcon } from "@/components/ui/icons";
 import { playCalledAlert, unlockAudio } from "@/lib/player/alert";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { playerErrorMessage } from "@/lib/player/messages";
-import { pickPwestoState } from "@/lib/player/state";
+import { callSizeFor, pickPwestoState } from "@/lib/player/state";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { createClient } from "@/lib/supabase/client";
 
@@ -37,6 +37,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     me: view.me,
     players: view.players,
     games: view.games,
+    callSize: callSizeFor(view.courtFormats),
   });
   const name = view.me?.name ?? "";
 
@@ -174,18 +175,24 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
             <p className="font-display text-3xl font-bold">Pumunta ka na sa {state.courtLabel}</p>
           </div>
         )}
-        <section aria-labelledby="with-heading" className="flex flex-col gap-2">
-          <h2 id="with-heading" className="text-xl">
-            Kasama mo sa court:
-          </h2>
-          <ul className="grid grid-cols-1 gap-2">
-            {state.withNames.map((withName, index) => (
-              <li key={`${withName}-${index}`} className="rounded-control bg-primary-tint px-4 py-3 font-semibold [overflow-wrap:anywhere]">
-                {withName}
-              </li>
-            ))}
-          </ul>
-        </section>
+        {state.format === "singles" ? (
+          <p className="rounded-control bg-primary-tint px-4 py-3 text-xl font-semibold [overflow-wrap:anywhere]">
+            Kalaban mo: {state.withNames[0]}
+          </p>
+        ) : (
+          <section aria-labelledby="with-heading" className="flex flex-col gap-2">
+            <h2 id="with-heading" className="text-xl">
+              Kasama mo sa court:
+            </h2>
+            <ul className="grid grid-cols-1 gap-2">
+              {state.withNames.map((withName, index) => (
+                <li key={`${withName}-${index}`} className="rounded-control bg-primary-tint px-4 py-3 font-semibold [overflow-wrap:anywhere]">
+                  {withName}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {state.notReady && (
           <Notice kind="info">Sinabihan na ang organizer. Hintayin mong palitan ka; babalik ka sa unahan ng pila.</Notice>
         )}

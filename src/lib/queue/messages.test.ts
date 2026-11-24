@@ -4,6 +4,7 @@ import { SESSION_ERRORS } from "@/lib/session/messages";
 import {
   calledBanner,
   finishedBanner,
+  formatChangedBanner,
   needPlayersText,
   pausedBanner,
   QUEUE_ERRORS,
@@ -45,6 +46,15 @@ describe("banners (NF8)", () => {
     expect(resumedBanner("Ana")).toBe("Tuloy na si Ana, sa dati niyang puwesto sa pila.");
     expect(removedBanner("Ana")).toBe("Inalis si Ana sa pila.");
     expect(needPlayersText(3)).toBe("Kailangan pa ng 3 player");
+  });
+
+  it("singles: 1 winner, and format changes", () => {
+    expect(finishedBanner({ courtLabel: "Court 2", gameNumber: 2, winners: ["Ana"], next: ["Ana", "Eli"] })).toBe(
+      "Tapos ang Laro #2 sa Court 2. Panalo: Ana. Tinawag: Ana, Eli",
+    );
+    expect(formatChangedBanner("Court 2", "singles")).toBe("Singles na ang Court 2.");
+    expect(formatChangedBanner("Court 1", "doubles")).toBe("Doubles na ang Court 1.");
+    expect(queueErrorMessage({ message: "invalid_format", code: "P0001" })).toBe(QUEUE_ERRORS.invalidFormat);
   });
 
   it("BR19: not ready and swap", () => {

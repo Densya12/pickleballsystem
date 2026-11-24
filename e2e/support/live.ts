@@ -4,11 +4,18 @@ import { expect, type Page } from "@playwright/test";
 
 export const SESSION_URL = /\/s\/[0-9a-f-]{36}\/live$/;
 
-export async function startSession(page: Page, name: string, opts: { courts: number; winnersStay?: boolean }) {
+export async function startSession(
+  page: Page,
+  name: string,
+  opts: { courts: number; winnersStay?: boolean; formats?: ("Doubles" | "Singles")[] },
+) {
   await page.getByRole("link", { name: "Bagong open play" }).click();
   await page.getByLabel("Pangalan ng session").fill(name);
   const step = opts.courts > 2 ? "Dagdag" : "Bawas";
   for (let i = 0; i < Math.abs(opts.courts - 2); i++) await page.getByRole("button", { name: step }).click();
+  for (const [index, format] of (opts.formats ?? []).entries()) {
+    await page.getByRole("group", { name: `Court ${index + 1}` }).getByRole("radio", { name: format }).check();
+  }
   if (opts.winnersStay) await page.getByText("Mananatili ang nanalo").click();
   await page.getByRole("button", { name: "Simulan ang session" }).click();
   await expect(page).toHaveURL(SESSION_URL);
@@ -26,7 +33,7 @@ export async function addWalkIn(page: Page, name: string, level = "Hindi sigurad
 }
 
 export function banner(page: Page) {
-  return page.getByRole("status").filter({ hasText: /Tinawag|Tapos ang Laro|Nasa pila|Naka-pause|Tuloy na|Inalis|Pinalitan/ });
+  return page.getByRole("status").filter({ hasText: /Tinawag|Tapos ang Laro|Nasa pila|Naka-pause|Tuloy na|Inalis|Pinalitan|(Singles|Doubles) na ang/ });
 }
 
 export function court(page: Page, label: string) {
