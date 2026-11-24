@@ -1,48 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { addWalkIn, banner, court, onCourt, queue, SESSION_URL, startSession, stat } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
-
-const SESSION_URL = /\/s\/[0-9a-f-]{36}\/live$/;
-
-async function startSession(page: Page, name: string, opts: { courts: number; winnersStay?: boolean }) {
-  await page.getByRole("link", { name: "Bagong open play" }).click();
-  await page.getByLabel("Pangalan ng session").fill(name);
-  const step = opts.courts > 2 ? "Dagdag" : "Bawas";
-  for (let i = 0; i < Math.abs(opts.courts - 2); i++) await page.getByRole("button", { name: step }).click();
-  if (opts.winnersStay) await page.getByText("Mananatili ang nanalo").click();
-  await page.getByRole("button", { name: "Simulan ang session" }).click();
-  await expect(page).toHaveURL(SESSION_URL);
-}
-
-async function addWalkIn(page: Page, name: string, level = "Hindi sigurado") {
-  await page.getByRole("link", { name: "Walk-in" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Magdagdag ng walk-in" })).toBeVisible();
-  await expect(page.getByText("Para sa player na walang phone o hindi makapag-scan.")).toBeVisible();
-  await page.getByLabel("Pangalan", { exact: true }).fill(name);
-  await page.getByRole("radio", { name: level }).check();
-  await page.getByRole("button", { name: "Ilagay sa pila" }).click();
-  await expect(page).toHaveURL(SESSION_URL);
-  await expect(banner(page)).toContainText(`Nasa pila na si ${name}`);
-}
-
-function banner(page: Page) {
-  return page.getByRole("status").filter({ hasText: /Tinawag|Tapos ang Laro|Nasa pila|Naka-pause|Tuloy na|Inalis/ });
-}
-
-function court(page: Page, label: string) {
-  return page.getByRole("region", { name: label });
-}
-
-function onCourt(page: Page, label: string) {
-  return court(page, label).getByRole("list", { name: `Naglalaro sa ${label}` }).getByRole("listitem");
-}
-
-function queue(page: Page) {
-  return page.getByRole("region", { name: "Susunod sa pila" });
-}
-
-function stat(page: Page, label: string) {
-  return page.locator("dl > div").filter({ has: page.getByText(label, { exact: true }) }).locator("dd");
-}
 
 test.describe("queue engine and Live screen", () => {
   test("all off: 2 courts, 9 walk-ins, call, finish, pause, remove, end", async ({ page }) => {
@@ -185,10 +143,11 @@ test.describe("queue engine and Live screen", () => {
     await expect(page.getByRole("button", { name: "I-share sa Messenger" })).toBeVisible();
     await expect(page.getByRole("button", { name: "I-print ang QR" })).toBeVisible();
 
-    // The QR link is public: a signed-out phone sees the placeholder while live...
+    // The QR link is public: a signed-out phone sees the check-in form while live...
     const player = await (await browser.newContext()).newPage();
     await player.goto(`/j/${code}`);
-    await expect(player.getByText("Malapit na ang check-in.", { exact: false })).toBeVisible();
+    await expect(player.getByRole("heading", { level: 1, name: "QR Night" })).toBeVisible();
+    await expect(player.getByRole("button", { name: "Pumila na" })).toBeVisible();
     await player.goto("/j/ZZZZZZ");
     await expect(player.getByText("Sarado na ang check-in.", { exact: false })).toBeVisible();
 

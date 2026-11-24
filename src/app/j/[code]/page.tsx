@@ -1,15 +1,63 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Notice, PageShell } from "@/components/ui";
+import { Card, Notice, PageShell } from "@/components/ui";
+import { getCheckinPreview, getPlayerSessionView } from "@/lib/player/data";
+import { waitingLine } from "@/lib/player/messages";
 import { normalizeJoinCode } from "@/lib/queue/qr";
-import { createClient } from "@/lib/supabase/server";
+import { formatSchedule } from "@/lib/session/time";
+import { CheckInForm } from "./CheckInForm";
 
 export const metadata: Metadata = {
   title: "Pumila · Open Play Queue",
 };
 
-/** Player link from the QR. Public placeholder until check-in arrives in Phase 4. */
-export default function JoinPage({ params }: PageProps<"/j/[code]">) {
+/**
+ * Player check-in from the QR link. Public: nobody signs in just to view it.
+ * The anonymous sign-in happens on "Pumila na" (CheckInForm).
+ */
+export default function CheckInPage({ params }: PageProps<"/j/[code]">) {
+  return (
+    <Suspense
+      fallback={
+        <PageShell>
+          <p className="pt-10 text-muted">Sandali lang…</p>
+        </PageShell>
+      }
+    >
+      <CheckInContent params={params} />
+    </Suspense>
+  );
+}
+
+async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">) {
+  const code = normalizeJoinCode((await params).code);
+  const preview = code ? await getCheckinPreview(code) : null;
+  if (!code || !preview || preview.status !== "live") return <Closed />;
+
+  // Already in line on this phone: go straight to "Pwesto sa pila".
+  const view = await getPlayerSessionView(code);
+  if (view?.me) redirect(`/j/${code}/me`);
+
+  return (
+    <PageShell
+      header={
+        <div className="flex flex-col gap-1 pt-6">
+          <p className="text-muted">Pumila sa open play</p>
+          <h1 className="text-3xl break-words">{preview.name}</h1>
+          <p className="text-muted">{formatSchedule(new Date(preview.startsAt!), new Date(preview.endsAt!))}</p>
+          <p className="font-semibold">{waitingLine(preview.waiting ?? 0, preview.courtsCount ?? 0)}</p>
+        </div>
+      }
+    >
+      <Card className="mt-2">
+        <CheckInForm code={code} />
+      </Card>
+    </PageShell>
+  );
+}
+
+function Closed() {
   return (
     <PageShell
       header={
@@ -19,22 +67,8 @@ export default function JoinPage({ params }: PageProps<"/j/[code]">) {
       }
     >
       <div className="pt-4">
-        <Suspense fallback={<p className="text-muted">Sandali lang…</p>}>
-          <JoinStatus params={params} />
-        </Suspense>
+        <Notice kind="error">Sarado na ang check-in. Tanungin ang organizer kung may bagong QR.</Notice>
       </div>
     </PageShell>
-  );
-}
-
-async function JoinStatus({ params }: Pick<PageProps<"/j/[code]">, "params">) {
-  const code = normalizeJoinCode((await params).code);
-  const supabase = await createClient();
-  const open = code ? (await supabase.rpc("is_checkin_open", { p_join_code: code })).data === true : false;
-
-  return open ? (
-    <Notice kind="info">Malapit na ang check-in. Sa ngayon, sabihin sa organizer ang pangalan mo.</Notice>
-  ) : (
-    <Notice kind="error">Sarado na ang check-in. Tanungin ang organizer kung may bagong QR.</Notice>
   );
 }

@@ -14,11 +14,14 @@ export type AuthUser = { id: string; email: string | null; name: string | null }
 export type Club = Database["public"]["Tables"]["clubs"]["Row"];
 export type StaffRole = "owner" | "organizer";
 
-/** Verified user from the session (getClaims validates the JWT), or null. */
+/**
+ * Verified organizer from the session (getClaims validates the JWT), or null.
+ * Anonymous sessions are players (Phase 4), never organizers.
+ */
 export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) return null;
+  if (error || !data?.claims?.sub || data.claims.is_anonymous === true) return null;
   const metadata = (data.claims.user_metadata ?? {}) as Record<string, unknown>;
   const name = [metadata.full_name, metadata.name].find((v): v is string => typeof v === "string" && v.trim() !== "");
   return {

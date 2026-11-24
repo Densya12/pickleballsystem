@@ -8,8 +8,10 @@ import {
   pausedBanner,
   QUEUE_ERRORS,
   queueErrorMessage,
+  notReadyText,
   removedBanner,
   resumedBanner,
+  swappedBanner,
   walkInBanner,
 } from "./messages";
 
@@ -43,6 +45,12 @@ describe("banners (NF8)", () => {
     expect(resumedBanner("Ana")).toBe("Tuloy na si Ana, sa dati niyang puwesto sa pila.");
     expect(removedBanner("Ana")).toBe("Inalis si Ana sa pila.");
     expect(needPlayersText(3)).toBe("Kailangan pa ng 3 player");
+  });
+
+  it("BR19: not ready and swap", () => {
+    expect(notReadyText("Ana")).toBe("Hindi pa handa si Ana");
+    expect(swappedBanner("Ana", "Ben", "Court 1")).toBe("Pinalitan si Ana ni Ben sa Court 1. Nasa unahan na ng pila si Ana.");
+    expect(queueErrorMessage({ message: "player_not_on_court", code: "P0001" })).toBe(QUEUE_ERRORS.notOnCourt);
   });
 });
 

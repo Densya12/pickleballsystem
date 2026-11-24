@@ -44,7 +44,9 @@ export async function updateSession(request: NextRequest) {
   // Do not run code between createServerClient and getClaims(): getClaims()
   // is what refreshes an expired session.
   const { data } = await supabase.auth.getClaims();
-  const signedIn = Boolean(data?.claims?.sub);
+  // Anonymous sessions belong to players (Phase 4 check-in). They count as
+  // signed out for organizer pages, so a player's phone can still sign in here.
+  const signedIn = Boolean(data?.claims?.sub) && data?.claims?.is_anonymous !== true;
 
   if (!signedIn && !isPublic) {
     return redirectTo(request, loginPath(pathname + search), response, cacheHeaders);

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Button, Card } from "@/components/ui";
+import { AlertIcon } from "@/components/ui/icons";
 import type { LiveCourt } from "@/lib/queue/data";
-import { needPlayersText } from "@/lib/queue/messages";
+import { needPlayersText, notReadyText } from "@/lib/queue/messages";
 import { WinnerPicker } from "./WinnerPicker";
 
 type Props = {
@@ -13,10 +14,12 @@ type Props = {
   busy: boolean;
   onCall: (courtId: string) => void;
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
+  /** BR19: replace a player who said "Hindi pa ako handa". */
+  onSwap: (courtId: string, playerId: string) => void;
 };
 
 /** One court: the 4 names in a 2×2 grid (no "VS": they pick partners on court, D11). */
-export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFinish }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFinish, onSwap }: Props) {
   const [picking, setPicking] = useState(false);
   const game = court.game;
   const headingId = `court-${court.id}`;
@@ -36,12 +39,30 @@ export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFini
             {game.players.map((player) => (
               <li
                 key={player.id}
-                className="flex min-h-14 items-center rounded-control bg-primary-tint px-3 py-2 font-semibold [overflow-wrap:anywhere]"
+                className={
+                  player.notReady
+                    ? "flex min-h-14 flex-col justify-center rounded-control border-[1.5px] border-dashed border-ink bg-warn px-3 py-2 font-semibold [overflow-wrap:anywhere]"
+                    : "flex min-h-14 items-center rounded-control bg-primary-tint px-3 py-2 font-semibold [overflow-wrap:anywhere]"
+                }
               >
                 {player.name}
+                {player.notReady && <span className="text-sm font-semibold text-warn">Hindi pa handa</span>}
               </li>
             ))}
           </ul>
+          {game.players
+            .filter((player) => player.notReady)
+            .map((player) => (
+              <div key={player.id} className="flex flex-col gap-2 rounded-control bg-warn px-4 py-3">
+                <p className="flex items-start gap-2 font-semibold text-warn">
+                  <AlertIcon className="mt-0.5 size-5 shrink-0" />
+                  <span>{notReadyText(player.name)}</span>
+                </p>
+                <Button variant="secondary" fullWidth disabled={busy} onClick={() => onSwap(court.id, player.id)}>
+                  Palitan
+                </Button>
+              </div>
+            ))}
           {picking ? (
             <WinnerPicker
               players={game.players}

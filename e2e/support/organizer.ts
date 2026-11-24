@@ -11,7 +11,7 @@ export function uniqueEmail(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
 }
 
-async function magicLinkFor(email: string): Promise<string> {
+export async function magicLinkFor(email: string): Promise<string> {
   const query = encodeURIComponent(`to:"${email}"`);
   let link: string | undefined;
   await expect
