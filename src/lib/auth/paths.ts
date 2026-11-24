@@ -1,6 +1,6 @@
 /** Routes reachable without signing in. Everything else requires an organizer session. */
-// /j/<code> is the player check-in link from the QR (Phase 4; a placeholder for now).
-const PUBLIC_PREFIXES = ["/login", "/auth", "/design-system", "/j"] as const;
+// /j/<code> is the session check-in link; /c/<code> is the club's permanent QR (Phase 5b).
+const PUBLIC_PREFIXES = ["/login", "/auth", "/design-system", "/j", "/c"] as const;
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

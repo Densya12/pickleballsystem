@@ -13,7 +13,8 @@ const column = "mx-auto w-full max-w-app px-4";
 
 /**
  * Mobile-first page frame: header, scrolling body, optional sticky footer.
- * Content is capped at 430px and centered on wider screens.
+ * Content is capped at 430px and centered on wider screens. The footer holds
+ * actions, so it never prints.
  */
 export function PageShell({ header, children, footer, className }: PageShellProps) {
   return (
@@ -25,7 +26,7 @@ export function PageShell({ header, children, footer, className }: PageShellProp
       )}
       <main className={cn(column, "flex-1 pt-2 pb-8")}>{children}</main>
       {footer && (
-        <footer className="sticky bottom-0 border-t border-default bg-page/95 backdrop-blur-sm">
+        <footer className="sticky bottom-0 border-t border-default bg-page/95 backdrop-blur-sm print:hidden">
           <div className={cn(column, "pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]")}>
             {footer}
           </div>

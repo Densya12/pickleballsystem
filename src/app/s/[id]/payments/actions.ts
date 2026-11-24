@@ -2,14 +2,19 @@
 
 import { refresh } from "next/cache";
 import { requireUser } from "@/lib/auth/dal";
-import { confirmedBanner, undoneBanner } from "@/lib/payments/messages";
+import { confirmedBanner, undoneBanner, undoneConfirmBanner } from "@/lib/payments/messages";
 import { playerNames } from "@/lib/queue/data";
 import { queueErrorMessage } from "@/lib/queue/messages";
 import { getSession } from "@/lib/session/data";
 import { SESSION_ERRORS } from "@/lib/session/messages";
 import { createClient } from "@/lib/supabase/server";
 
-export type PaymentActionResult = { error?: string; banner?: string };
+export type PaymentActionResult = {
+  error?: string;
+  banner?: string;
+  /** Set when "Ibalik" can undo this action (D18). */
+  undo?: { banner: string };
+};
 
 /** Re-checks the user and staff access (RLS); the RPCs check organizer and session again. */
 async function authorize(sessionId: string): Promise<PaymentActionResult | null> {
@@ -31,7 +36,10 @@ export async function confirmPaymentAction(sessionId: string, playerId: string):
     supabase.from("payments").select("method").eq("session_player_id", playerId).maybeSingle(),
   ]);
   refresh();
-  return { banner: confirmedBanner(name, payment?.method === "cash" ? "cash" : "gcash") };
+  return {
+    banner: confirmedBanner(name, payment?.method === "cash" ? "cash" : "gcash"),
+    undo: { banner: undoneConfirmBanner(name) },
+  };
 }
 
 /** Back to unpaid, for mistakes. */

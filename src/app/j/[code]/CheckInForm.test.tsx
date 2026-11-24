@@ -128,4 +128,45 @@ describe("CheckInForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Pumila na" }));
     expect(rpc).toHaveBeenCalledWith("join_session", expect.objectContaining({ p_method: "cash", p_reference: undefined }));
   });
+
+  describe("returning player (D18)", () => {
+    const ANA = { name: "Ana Dela Cruz", level: "advanced" };
+
+    it("offers one tap: Pumila bilang …, keeping the level", async () => {
+      auth.getSession.mockResolvedValue({ data: { session: { access_token: "t" } } });
+      render(<CheckInForm code="ABC234" payment={FREE} lastProfile={ANA} />);
+      expect(screen.queryByLabelText("Pangalan mo")).not.toBeInTheDocument();
+      expect(screen.getByText("Advanced")).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("button", { name: "Pumila bilang Ana Dela Cruz" }));
+      expect(auth.signInAnonymously).not.toHaveBeenCalled();
+      expect(rpc).toHaveBeenCalledWith("join_session", {
+        p_join_code: "ABC234",
+        p_display_name: "Ana Dela Cruz",
+        p_level: "advanced",
+      });
+      expect(push).toHaveBeenCalledWith("/j/ABC234/me");
+    });
+
+    it("Hindi ako si …: shows the empty form", async () => {
+      render(<CheckInForm code="ABC234" payment={FREE} lastProfile={ANA} />);
+      await userEvent.click(screen.getByRole("button", { name: "Hindi ako si Ana Dela Cruz" }));
+      expect(screen.getByLabelText("Pangalan mo")).toHaveValue("");
+      expect(screen.getByRole("button", { name: "Pumila na" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Pumila bilang/ })).not.toBeInTheDocument();
+      await userEvent.type(screen.getByLabelText("Pangalan mo"), "Ben");
+      await userEvent.click(screen.getByRole("button", { name: "Pumila na" }));
+      expect(rpc).toHaveBeenCalledWith("join_session", expect.objectContaining({ p_display_name: "Ben", p_level: "unsure" }));
+    });
+
+    it("still asks for payment when there is a fee", async () => {
+      render(<CheckInForm code="ABC234" payment={PAID} lastProfile={ANA} />);
+      expect(screen.getByRole("heading", { name: "Bayad · ₱150" })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("button", { name: "Pumila bilang Ana Dela Cruz" }));
+      expect(screen.getByText(PAYMENT_CHOICE_REQUIRED)).toBeInTheDocument();
+      expect(rpc).not.toHaveBeenCalled();
+      await userEvent.click(screen.getByRole("switch", { name: "Cash ang ibabayad ko" }));
+      await userEvent.click(screen.getByRole("button", { name: "Pumila bilang Ana Dela Cruz" }));
+      expect(rpc).toHaveBeenCalledWith("join_session", expect.objectContaining({ p_display_name: "Ana Dela Cruz", p_method: "cash" }));
+    });
+  });
 });

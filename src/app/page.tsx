@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Button, Card, PageShell } from "@/components/ui";
-import { BallIcon, ChevronRightIcon, PlusIcon } from "@/components/ui/icons";
+import { BallIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "@/components/ui/icons";
 import { requireClub } from "@/lib/auth/dal";
 import { formatCourts } from "@/lib/format";
 import { getHomeSessions, type Session } from "@/lib/session/data";
@@ -22,7 +22,7 @@ export default function Home() {
 
 async function HomeContent() {
   const { user, club } = await requireClub();
-  const { live, drafts, ended } = await getHomeSessions(club.id);
+  const { live, drafts, ended, lastRepeatable } = await getHomeSessions(club.id);
   const firstName = user.name?.split(/\s+/)[0];
 
   return (
@@ -45,6 +45,13 @@ async function HomeContent() {
             <PlusIcon />
             Bagong open play
           </Button>
+          {lastRepeatable && (
+            // D18: same settings as last time, on the next date; then one tap on "Simulan".
+            <Button href={`/sessions/new?ulitin=${lastRepeatable.id}`} variant="secondary" fullWidth>
+              <RepeatIcon />
+              <span className="min-w-0 [overflow-wrap:anywhere]">Ulitin: {lastRepeatable.name}</span>
+            </Button>
+          )}
         </div>
 
         <Section title="Mga susunod na session" id="upcoming">

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import { BackLink, Card, PageShell } from "@/components/ui";
-import { requireUser } from "@/lib/auth/dal";
+import { ChevronRightIcon } from "@/components/ui/icons";
+import { getCurrentMembership, requireUser } from "@/lib/auth/dal";
 import { originFromHeaders } from "@/lib/http/origin";
 import { getJoinCode } from "@/lib/queue/data";
 import { qrSvg } from "@/lib/queue/qr";
@@ -36,12 +38,18 @@ export default function QrPage({ params }: PageProps<"/s/[id]/qr">) {
 
 async function QrContent({ params }: Pick<PageProps<"/s/[id]/qr">, "params">) {
   const { id } = await params;
-  await requireUser(`/s/${encodeURIComponent(id)}/qr`);
+  const user = await requireUser(`/s/${encodeURIComponent(id)}/qr`);
   const session = await getSession(id);
   if (!session) notFound();
   if (session.status !== "live") redirect(`/s/${session.id}/live`);
 
-  const [code, headerList] = await Promise.all([getJoinCode(session.id), headers()]);
+  const [code, headerList, membership] = await Promise.all([
+    getJoinCode(session.id),
+    headers(),
+    getCurrentMembership(user.id),
+  ]);
+  // Settings shows the current club's QR, so link there only for that club's owner.
+  const showClubQrLink = membership?.role === "owner" && membership.club.id === session.club_id;
   if (!code) notFound();
   const url = `${originFromHeaders(headerList)}/j/${code}`;
   const svg = await qrSvg(url);
@@ -89,6 +97,16 @@ async function QrContent({ params }: Pick<PageProps<"/s/[id]/qr">, "params">) {
         </div>
 
         <ShareActions url={url} sessionName={session.name} />
+
+        {showClubQrLink && (
+          <Link
+            href="/settings#club-qr-heading"
+            className="flex min-h-12 items-center justify-center gap-1 self-center rounded-control px-3 text-center font-semibold underline underline-offset-2 focus-visible:outline-3 focus-visible:outline-focus print:hidden"
+          >
+            May permanenteng QR ang club
+            <ChevronRightIcon className="size-5 shrink-0" />
+          </Link>
+        )}
       </div>
     </PageShell>
   );

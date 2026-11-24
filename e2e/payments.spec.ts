@@ -50,10 +50,10 @@ test("pay first: GCash (pending) gets called, cash is held until confirmed on Ba
   const liveUrl = organizer.url();
 
   // Walk-ins with each payment choice (one GCash walk-in reuses Ana's reference).
-  await addWalkIn(organizer, "Cash Walk", "Beginner", { choice: "Cash, natanggap na" });
+  await addWalkIn(organizer, "Cash Walk", "Beginner", { choice: "Nagbayad ng cash" });
   await addWalkIn(organizer, "GCash Walk", "Beginner", { choice: "GCash", reference: "1234-5678-90" });
   await addWalkIn(organizer, "Later Walk", "Beginner", { choice: "Mamaya na magbabayad" });
-  await addWalkIn(organizer, "Cash Two", "Beginner", { choice: "Cash, natanggap na" });
+  await addWalkIn(organizer, "Cash Two", "Beginner", { choice: "Nagbayad ng cash" });
 
   await organizer.getByRole("link", { name: "Ipakita ang QR" }).click();
   const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
@@ -110,6 +110,14 @@ test("pay first: GCash (pending) gets called, cash is held until confirmed on Ba
   );
   await benCard.getByRole("button", { name: "Natanggap na (cash)" }).click();
   await expect(organizer.getByRole("status").filter({ hasText: "Natanggap ang cash ni Phone Ben." })).toBeVisible();
+  await expect(paymentLine(ben)).toHaveText(/Bayad na/, { timeout: 2_000 });
+
+  // D18: "Ibalik" undoes the last "Natanggap na" (cash still chosen), then it's received again.
+  await organizer.getByRole("button", { name: /^Ibalik \(\d+s\)$/ }).click();
+  await expect(organizer.getByRole("status").filter({ hasText: "Naibalik sa dati ang bayad ni Phone Ben." })).toBeVisible();
+  await expect(paymentLine(ben)).toHaveText(/Hindi pa bayad/, { timeout: 2_000 });
+  await expect(benCard).toContainText("cash ang sabi");
+  await benCard.getByRole("button", { name: "Natanggap na (cash)" }).click();
   await expect(paymentLine(ben)).toHaveText(/Bayad na/, { timeout: 2_000 });
   await expect(organizer.getByTestId("payment-counts")).toHaveText("4 bayad · 1 i-check · 1 hindi pa");
 

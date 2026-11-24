@@ -1,6 +1,7 @@
 import { AUTH_MESSAGES } from "@/lib/auth/messages";
 import { paymentErrorMessage } from "@/lib/payments/messages";
 import { sessionErrorMessage } from "@/lib/session/messages";
+import { UNDO_ERRORS } from "@/lib/undo/countdown";
 
 /** Feedback after every queue action (NF8) and Taglish errors from the queue RPCs. */
 
@@ -62,6 +63,16 @@ export function formatChangedBanner(courtLabel: string, format: string): string 
   return `${format === "singles" ? "Singles" : "Doubles"} na ang ${courtLabel}.`;
 }
 
+/** After "Ibalik" on a finished game (D18). */
+export function undoneFinishBanner(courtLabel: string, gameNumber: number): string {
+  return `Naibalik ang Laro #${gameNumber} sa ${courtLabel}. Tuloy pa ang laro.`;
+}
+
+/** After "Ibalik" on a removal (D18). */
+export function undoneRemoveBanner(name: string): string {
+  return `Naibalik si ${name} sa pila, sa dati niyang puwesto.`;
+}
+
 export function notReadyText(name: string): string {
   return `Hindi pa handa si ${name}`;
 }
@@ -107,6 +118,8 @@ export function queueErrorMessage(error: DbErrorLike): string {
     case "player_not_found":
     case "game_not_found":
       return QUEUE_ERRORS.notFound;
+    case "undo_not_available":
+      return UNDO_ERRORS.notAvailable;
     case "not_organizer_account":
       return AUTH_MESSAGES.notOrganizerAccount;
   }

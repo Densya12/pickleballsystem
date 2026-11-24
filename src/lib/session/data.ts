@@ -35,18 +35,20 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const PAST_SESSIONS_LIMIT = 10;
 
-/** Home lists: the live session (BR1: at most one), drafts by start, recent ended. */
+/** Home lists: the live session (BR1: at most one), drafts by start, recent ended, and the session to repeat. */
 export async function getHomeSessions(clubId: string) {
   const supabase = await createClient();
   const base = () => supabase.from("sessions").select(COLUMNS).eq("club_id", clubId);
 
-  const [live, drafts, ended] = await Promise.all([
+  const [live, drafts, ended, last] = await Promise.all([
     base().eq("status", "live").maybeSingle(),
     base().eq("status", "draft").order("starts_at", { ascending: true }),
     base().eq("status", "ended").order("ended_at", { ascending: false }).limit(PAST_SESSIONS_LIMIT),
+    // "Ulitin" (D18): the most recently created ended or draft session.
+    base().in("status", ["draft", "ended"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
-  for (const result of [live, drafts, ended]) {
+  for (const result of [live, drafts, ended, last]) {
     if (result.error) throw new Error(`Could not load sessions: ${result.error.message}`);
   }
 
@@ -54,6 +56,7 @@ export async function getHomeSessions(clubId: string) {
     live: (live.data as Session | null) ?? null,
     drafts: (drafts.data ?? []) as Session[],
     ended: (ended.data ?? []) as Session[],
+    lastRepeatable: (last.data as Session | null) ?? null,
   };
 }
 

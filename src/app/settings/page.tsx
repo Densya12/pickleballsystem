@@ -5,6 +5,7 @@ import { BackLink, PageShell } from "@/components/ui";
 import { requireClub } from "@/lib/auth/dal";
 import { inviteExpiryText } from "@/lib/club/messages";
 import { originFromHeaders } from "@/lib/http/origin";
+import { qrSvg } from "@/lib/queue/qr";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsView, type InviteItem, type StaffItem } from "./SettingsView";
 
@@ -28,7 +29,7 @@ export default function SettingsPage() {
 
 function SettingsHeader() {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 print:hidden">
       <BackLink href="/" />
       <h1 className="text-3xl">Settings ng club</h1>
     </div>
@@ -60,6 +61,8 @@ async function SettingsContent() {
   if (invitesResult.error) throw new Error(`Could not load invites: ${invitesResult.error.message}`);
 
   const origin = originFromHeaders(headerList);
+  const entryUrl = `${origin}/c/${club.entry_code}`;
+  const clubQr = isOwner ? { url: entryUrl, svg: await qrSvg(entryUrl), clubName: club.name } : undefined;
 
   const staff: StaffItem[] = staffResult.data.map((s) => ({
     userId: s.user_id,
@@ -90,6 +93,7 @@ async function SettingsContent() {
       isOwner={isOwner}
       staff={staff}
       invites={invites}
+      clubQr={clubQr}
     />
   );
 }

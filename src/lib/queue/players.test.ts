@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { levelLabel, parseWalkIn, tidyName, WALK_IN_MESSAGES } from "./players";
+import {
+  levelLabel,
+  parseWalkIn,
+  parseWalkInPayment,
+  tidyName,
+  WALK_IN_MESSAGES,
+  WALK_IN_PAYMENT_REQUIRED,
+} from "./players";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -36,3 +43,27 @@ describe("walk-in input", () => {
     expect(levelLabel("intermediate")).toBe("Intermediate");
   });
 });
+
+describe("parseWalkInPayment (D18: no default with a fee)", () => {
+  it("requires a choice when there is a fee", () => {
+    expect(parseWalkInPayment(150, "", "")).toEqual({ ok: false, errors: { payment: WALK_IN_PAYMENT_REQUIRED } });
+    expect(parseWalkInPayment(150, "bitcoin", "")).toEqual({ ok: false, errors: { payment: WALK_IN_PAYMENT_REQUIRED } });
+  });
+
+  it("accepts each choice", () => {
+    expect(parseWalkInPayment(150, "cash_received", "")).toEqual({ ok: true, payment: "cash_received" });
+    expect(parseWalkInPayment(150, "later", "")).toEqual({ ok: true, payment: "later" });
+    expect(parseWalkInPayment(150, "gcash", "1234 5678 90")).toEqual({ ok: true, payment: "gcash" });
+  });
+
+  it("GCash needs a valid reference", () => {
+    const result = parseWalkInPayment(150, "gcash", "12a");
+    expect(result.ok).toBe(false);
+    expect(result.ok ? undefined : result.errors.reference).toMatch(/reference number/);
+  });
+
+  it("free sessions skip payment", () => {
+    expect(parseWalkInPayment(0, "", "")).toEqual({ ok: true });
+  });
+});
+

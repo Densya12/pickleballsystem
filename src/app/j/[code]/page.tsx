@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Card, Notice, PageShell } from "@/components/ui";
-import { getCheckinPreview, getPlayerSessionView } from "@/lib/player/data";
+import { getCheckinPreview, getLastProfile, getPlayerSessionView } from "@/lib/player/data";
 import { waitingLine } from "@/lib/player/messages";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { formatSchedule } from "@/lib/session/time";
@@ -36,7 +36,7 @@ async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">
   if (!code || !preview || preview.status !== "live") return <Closed />;
 
   // Already in line on this phone: go straight to "Pwesto sa pila".
-  const view = await getPlayerSessionView(code);
+  const [view, lastProfile] = await Promise.all([getPlayerSessionView(code), getLastProfile(code)]);
   if (view?.me) redirect(`/j/${code}/me`);
 
   return (
@@ -59,6 +59,7 @@ async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">
             gcashName: preview.gcashName,
             gcashNumber: preview.gcashNumber,
           }}
+          lastProfile={lastProfile}
         />
       </Card>
     </PageShell>
