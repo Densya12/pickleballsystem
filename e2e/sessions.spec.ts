@@ -44,14 +44,13 @@ test.describe("sessions (organizer)", () => {
     await page.getByLabel("Bayad bawat player (₱)").fill("200");
     await page.getByRole("button", { name: "Simulan ang session" }).click();
 
-    // Session page: live, with the details that were entered
+    // The Live screen, with its 3 courts
     await expect(page).toHaveURL(SESSION_URL);
     const sessionUrl = page.url();
     await expect(page.getByRole("heading", { level: 1, name: "Friday Night Open Play" })).toBeVisible();
-    await expect(page.getByText("Live ngayon", { exact: true })).toBeVisible();
-    await expect(page.getByText("Biyernes, Nob 27 · 6:00 PM – 9:00 PM")).toBeVisible();
-    const details = page.getByRole("definition");
-    await expect(details).toHaveText(["3 courts", "15 points", "Mananatili ang nanalo", "Oo", "₱200", "Wala"]);
+    await expect(page.getByText("LIVE", { exact: true })).toBeVisible();
+    await expect(page.getByText("6:00 PM – 9:00 PM · 3 courts")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: /^Court \d$/ })).toHaveCount(3);
 
     // Home shows it as LIVE NGAYON
     await page.getByRole("link", { name: "Bumalik" }).click();
@@ -64,13 +63,16 @@ test.describe("sessions (organizer)", () => {
     await page.getByRole("button", { name: "Tapusin ang session" }).click();
     await expect(page.getByText("Sigurado ka? Magsasara ang check-in.")).toBeVisible();
     await page.getByRole("button", { name: "Huwag muna" }).click();
-    await expect(page.getByText("Live ngayon", { exact: true })).toBeVisible();
+    await expect(page.getByText("LIVE", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Tapusin ang session" }).click();
     await page.getByRole("button", { name: "Oo, tapusin" }).click();
     await expect(page.getByText("Tapos na", { exact: true })).toBeVisible();
     await expect(page.getByText(/Tapos na ang session na ito/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Tapusin ang session" })).toHaveCount(0);
+    // The ended page lists the details that were entered.
+    await expect(page.getByRole("definition")).toHaveText(["3 courts", "15 points", "Mananatili ang nanalo", "Oo", "₱200", "Wala"]);
+    await expect(page.getByText("Biyernes, Nob 27 · 6:00 PM – 9:00 PM", { exact: true })).toBeVisible();
 
     // Home: no live card; the session is under Nakaraang session
     await page.getByRole("link", { name: "Bumalik" }).click();
@@ -103,7 +105,7 @@ test.describe("sessions (organizer)", () => {
     await expect(page.getByText("Draft", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Burahin" })).toBeVisible();
     await page.getByRole("button", { name: "Simulan ang session" }).click();
-    await expect(page.getByText("Live ngayon", { exact: true })).toBeVisible();
+    await expect(page.getByText("LIVE", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Tapusin ang session" })).toBeVisible();
 
     await page.getByRole("link", { name: "Bumalik" }).click();

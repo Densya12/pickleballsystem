@@ -6,16 +6,19 @@ import { BackLink, Card, Notice, PageShell } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { rotationLabel } from "@/lib/club/options";
 import { formatCourts, formatGcashNumber, formatPeso } from "@/lib/format";
+import { getLiveState } from "@/lib/queue/data";
+import { walkInBanner } from "@/lib/queue/messages";
 import { getSession, type Session } from "@/lib/session/data";
 import { formatDay, formatSchedule, formatTime } from "@/lib/session/time";
+import { LiveView } from "./LiveView";
 import { SessionControls } from "./SessionControls";
 
 export const metadata: Metadata = {
   title: "Session · Open Play Queue",
 };
 
-/** Session page. Phase 2 placeholder: details, status and start/end; the queue arrives in Phase 3. */
-export default function SessionPage({ params }: PageProps<"/s/[id]/live">) {
+/** Session page: the Live screen while live; details and start/delete for drafts; read-only when ended. */
+export default function SessionPage({ params, searchParams }: PageProps<"/s/[id]/live">) {
   return (
     <Suspense
       fallback={
@@ -24,18 +27,41 @@ export default function SessionPage({ params }: PageProps<"/s/[id]/live">) {
         </PageShell>
       }
     >
-      <SessionContent params={params} />
+      <SessionContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function SessionContent({ params }: Pick<PageProps<"/s/[id]/live">, "params">) {
+async function SessionContent({ params, searchParams }: Pick<PageProps<"/s/[id]/live">, "params" | "searchParams">) {
   const { id } = await params;
   await requireUser(`/s/${encodeURIComponent(id)}/live`);
 
   // RLS returns nothing for other clubs' sessions, so they get the same 404 as unknown ids.
   const session = await getSession(id);
   if (!session) notFound();
+
+  if (session.status === "live") {
+    const [state, { added }] = await Promise.all([getLiveState(session.id), searchParams]);
+    // Banner after adding a walk-in (that page redirects here with ?added=<player id>).
+    const addedPlayer = typeof added === "string" ? state.queue.find((p) => p.id === added) : undefined;
+    const incomingBanner = addedPlayer
+      ? { key: addedPlayer.id, text: walkInBanner(addedPlayer.name, addedPlayer.position) }
+      : null;
+    return (
+      <LiveView
+        session={{
+          id: session.id,
+          name: session.name,
+          rotation: session.rotation,
+          startsAt: session.starts_at,
+          endsAt: session.ends_at,
+          courtsCount: session.courts_count,
+        }}
+        state={state}
+        incomingBanner={incomingBanner}
+      />
+    );
+  }
 
   const startsAt = new Date(session.starts_at);
   const endsAt = new Date(session.ends_at);
@@ -63,13 +89,6 @@ async function SessionContent({ params }: Pick<PageProps<"/s/[id]/live">, "param
 function StatusNote({ session }: { session: Session }) {
   if (session.status === "draft") {
     return <Notice kind="info">Draft pa ito. Hindi pa bukas ang check-in.</Notice>;
-  }
-  if (session.status === "live") {
-    return (
-      <Notice kind="info">
-        Live na ang session. Darating dito ang pila at mga court sa susunod na update.
-      </Notice>
-    );
   }
   const endedAt = session.ended_at ? new Date(session.ended_at) : null;
   return (

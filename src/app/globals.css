@@ -88,3 +88,10 @@
     line-height: 1.15;
   }
 }
+
+/* Printing (e.g. the QR page): plain white paper, no app background. */
+@media print {
+  body {
+    background: #fff;
+  }
+}
