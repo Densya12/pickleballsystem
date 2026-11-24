@@ -35,9 +35,9 @@ describe("RadioGroup", () => {
       <RadioGroup
         legend="Rotation"
         name="r"
-        options={[{ value: "all_off", label: "Lahat ng apat aalis", description: "Babalik sa pila." }]}
+        options={[{ value: "all_off", label: "Lahat aalis", description: "Babalik sila sa dulo ng pila" }]}
       />,
     );
-    expect(screen.getByText("Babalik sa pila.")).toBeInTheDocument();
+    expect(screen.getByText("Babalik sila sa dulo ng pila")).toBeInTheDocument();
   });
 });

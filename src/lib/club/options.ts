@@ -9,7 +9,7 @@ export const POINTS_CHOICES: readonly { value: `${Points}`; label: string }[] = 
 ];
 
 export const ROTATION_CHOICES: readonly { value: Rotation; label: string; description: string }[] = [
-  { value: "all_off", label: "Lahat ng apat aalis", description: "Babalik sila sa dulo ng pila" },
+  { value: "all_off", label: "Lahat aalis", description: "Babalik sila sa dulo ng pila" },
   { value: "winners_stay", label: "Mananatili ang nanalo", description: "Hanggang 2 sunod na laro lang" },
 ];
 

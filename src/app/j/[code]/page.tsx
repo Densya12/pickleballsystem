@@ -51,7 +51,15 @@ async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">
       }
     >
       <Card className="mt-2">
-        <CheckInForm code={code} />
+        <CheckInForm
+          code={code}
+          payment={{
+            fee: preview.fee,
+            payFirst: preview.payFirst,
+            gcashName: preview.gcashName,
+            gcashNumber: preview.gcashNumber,
+          }}
+        />
       </Card>
     </PageShell>
   );

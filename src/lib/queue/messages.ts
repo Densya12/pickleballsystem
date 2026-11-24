@@ -1,4 +1,5 @@
 import { AUTH_MESSAGES } from "@/lib/auth/messages";
+import { paymentErrorMessage } from "@/lib/payments/messages";
 import { sessionErrorMessage } from "@/lib/session/messages";
 
 /** Feedback after every queue action (NF8) and Taglish errors from the queue RPCs. */
@@ -79,6 +80,8 @@ export const QUEUE_ERRORS = {
 type DbErrorLike = { code?: string; message?: string; details?: string | null };
 
 export function queueErrorMessage(error: DbErrorLike): string {
+  const payment = paymentErrorMessage(error);
+  if (payment) return payment;
   switch (error.message) {
     case "not_enough_players": {
       const needed = Number(error.details);

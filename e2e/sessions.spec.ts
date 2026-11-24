@@ -30,7 +30,7 @@ test.describe("sessions (organizer)", () => {
 
     // Club defaults are pre-filled (BR2); the courts stepper starts at 2.
     await expect(page.getByRole("radio", { name: "11" })).toBeChecked();
-    await expect(page.getByRole("radio", { name: /Lahat ng apat aalis/ })).toBeChecked();
+    await expect(page.getByRole("radio", { name: /Lahat aalis/ })).toBeChecked();
     await expect(page.getByLabel("Bayad bawat player (₱)")).toHaveValue("150");
     await expect(page.getByRole("status").filter({ hasText: "courts" })).toHaveText("2 courts");
 

@@ -43,7 +43,7 @@ async function WalkInContent({ params }: Pick<PageProps<"/s/[id]/walk-in">, "par
       }
     >
       <Card className="mt-2">
-        <WalkInForm sessionId={session.id} />
+        <WalkInForm sessionId={session.id} fee={session.fee} />
       </Card>
     </PageShell>
   );

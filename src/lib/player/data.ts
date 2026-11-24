@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Me, QueuePlayer, RunningGame } from "./state";
+import type { CallRules, Me, QueuePlayer, RunningGame } from "./state";
 
 /**
  * Player-side reads. The check-in preview is public; everything else is read
@@ -15,6 +15,10 @@ export type CheckinPreview = {
   endsAt: string | null;
   courtsCount: number | null;
   waiting: number | null;
+  fee: number;
+  payFirst: boolean;
+  gcashName: string | null;
+  gcashNumber: string | null;
 };
 
 export async function getCheckinPreview(code: string): Promise<CheckinPreview> {
@@ -28,6 +32,10 @@ export async function getCheckinPreview(code: string): Promise<CheckinPreview> {
     endsAt: data?.ends_at ?? null,
     courtsCount: data?.courts_count ?? null,
     waiting: data?.waiting ?? null,
+    fee: data?.fee ?? 0,
+    payFirst: data?.pay_first ?? false,
+    gcashName: data?.gcash_name ?? null,
+    gcashNumber: data?.gcash_number ?? null,
   };
 }
 
@@ -38,6 +46,11 @@ export type PlayerSessionView = {
   games: RunningGame[];
   /** One entry per court (for the "next up" window). */
   courtFormats: string[];
+  /** The session's payment rule (BR6) and what to pay. */
+  rules: CallRules;
+  gcash: { name: string | null; number: string | null };
+  /** The caller's own payment (NF14: only their own row is readable). */
+  payment: { status: string; method: string | null; referenceDigits: string | null };
 };
 
 /** The session behind a join code, if the caller may read it (player or staff). */
@@ -48,7 +61,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
 
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, name, status, starts_at, ends_at")
+    .select("id, name, status, starts_at, ends_at, fee, pay_first, gcash_name, gcash_number")
     .eq("join_code", code)
     .maybeSingle();
   if (error) throw new Error(`Could not load session: ${error.message}`);
@@ -58,7 +71,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
     supabase.rpc("my_player", { p_session_id: session.id }).maybeSingle(),
     supabase
       .from("session_players")
-      .select("id, display_name, status, queue_pos")
+      .select("id, display_name, status, queue_pos, payment_status")
       .eq("session_id", session.id)
       .neq("status", "left")
       .order("queue_pos"),
@@ -70,6 +83,10 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
   }
 
   const courtLabel = new Map((courts.data ?? []).map((c) => [c.id, c.label]));
+  const myRow = me.data ? (players.data ?? []).find((p) => p.id === me.data!.id) : undefined;
+  const { data: myPayment } = me.data
+    ? await supabase.from("payments").select("method, reference_digits, status").eq("session_player_id", me.data.id).maybeSingle()
+    : { data: null };
   return {
     session: {
       id: session.id,
@@ -81,7 +98,13 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
     me: me.data
       ? { id: me.data.id, name: me.data.display_name, status: me.data.status, notReady: me.data.not_ready_at !== null }
       : null,
-    players: (players.data ?? []).map((p) => ({ id: p.id, name: p.display_name, status: p.status, queuePos: p.queue_pos })),
+    players: (players.data ?? []).map((p) => ({
+      id: p.id,
+      name: p.display_name,
+      status: p.status,
+      queuePos: p.queue_pos,
+      paymentStatus: p.payment_status,
+    })),
     games: (games.data ?? []).map((g) => ({
       id: g.id,
       number: g.number,
@@ -90,5 +113,12 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       playerIds: g.player_ids,
     })),
     courtFormats: (courts.data ?? []).map((c) => c.format),
+    rules: { payFirst: session.pay_first, fee: session.fee },
+    gcash: { name: session.gcash_name, number: session.gcash_number },
+    payment: {
+      status: myRow?.payment_status ?? "unpaid",
+      method: myPayment?.method ?? null,
+      referenceDigits: myPayment?.reference_digits ?? null,
+    },
   };
 }

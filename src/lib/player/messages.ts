@@ -1,3 +1,5 @@
+import { paymentErrorMessage } from "@/lib/payments/messages";
+
 /** Taglish copy and error messages for the player screens. */
 
 export const PLAYER_ERRORS = {
@@ -14,6 +16,8 @@ export const PLAYER_ERRORS = {
 type DbErrorLike = { code?: string; message?: string };
 
 export function playerErrorMessage(error: DbErrorLike): string {
+  const payment = paymentErrorMessage(error);
+  if (payment) return payment;
   switch (error.message) {
     case "checkin_closed":
       return PLAYER_ERRORS.closed;

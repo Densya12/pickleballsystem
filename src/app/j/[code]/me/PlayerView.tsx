@@ -9,6 +9,7 @@ import type { PlayerSessionView } from "@/lib/player/data";
 import { playerErrorMessage } from "@/lib/player/messages";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
+import { PaymentPanel } from "./PaymentPanel";
 import { createClient } from "@/lib/supabase/client";
 
 type PlayerRpc = "player_pause" | "player_resume" | "player_leave" | "player_not_ready";
@@ -38,6 +39,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     players: view.players,
     games: view.games,
     callSize: callSizeFor(view.courtFormats),
+    rules: view.rules,
   });
   const name = view.me?.name ?? "";
 
@@ -109,6 +111,17 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     />
   );
 
+  // Right under the place in line, so a held player sees why first (BR6).
+  const paymentPanel = view.me ? (
+    <PaymentPanel
+      playerId={view.me.id}
+      fee={view.rules.fee}
+      payFirst={view.rules.payFirst}
+      gcash={view.gcash}
+      payment={view.payment}
+    />
+  ) : null;
+
   let body: ReactNode = null;
   if (state.kind === "queued") {
     body = (
@@ -122,6 +135,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
           <p className="text-muted">sa pila</p>
         </Card>
         {state.nextUp && <Notice kind="success">Sa susunod na bakanteng court ka na</Notice>}
+        {paymentPanel}
         {state.ahead.length > 0 && (
           <section aria-labelledby="ahead-heading" className="flex flex-col gap-2">
             <h2 id="ahead-heading" className="text-xl">
@@ -153,6 +167,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         <Notice kind="info">
           Naka-hold ang pwesto mo (#{state.position}). Hindi ka muna tatawagin hangga&apos;t hindi ka bumabalik.
         </Notice>
+        {paymentPanel}
         <div className="flex flex-col gap-3">
           <Button size="lg" fullWidth disabled={busy} onClick={() => void act("player_resume")}>
             Handa na ulit akong maglaro
@@ -196,6 +211,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         {state.notReady && (
           <Notice kind="info">Sinabihan na ang organizer. Hintayin mong palitan ka; babalik ka sa unahan ng pila.</Notice>
         )}
+        {paymentPanel}
         <div className="flex flex-col gap-3">
           {!isAcked && (
             <Button size="lg" fullWidth onClick={() => acknowledge(state.gameId)}>

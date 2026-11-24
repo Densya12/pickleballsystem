@@ -57,6 +57,8 @@ async function SessionContent({ params, searchParams }: Pick<PageProps<"/s/[id]/
           startsAt: session.starts_at,
           endsAt: session.ends_at,
           courtsCount: session.courts_count,
+          fee: session.fee,
+          payFirst: session.pay_first,
         }}
         state={state}
         incomingBanner={incomingBanner}

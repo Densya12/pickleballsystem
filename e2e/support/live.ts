@@ -21,12 +21,18 @@ export async function startSession(
   await expect(page).toHaveURL(SESSION_URL);
 }
 
-export async function addWalkIn(page: Page, name: string, level = "Hindi sigurado") {
+export type WalkInPayment = { choice: "Cash, natanggap na" | "GCash" | "Mamaya na magbabayad"; reference?: string };
+
+export async function addWalkIn(page: Page, name: string, level = "Hindi sigurado", payment?: WalkInPayment) {
   await page.getByRole("link", { name: "Walk-in" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Magdagdag ng walk-in" })).toBeVisible();
   await expect(page.getByText("Para sa player na walang phone o hindi makapag-scan.")).toBeVisible();
   await page.getByLabel("Pangalan", { exact: true }).fill(name);
   await page.getByRole("radio", { name: level }).check();
+  if (payment) {
+    await page.getByRole("radio", { name: payment.choice }).check();
+    if (payment.reference) await page.getByLabel("GCash reference number (kung GCash)").fill(payment.reference);
+  }
   await page.getByRole("button", { name: "Ilagay sa pila" }).click();
   await expect(page).toHaveURL(SESSION_URL);
   await expect(banner(page)).toContainText(`Nasa pila na si ${name}`);

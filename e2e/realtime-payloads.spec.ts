@@ -18,7 +18,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:5
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 const FORBIDDEN = ["display_token", "device_id", "user_id"];
-const TABLES = ["sessions", "session_players", "courts", "games"] as const;
+const TABLES = ["sessions", "session_players", "courts", "games", "payments"] as const;
 
 type Payload = RealtimePostgresChangesPayload<Record<string, unknown>>;
 
@@ -109,8 +109,8 @@ test("Realtime payloads never carry display_token, device_id or user_id", async 
   // Both sides heard every table, including the session ending.
   for (const [who, payloads] of [["organizer", organizerPayloads], ["player", playerPayloads]] as const) {
     await expect
-      .poll(() => new Set(payloads.map((p) => p.table)).size, { message: `${who} receives all 4 tables`, timeout: 10_000 })
-      .toBe(4);
+      .poll(() => new Set(payloads.map((p) => p.table)).size, { message: `${who} receives all 4 queue tables`, timeout: 10_000 })
+      .toBeGreaterThanOrEqual(4);
     await expect
       .poll(() => payloads.some((p) => p.table === "sessions" && (p.new as { status?: string }).status === "ended"), {
         message: `${who} hears the session end`,
@@ -130,4 +130,75 @@ test("Realtime payloads never carry display_token, device_id or user_id", async 
   for (const channel of channels) await channel.unsubscribe();
   await organizer.auth.signOut();
   await player.auth.signOut();
+});
+
+test("NF14: Realtime never gives a player another player's payment or reference", async () => {
+  test.setTimeout(60_000);
+  const organizer = client();
+  const email = uniqueEmail("nf14");
+  await ok(organizer.auth.signInWithOtp({ email, options: { emailRedirectTo: "http://localhost:3000/auth/confirm" } }));
+  const tokenHash = new URL((await magicLinkFor(email)).replace("&token_hash", "?x=1&token_hash")).searchParams.get("token_hash");
+  await ok(organizer.auth.verifyOtp({ type: "email", token_hash: tokenHash! }));
+
+  const clubId = await must(organizer.rpc("create_club", { p_name: "Privacy Club" }));
+  const start = new Date();
+  const sessionId = await must(
+    organizer.rpc("create_session", {
+      p_club_id: clubId,
+      p_name: "Privacy Night",
+      p_starts_at: start.toISOString(),
+      p_ends_at: new Date(start.getTime() + 3 * 3_600_000).toISOString(),
+      p_courts_count: 1,
+      p_fee: 150,
+      p_pay_first: true,
+      p_start: true,
+    }),
+  );
+  const { join_code } = await must(organizer.from("sessions").select("join_code").eq("id", sessionId).single());
+
+  // Two phone players, each with their own reference.
+  const anna = client();
+  const ben = client();
+  await ok(anna.auth.signInAnonymously());
+  await ok(ben.auth.signInAnonymously());
+  const annaId = await must(anna.rpc("join_session", { p_join_code: join_code, p_display_name: "Anna", p_method: "cash" }));
+  const benId = await must(ben.rpc("join_session", { p_join_code: join_code, p_display_name: "Ben", p_method: "cash" }));
+
+  const annaHeard: Payload[] = [];
+  const benHeard: Payload[] = [];
+  const organizerHeard: Payload[] = [];
+  const channels = [
+    await listen(anna, sessionId, annaHeard),
+    await listen(ben, sessionId, benHeard),
+    await listen(organizer, sessionId, organizerHeard),
+  ];
+
+  const ANNA_REF = "111122223333";
+  const BEN_REF = "999988887777";
+  await ok(anna.rpc("player_submit_reference", { p_player_id: annaId, p_reference: ANNA_REF }));
+  await ok(ben.rpc("player_submit_reference", { p_player_id: benId, p_reference: BEN_REF }));
+  await ok(organizer.rpc("confirm_payment", { p_player_id: annaId }));
+  await ok(organizer.rpc("confirm_payment", { p_player_id: benId }));
+
+  const payments = (heard: Payload[]) => heard.filter((p) => p.table === "payments");
+  // The organizer hears every payment change; each player hears their own.
+  await expect.poll(() => payments(organizerHeard).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(4);
+  await expect.poll(() => payments(annaHeard).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
+  await expect.poll(() => payments(benHeard).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
+
+  const text = (heard: Payload[]) => JSON.stringify(heard);
+  expect(payments(annaHeard).every((p) => (p.new as { session_player_id?: string }).session_player_id === annaId)).toBe(true);
+  expect(payments(benHeard).every((p) => (p.new as { session_player_id?: string }).session_player_id === benId)).toBe(true);
+  expect(text(annaHeard), "Anna never receives Ben's reference").not.toContain(BEN_REF);
+  expect(text(benHeard), "Ben never receives Anna's reference").not.toContain(ANNA_REF);
+  expect(text(annaHeard), "Anna does receive her own reference").toContain(ANNA_REF);
+  expect(text(organizerHeard)).toContain(ANNA_REF);
+  expect(text(organizerHeard)).toContain(BEN_REF);
+  // payment_status (not the reference) is visible to players of the session: it drives holds.
+  expect(annaHeard.some((p) => p.table === "session_players" && (p.new as { id?: string }).id === benId)).toBe(true);
+  for (const heard of [annaHeard, benHeard, organizerHeard]) expect(keysOf(heard)).not.toContain("updated_by");
+
+  for (const channel of channels) await channel.unsubscribe();
+  for (const c of [organizer, anna, ben]) await c.auth.signOut();
 });
