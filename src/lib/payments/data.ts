@@ -6,7 +6,7 @@ import type { PayingPlayer, PaymentStatus } from "./summary";
 export async function getSessionPayments(sessionId: string): Promise<PayingPlayer[]> {
   const supabase = await createClient();
   const [players, payments] = await Promise.all([
-    supabase.from("session_players").select("id, display_name, status, payment_status, queue_pos").eq("session_id", sessionId).order("queue_pos"),
+    supabase.from("session_players").select("id, display_name, status, payment_status, queue_pos, games_played").eq("session_id", sessionId).order("queue_pos"),
     supabase.from("payments").select("session_player_id, method, reference_digits, amount").eq("session_id", sessionId),
   ]);
   if (players.error) throw new Error(`Could not load players: ${players.error.message}`);
@@ -23,6 +23,7 @@ export async function getSessionPayments(sessionId: string): Promise<PayingPlaye
       method: (payment?.method ?? null) as PayingPlayer["method"],
       referenceDigits: payment?.reference_digits ?? null,
       amount: payment?.amount ?? null,
+      gamesPlayed: p.games_played,
     };
   });
 }

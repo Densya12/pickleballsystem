@@ -52,12 +52,30 @@ export async function getHomeSessions(clubId: string) {
     if (result.error) throw new Error(`Could not load sessions: ${result.error.message}`);
   }
 
+  const endedSessions = (ended.data ?? []) as Session[];
   return {
     live: (live.data as Session | null) ?? null,
     drafts: (drafts.data ?? []) as Session[],
-    ended: (ended.data ?? []) as Session[],
+    ended: endedSessions,
+    endedStats: await getEndedStats(endedSessions.map((s) => s.id)),
     lastRepeatable: (last.data as Session | null) ?? null,
   };
+}
+
+/** "{players} players · ₱{collected} nakolekta" for past sessions (confirmed payments only). */
+async function getEndedStats(sessionIds: string[]): Promise<Map<string, { players: number; collected: number }>> {
+  const stats = new Map(sessionIds.map((id) => [id, { players: 0, collected: 0 }]));
+  if (sessionIds.length === 0) return stats;
+  const supabase = await createClient();
+  const [players, payments] = await Promise.all([
+    supabase.from("session_players").select("session_id").in("session_id", sessionIds),
+    supabase.from("payments").select("session_id, amount").in("session_id", sessionIds).eq("status", "confirmed"),
+  ]);
+  if (players.error) throw new Error(`Could not load session players: ${players.error.message}`);
+  if (payments.error) throw new Error(`Could not load payments: ${payments.error.message}`);
+  for (const row of players.data ?? []) stats.get(row.session_id)!.players += 1;
+  for (const row of payments.data ?? []) stats.get(row.session_id)!.collected += row.amount;
+  return stats;
 }
 
 /** A session the user may see (staff of its club), or null. */

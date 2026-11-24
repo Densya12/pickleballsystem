@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button, Card, Notice } from "@/components/ui";
 import { PrinterIcon, QrIcon } from "@/components/ui/icons";
+import { isNetworkError, NETWORK_ERROR_MESSAGE } from "@/lib/outbox/rules";
 import { regenerateEntryCodeAction } from "./actions";
 
 export type ClubQr = { url: string; svg: string; clubName: string };
@@ -19,7 +20,13 @@ export function ClubQrCard({ qr }: { qr: ClubQr }) {
 
   function regenerate() {
     startTransition(async () => {
-      const result = await regenerateEntryCodeAction();
+      let result: Awaited<ReturnType<typeof regenerateEntryCodeAction>>;
+      try {
+        result = await regenerateEntryCodeAction();
+      } catch (caught) {
+        if (!isNetworkError(caught)) throw caught;
+        result = { error: NETWORK_ERROR_MESSAGE };
+      }
       setConfirming(false);
       setMessage(
         result.error

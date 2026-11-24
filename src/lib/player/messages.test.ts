@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { NETWORK_ERROR_MESSAGE } from "@/lib/outbox/rules";
 import { PLAYER_ERRORS, playerErrorMessage, waitingLine } from "./messages";
 
 describe("player messages", () => {
@@ -9,7 +10,10 @@ describe("player messages", () => {
     [{ message: "invalid_player_status", code: "P0001" }, PLAYER_ERRORS.changed],
     [{ message: "player_not_found", code: "P0001" }, PLAYER_ERRORS.noRow],
     [{ message: "violates check constraint", code: "23514" }, PLAYER_ERRORS.invalidInput],
-    [{ message: "fetch failed" }, PLAYER_ERRORS.generic],
+    // Phase 7: a failed fetch says so plainly.
+    [{ message: "fetch failed" }, NETWORK_ERROR_MESSAGE],
+    [{ message: "TypeError: Failed to fetch" }, NETWORK_ERROR_MESSAGE],
+    [{ message: "something unexpected" }, PLAYER_ERRORS.generic],
   ])("%j", (error, expected) => expect(playerErrorMessage(error)).toBe(expected));
 
   it("shows how many wait and how many courts", () => {
@@ -17,3 +21,4 @@ describe("player messages", () => {
     expect(waitingLine(0, 1)).toBe("0 ang nakapila · 1 court");
   });
 });
+

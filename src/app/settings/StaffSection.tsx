@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button, Card, Notice } from "@/components/ui";
 import { CheckIcon } from "@/components/ui/icons";
+import { isNetworkError, NETWORK_ERROR_MESSAGE } from "@/lib/outbox/rules";
 import {
   createInviteAction,
   removeStaffAction,
@@ -22,9 +23,14 @@ export function StaffSection({ isOwner, staff, invites }: Props) {
   function run(action: () => Promise<StaffActionResult>, after?: () => void) {
     setError(undefined);
     startTransition(async () => {
-      const result = await action();
-      if (result.error) setError(result.error);
-      else after?.();
+      try {
+        const result = await action();
+        if (result.error) setError(result.error);
+        else after?.();
+      } catch (caught) {
+        if (!isNetworkError(caught)) throw caught;
+        setError(NETWORK_ERROR_MESSAGE);
+      }
     });
   }
 

@@ -3,14 +3,14 @@ import { Suspense, type ReactNode } from "react";
 import { Button, Card, PageShell } from "@/components/ui";
 import { BallIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "@/components/ui/icons";
 import { requireClub } from "@/lib/auth/dal";
-import { formatCourts } from "@/lib/format";
+import { formatCourts, formatPeso } from "@/lib/format";
 import { getHomeSessions, type Session } from "@/lib/session/data";
 import { dateBadge, formatDate, formatSchedule, formatTimeRange, greeting } from "@/lib/session/time";
 
 /**
  * Home: the live session (BR1: at most one), upcoming drafts and past sessions.
- * Player counts and peso totals arrive in later phases. The "Mga member" nav
- * item stays hidden until Phase 7 (there is no nav bar yet).
+ * Past sessions show players and the ₱ collected. "Mga member", Settings and
+ * the guide are at the bottom.
  */
 export default function Home() {
   return (
@@ -22,7 +22,7 @@ export default function Home() {
 
 async function HomeContent() {
   const { user, club } = await requireClub();
-  const { live, drafts, ended, lastRepeatable } = await getHomeSessions(club.id);
+  const { live, drafts, ended, endedStats, lastRepeatable } = await getHomeSessions(club.id);
   const firstName = user.name?.split(/\s+/)[0];
 
   return (
@@ -70,7 +70,7 @@ async function HomeContent() {
           {ended.length > 0 ? (
             <SessionList>
               {ended.map((session) => (
-                <PastRow key={session.id} session={session} />
+                <PastRow key={session.id} session={session} stats={endedStats.get(session.id)} />
               ))}
             </SessionList>
           ) : (
@@ -78,9 +78,17 @@ async function HomeContent() {
           )}
         </Section>
 
-        <Button href="/settings" variant="secondary" fullWidth>
-          Settings ng club
-        </Button>
+        <nav aria-label="Iba pa" className="flex flex-col gap-3">
+          <Button href="/members" variant="secondary" fullWidth>
+            Mga member
+          </Button>
+          <Button href="/settings" variant="secondary" fullWidth>
+            Settings ng club
+          </Button>
+          <Button href="/guide" variant="secondary" fullWidth>
+            Gabay para sa organizer
+          </Button>
+        </nav>
       </div>
     </PageShell>
   );
@@ -136,12 +144,18 @@ function UpcomingRow({ session }: { session: Session }) {
   );
 }
 
-function PastRow({ session }: { session: Session }) {
+function PastRow({ session, stats }: { session: Session; stats?: { players: number; collected: number } }) {
   return (
     <RowLink href={`/s/${session.id}/live`}>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="font-semibold break-words">{session.name}</span>
         <span className="text-muted">{formatDate(new Date(session.starts_at))}</span>
+        {stats && (
+          <span className="text-muted">
+            {stats.players} {stats.players === 1 ? "player" : "players"}
+            {session.fee > 0 ? ` · ${formatPeso(stats.collected)} nakolekta` : " · libre"}
+          </span>
+        )}
       </span>
     </RowLink>
   );

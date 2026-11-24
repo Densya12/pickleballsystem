@@ -60,3 +60,21 @@ describe("duplicateReferences (BR15: flagged, not rejected)", () => {
     expect(dupes.has("e")).toBe(false);
   });
 });
+
+describe("summarizePayments after the session ended", () => {
+  const ended = (name: string, paymentStatus: "unpaid" | "pending" | "confirmed", gamesPlayed: number) => ({
+    id: name, name, status: "left", paymentStatus, method: null, referenceDigits: null, amount: null, gamesPlayed,
+  });
+
+  it("counts whoever played or paid (everyone is 'left' now)", () => {
+    const summary = summarizePayments(
+      [ended("Ana", "unpaid", 3), ended("Ben", "confirmed", 0), ended("Cara", "unpaid", 0), ended("Dino", "pending", 2)],
+      150,
+      { sessionEnded: true },
+    );
+    expect(summary.counted.map((p) => p.name)).toEqual(["Ana", "Ben", "Dino"]);
+    expect(summary.unpaid.map((p) => p.name)).toEqual(["Ana"]);
+    expect(summary.expectedTotal).toBe(450);
+  });
+});
+

@@ -21,6 +21,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export type QueueActionResult = {
   error?: string;
+  /** The database's error message (e.g. "game_already_finished"), for outbox replays. */
+  code?: string;
   banner?: string;
   /** Set when "Ibalik" can undo this action (D18): the banner to show after undoing. */
   undo?: { banner: string };
@@ -47,7 +49,7 @@ export async function callNextAction(sessionId: string, courtId: string): Promis
 
   const supabase = await createClient();
   const { data: gameId, error } = await supabase.rpc("call_next", { p_court_id: courtId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const game = await getGame(gameId);
   refresh();
@@ -70,7 +72,7 @@ export async function finishGameAction(
     p_game_id: gameId,
     p_winner_ids: winnerIds ?? undefined,
   });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const [next, winners] = await Promise.all([
     nextGameBanner(nextGameId),
@@ -97,7 +99,7 @@ export async function swapNotReadyAction(
   const supabase = await createClient();
   const { data: courtRow } = await supabase.from("courts").select("label").eq("id", courtId).maybeSingle();
   const { data: newcomerId, error } = await supabase.rpc("swap_not_ready", { p_court_id: courtId, p_player_id: playerId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const [out, into] = await playerNames([playerId, newcomerId]);
   refresh();
@@ -115,7 +117,7 @@ export async function setCourtFormatAction(
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_court_format", { p_court_id: courtId, p_format: format });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const { data: courtRow } = await supabase.from("courts").select("label").eq("id", courtId).maybeSingle();
   refresh();
@@ -137,7 +139,7 @@ async function playerAction(
   const [name] = await playerNames([playerId]);
   const supabase = await createClient();
   const { error } = await supabase.rpc(rpc, { p_player_id: playerId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   refresh();
   return { banner: banner(name), undo: undoBanner ? { banner: undoBanner(name) } : undefined };

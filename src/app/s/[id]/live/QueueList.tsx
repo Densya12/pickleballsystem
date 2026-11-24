@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SaveAsMember } from "@/components/session/SaveAsMember";
 import { Button, StatusLabel } from "@/components/ui";
 import { ChevronRightIcon, PauseIcon } from "@/components/ui/icons";
 import type { QueueEntry } from "@/lib/queue/data";
@@ -8,6 +9,7 @@ import { isHeld, type CallRules } from "@/lib/player/state";
 import { levelLabel } from "@/lib/queue/players";
 
 type Props = {
+  sessionId: string;
   queue: QueueEntry[];
   /** pay_first + fee: unpaid players show "Hold · bayad muna" (BR6). */
   rules: CallRules;
@@ -18,7 +20,7 @@ type Props = {
 };
 
 /** "Susunod sa pila" (BR5 order). Tap a name for its actions; no swipe gestures. */
-export function QueueList({ queue, rules, busy, onPause, onResume, onRemove }: Props) {
+export function QueueList({ sessionId, queue, rules, busy, onPause, onResume, onRemove }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = queue.find((p) => p.id === openId) ?? null;
 
@@ -62,6 +64,7 @@ export function QueueList({ queue, rules, busy, onPause, onResume, onRemove }: P
       </ol>
 
       <PlayerSheet
+        sessionId={sessionId}
         player={open}
         busy={busy}
         onClose={() => setOpenId(null)}
@@ -74,6 +77,7 @@ export function QueueList({ queue, rules, busy, onPause, onResume, onRemove }: P
 }
 
 function PlayerSheet({
+  sessionId,
   player,
   busy,
   onClose,
@@ -81,6 +85,7 @@ function PlayerSheet({
   onResume,
   onRemove,
 }: {
+  sessionId: string;
   player: QueueEntry | null;
   busy: boolean;
   onClose: () => void;
@@ -148,6 +153,13 @@ function PlayerSheet({
                   I-pause
                 </Button>
               )}
+              <SaveAsMember
+                key={player.id}
+                sessionId={sessionId}
+                playerId={player.id}
+                playerName={player.name}
+                isMember={player.memberId !== null}
+              />
               <Button variant="danger-outline" fullWidth disabled={busy} onClick={() => setConfirming(true)}>
                 Alisin sa pila
               </Button>

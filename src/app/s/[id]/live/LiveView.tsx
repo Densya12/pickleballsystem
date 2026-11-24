@@ -3,25 +3,20 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
+import { OutboxStatus } from "@/components/session/OutboxStatus";
 import { BackLink, Button, Notice, PageShell, Toggle } from "@/components/ui";
 import { ChevronRightIcon, DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 import { formatCourts } from "@/lib/format";
+import { courtFormatLabel } from "@/lib/session/validation";
+import { ONLINE_ONLY_MESSAGE, isNetworkError, type OutboxItem, type OutboxKind } from "@/lib/outbox/rules";
+import { useOutbox } from "@/lib/outbox/useOutbox";
 import type { LiveState } from "@/lib/queue/data";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { formatTimeRange } from "@/lib/session/time";
 import { undoDeadlineFromNow } from "@/lib/undo/countdown";
+import { sendOrganizerAction } from "../outbox-send";
 import { undoLastAction } from "../undo-actions";
 import { CourtCard } from "./CourtCard";
-import {
-  callNextAction,
-  finishGameAction,
-  pausePlayerAction,
-  removePlayerAction,
-  resumePlayerAction,
-  setCourtFormatAction,
-  swapNotReadyAction,
-  type QueueActionResult,
-} from "./queue-actions";
 import { QueueList } from "./QueueList";
 import { SessionControls } from "./SessionControls";
 import { useTagatawag } from "./useTagatawag";
@@ -68,11 +63,32 @@ export function LiveView({ session, state, incomingBanner }: Props) {
     }
   }, [incomingBanner]);
 
-  function run(action: () => Promise<QueueActionResult>): Promise<boolean> {
+  // NF10: without signal, actions wait in the outbox and are sent in order later.
+  const outbox = useOutbox(session.id, sendOrganizerAction);
+
+  function act(kind: OutboxKind, args: OutboxItem["args"], label: string): Promise<boolean> {
     const deadline = undoDeadlineFromNow();
     return new Promise((resolve) => {
       startTransition(async () => {
-        const result = await action();
+        let outcome;
+        try {
+          outcome = await outbox.perform({ kind, args, label });
+        } catch {
+          setError("May nagkaproblema. Subukan ulit.");
+          setBanner(null);
+          setUndoOffer(null);
+          resolve(false);
+          return;
+        }
+        if (outcome.queued) {
+          // Shown under "Hinihintay ang signal"; counts as done for the screen.
+          setError(null);
+          setBanner(null);
+          setUndoOffer(null);
+          resolve(true);
+          return;
+        }
+        const { result } = outcome;
         if (result.error) {
           setError(result.error);
           setBanner(null);
@@ -88,13 +104,29 @@ export function LiveView({ session, state, incomingBanner }: Props) {
   }
 
   function undo(offer: UndoOffer) {
+    if (!navigator.onLine) {
+      setError(ONLINE_ONLY_MESSAGE);
+      return;
+    }
     startTransition(async () => {
-      const result = await undoLastAction(session.id);
-      setUndoOffer(null);
-      setError(result.error ?? null);
-      setBanner(result.error ? null : offer.doneBanner);
+      try {
+        const result = await undoLastAction(session.id);
+        setUndoOffer(null);
+        setError(result.error ?? null);
+        setBanner(result.error ? null : offer.doneBanner);
+      } catch (caught) {
+        setError(isNetworkError(caught) ? ONLINE_ONLY_MESSAGE : "May nagkaproblema. Subukan ulit.");
+      }
     });
   }
+
+  const courtById = new Map(state.courts.map((c) => [c.id, c]));
+  const nameOf = (playerId: string) =>
+    state.queue.find((p) => p.id === playerId)?.name ??
+    state.courts.flatMap((c) => c.game?.players ?? []).find((p) => p.id === playerId)?.name ??
+    "player";
+  // Courts with an action waiting for signal: their buttons wait too, so nobody taps twice.
+  const waitingCourts = new Set(outbox.pending.map((item) => item.args.courtId).filter((id): id is string => typeof id === "string"));
 
   const nakapila = state.queue.length;
 
@@ -118,7 +150,8 @@ export function LiveView({ session, state, incomingBanner }: Props) {
     >
       <div className="flex flex-col gap-6" data-live-sync={sync}>
         <div className="flex flex-col gap-2" aria-live="polite">
-          {sync === "lost" && (
+          <OutboxStatus online={outbox.online} pending={outbox.pending} failed={outbox.failed} onDiscard={outbox.discardFailed} />
+          {sync === "lost" && outbox.online && (
             <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>
           )}
           {error && <Notice kind="error">{error}</Notice>}
@@ -164,12 +197,21 @@ export function LiveView({ session, state, incomingBanner }: Props) {
               rotation={session.rotation}
               eligibleCount={state.eligibleCount}
               busy={busy}
-              onCall={(courtId) => void run(() => callNextAction(session.id, courtId))}
+              waiting={waitingCourts.has(court.id)}
+              onCall={(courtId) => void act("call_next", { courtId }, `Tawagin sa ${courtById.get(courtId)?.label ?? "court"}`)}
               onFinish={(courtId, gameId, winners) =>
-                void run(() => finishGameAction(session.id, courtId, gameId, winners))
+                void act(
+                  "finish_game",
+                  { courtId, gameId, winnerIds: winners },
+                  `Tapos na: Laro #${court.game?.number ?? "?"} sa ${court.label}`,
+                )
               }
-              onSwap={(courtId, playerId) => void run(() => swapNotReadyAction(session.id, courtId, playerId))}
-              onSetFormat={(courtId, format) => void run(() => setCourtFormatAction(session.id, courtId, format))}
+              onSwap={(courtId, playerId) =>
+                void act("swap_not_ready", { courtId, playerId }, `Palitan si ${nameOf(playerId)} sa ${court.label}`)
+              }
+              onSetFormat={(courtId, format) =>
+                void act("set_court_format", { courtId, format }, `Gawing ${courtFormatLabel(format)} ang ${court.label}`)
+              }
             />
           ))}
         </section>
@@ -182,9 +224,10 @@ export function LiveView({ session, state, incomingBanner }: Props) {
             queue={state.queue}
             rules={{ payFirst: session.payFirst, fee: session.fee }}
             busy={busy}
-            onPause={(playerId) => run(() => pausePlayerAction(session.id, playerId))}
-            onResume={(playerId) => run(() => resumePlayerAction(session.id, playerId))}
-            onRemove={(playerId) => run(() => removePlayerAction(session.id, playerId))}
+            sessionId={session.id}
+            onPause={(playerId) => act("pause_player", { playerId }, `I-pause si ${nameOf(playerId)}`)}
+            onResume={(playerId) => act("resume_player", { playerId }, `Ituloy si ${nameOf(playerId)}`)}
+            onRemove={(playerId) => act("remove_player", { playerId }, `Alisin si ${nameOf(playerId)} sa pila`)}
           />
         </section>
 

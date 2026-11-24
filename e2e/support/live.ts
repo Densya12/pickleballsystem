@@ -63,3 +63,28 @@ export function queue(page: Page) {
 export function stat(page: Page, label: string) {
   return page.locator("dl > div").filter({ has: page.getByText(label, { exact: true }) }).locator("dd");
 }
+
+/** Phase 7: a walk-in picked from the club's members ("Pumili sa members"). */
+export async function addMemberWalkIn(page: Page, name: string, payment: WalkInPayment["choice"] = "Nagbayad ng cash") {
+  await page.getByRole("link", { name: "Walk-in" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Magdagdag ng walk-in" })).toBeVisible();
+  await page.getByLabel("Pumili sa members").fill(name);
+  await page.getByRole("list", { name: "Mga member na tugma" }).getByRole("button", { name: new RegExp(`^${name}`) }).click();
+  await expect(page.getByLabel("Pangalan", { exact: true })).toHaveValue(name);
+  const option = page.getByRole("radio", { name: payment });
+  if ((await option.count()) > 0) await option.check();
+  await page.getByRole("button", { name: "Ilagay sa pila" }).click();
+  await expect(page).toHaveURL(SESSION_URL);
+  await expect(banner(page)).toContainText(`Nasa pila na si ${name}`);
+}
+
+/** Adds a member from /members/new. Ends on the members list. */
+export async function addMember(page: Page, name: string, opts: { level?: string; dues?: string; notes?: string } = {}) {
+  await page.goto("/members/new");
+  await page.getByLabel("Pangalan", { exact: true }).fill(name);
+  if (opts.level) await page.getByRole("radio", { name: opts.level, exact: true }).check();
+  if (opts.dues) await page.getByRole("radio", { name: opts.dues, exact: true }).check();
+  if (opts.notes) await page.getByLabel("Notes (optional)").fill(opts.notes);
+  await page.getByRole("button", { name: "I-save" }).click();
+  await expect(page.getByText(`Na-save si ${name}.`)).toBeVisible();
+}
