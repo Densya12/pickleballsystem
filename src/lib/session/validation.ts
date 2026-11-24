@@ -20,6 +20,22 @@ export const COURTS_MIN = 1;
 export const COURTS_MAX = 8;
 export const COURTS_DEFAULT = 2;
 
+export const COURT_FORMATS = ["doubles", "singles"] as const;
+export type CourtFormat = (typeof COURT_FORMATS)[number];
+export const COURT_FORMAT_CHOICES: readonly { value: CourtFormat; label: string }[] = [
+  { value: "doubles", label: "Doubles" },
+  { value: "singles", label: "Singles" },
+];
+
+export function courtFormatLabel(format: string): string {
+  return format === "singles" ? "Singles" : "Doubles";
+}
+
+/** Players per game: 2 singles, 4 doubles (mirrors private.court_size). */
+export function courtSize(format: string): number {
+  return format === "singles" ? 2 : 4;
+}
+
 export const SESSION_MESSAGES = {
   nameRequired: "Pakilagay ang pangalan ng session.",
   nameTooShort: `Masyadong maikli. Kahit ${SESSION_NAME_MIN} letra.`,
@@ -32,6 +48,7 @@ export const SESSION_MESSAGES = {
   rotationInvalid: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
   feeInvalid: CLUB_MESSAGES.feeInvalid,
   feeTooHigh: CLUB_MESSAGES.feeTooHigh,
+  courtFormatsInvalid: "Pumili ng Doubles o Singles para sa bawat court.",
 } as const;
 
 /** Form field names (also the keys for field errors and kept values). */
@@ -44,6 +61,8 @@ export const SESSION_FIELDS = [
   "rotation",
   "pay_first",
   "fee",
+  /** Comma-separated, one per court (form fields court_format_1..N). */
+  "court_formats",
 ] as const;
 export type SessionField = (typeof SESSION_FIELDS)[number];
 
@@ -57,6 +76,7 @@ export type NewSessionInput = {
   rotation: Rotation;
   pay_first: boolean;
   fee: number;
+  court_formats: CourtFormat[];
 };
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
@@ -79,6 +99,9 @@ export function parseNewSession(form: FormLike): ParseResult<NewSessionInput> {
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
   // A checkbox sends "on" when checked and nothing when not.
   const payFirst = form.get("pay_first") !== null;
+  // One Doubles/Singles choice per court; a missing choice means Doubles.
+  const courtCount = Number.isInteger(courts) && courts >= COURTS_MIN && courts <= COURTS_MAX ? courts : 0;
+  const courtFormats = Array.from({ length: courtCount }, (_, i) => text(form, `court_format_${i + 1}`) || "doubles");
 
   const errors: Partial<Record<keyof NewSessionInput, string>> = {
     name:
@@ -104,6 +127,9 @@ export function parseNewSession(form: FormLike): ParseResult<NewSessionInput> {
       ? undefined
       : SESSION_MESSAGES.rotationInvalid,
     fee: Number.isNaN(fee) ? SESSION_MESSAGES.feeInvalid : fee > FEE_MAX ? SESSION_MESSAGES.feeTooHigh : undefined,
+    court_formats: courtFormats.every((f) => (COURT_FORMATS as readonly string[]).includes(f))
+      ? undefined
+      : SESSION_MESSAGES.courtFormatsInvalid,
   };
 
   return toParseResult(
@@ -116,6 +142,7 @@ export function parseNewSession(form: FormLike): ParseResult<NewSessionInput> {
       rotation: rotation as Rotation,
       pay_first: payFirst,
       fee,
+      court_formats: courtFormats as CourtFormat[],
     },
     errors,
   );

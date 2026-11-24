@@ -14,6 +14,7 @@ import {
   pausePlayerAction,
   removePlayerAction,
   resumePlayerAction,
+  setCourtFormatAction,
   swapNotReadyAction,
   type QueueActionResult,
 } from "./queue-actions";
@@ -127,6 +128,7 @@ export function LiveView({ session, state, incomingBanner }: Props) {
                 void run(() => finishGameAction(session.id, courtId, gameId, winners))
               }
               onSwap={(courtId, playerId) => void run(() => swapNotReadyAction(session.id, courtId, playerId))}
+              onSetFormat={(courtId, format) => void run(() => setCourtFormatAction(session.id, courtId, format))}
             />
           ))}
         </section>

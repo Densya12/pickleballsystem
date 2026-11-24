@@ -4,11 +4,19 @@
  */
 
 export type QueuePlayer = { id: string; name: string; status: string; queuePos: number };
-export type RunningGame = { id: string; number: number; courtLabel: string; playerIds: string[] };
+export type RunningGame = { id: string; number: number; courtLabel: string; format: string; playerIds: string[] };
 export type Me = { id: string; name: string; status: string; notReady: boolean };
 
-/** How many eligible players a court calls at once (BR7). */
+/** How many eligible players a doubles court calls at once (BR7). */
 export const CALL_SIZE = 4;
+
+/**
+ * "Next up" window: the next 2 eligible if every court is singles, otherwise
+ * the next 4 (any doubles court takes 4).
+ */
+export function callSizeFor(courtFormats: readonly string[]): number {
+  return courtFormats.length > 0 && courtFormats.every((f) => f === "singles") ? 2 : CALL_SIZE;
+}
 export const AHEAD_SHOWN = 3;
 
 /**
@@ -22,13 +30,13 @@ export function isCallable(player: Pick<QueuePlayer, "status">): boolean {
 export type QueueInfo = {
   /** #N in line among everyone waiting (queued and paused), BR5 order. */
   position: number;
-  /** Within the next 4 eligible: "Sa susunod na bakanteng court ka na". */
+  /** Within the next 4 (or 2) eligible: "Sa susunod na bakanteng court ka na". */
   nextUp: boolean;
   /** Up to 3 names right before the player, in queue order. */
   ahead: string[];
 };
 
-export function queueInfo(players: readonly QueuePlayer[], meId: string): QueueInfo | null {
+export function queueInfo(players: readonly QueuePlayer[], meId: string, callSize = CALL_SIZE): QueueInfo | null {
   const waiting = players
     .filter((p) => p.status === "queued" || p.status === "paused")
     .sort((a, b) => a.queuePos - b.queuePos);
@@ -39,7 +47,7 @@ export function queueInfo(players: readonly QueuePlayer[], meId: string): QueueI
   const me = waiting[index];
   return {
     position: index + 1,
-    nextUp: isCallable(me) && before.filter(isCallable).length < CALL_SIZE,
+    nextUp: isCallable(me) && before.filter(isCallable).length < callSize,
     ahead: before.slice(-AHEAD_SHOWN).map((p) => p.name),
   };
 }
@@ -49,15 +57,25 @@ export type PwestoState =
   | { kind: "left" }
   | ({ kind: "queued" } & QueueInfo)
   | { kind: "paused"; position: number }
-  | { kind: "playing"; gameId: string; courtLabel: string; withNames: string[]; notReady: boolean };
+  | {
+      kind: "playing";
+      gameId: string;
+      courtLabel: string;
+      /** singles: withNames is the 1 opponent; doubles: the other 3. */
+      format: string;
+      withNames: string[];
+      notReady: boolean;
+    };
 
 export function pickPwestoState(input: {
   sessionStatus: string;
   me: Me | null;
   players: readonly QueuePlayer[];
   games: readonly RunningGame[];
+  /** From callSizeFor(court formats); defaults to doubles (4). */
+  callSize?: number;
 }): PwestoState {
-  const { sessionStatus, me, players, games } = input;
+  const { sessionStatus, me, players, games, callSize = CALL_SIZE } = input;
   if (sessionStatus === "ended") return { kind: "ended" };
   if (!me || me.status === "left") return { kind: "left" };
 
@@ -69,14 +87,15 @@ export function pickPwestoState(input: {
         kind: "playing",
         gameId: game.id,
         courtLabel: game.courtLabel,
-        // The other 3, in call order. No teams: they pick partners on court (D11).
+        format: game.format,
+        // The others, in call order. No teams in doubles: they pick partners on court (D11).
         withNames: game.playerIds.filter((id) => id !== me.id).map((id) => names.get(id) ?? "?"),
         notReady: me.notReady,
       };
     }
   }
 
-  const info = queueInfo(players, me.id);
+  const info = queueInfo(players, me.id, callSize);
   if (me.status === "paused") return { kind: "paused", position: info?.position ?? 0 };
   return { kind: "queued", ...(info ?? { position: 0, nextUp: false, ahead: [] }) };
 }

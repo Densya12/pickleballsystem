@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addWalkIn, banner, court, onCourt, queue, SESSION_URL, startSession, stat } from "./support/live";
+import { addWalkIn, banner, court, onCourt, queue, startSession, stat } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 test.describe("queue engine and Live screen", () => {

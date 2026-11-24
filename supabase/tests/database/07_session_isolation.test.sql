@@ -151,7 +151,7 @@ reset role;
 
 -- Function privilege table, as the API sees it.
 select ok(
-  not has_function_privilege('anon', 'public.create_session(uuid, text, timestamptz, timestamptz, integer, integer, text, boolean, integer, boolean)', 'execute')
+  not has_function_privilege('anon', 'public.create_session(uuid, text, timestamptz, timestamptz, integer, integer, text, boolean, integer, boolean, text[])', 'execute')
   and not has_function_privilege('anon', 'public.start_session(uuid)', 'execute')
   and not has_function_privilege('anon', 'public.end_session(uuid)', 'execute')
   and not has_function_privilege('anon', 'public.delete_draft_session(uuid)', 'execute'),

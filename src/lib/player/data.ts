@@ -36,6 +36,8 @@ export type PlayerSessionView = {
   me: Me | null;
   players: QueuePlayer[];
   games: RunningGame[];
+  /** One entry per court (for the "next up" window). */
+  courtFormats: string[];
 };
 
 /** The session behind a join code, if the caller may read it (player or staff). */
@@ -60,8 +62,8 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       .eq("session_id", session.id)
       .neq("status", "left")
       .order("queue_pos"),
-    supabase.from("courts").select("id, label").eq("session_id", session.id),
-    supabase.from("games").select("id, number, court_id, player_ids").eq("session_id", session.id).is("ended_at", null),
+    supabase.from("courts").select("id, label, format").eq("session_id", session.id).order("number"),
+    supabase.from("games").select("id, number, court_id, format, player_ids").eq("session_id", session.id).is("ended_at", null),
   ]);
   for (const result of [me, players, courts, games]) {
     if (result.error) throw new Error(`Could not load your place in line: ${result.error.message}`);
@@ -84,7 +86,9 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       id: g.id,
       number: g.number,
       courtLabel: courtLabel.get(g.court_id) ?? "",
+      format: g.format,
       playerIds: g.player_ids,
     })),
+    courtFormats: (courts.data ?? []).map((c) => c.format),
   };
 }

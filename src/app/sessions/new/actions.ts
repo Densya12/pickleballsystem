@@ -30,6 +30,9 @@ export async function createSessionAction(
     SESSION_FIELDS.map((field) => [field, String(formData.get(field) ?? "")]),
   );
   values.pay_first = formData.get("pay_first") === null ? "" : "on";
+  values.court_formats = Array.from({ length: 8 }, (_, i) => String(formData.get(`court_format_${i + 1}`) ?? ""))
+    .filter(Boolean)
+    .join(",");
 
   const parsed = parseNewSession(formData);
   if (!parsed.ok) {
@@ -49,6 +52,7 @@ export async function createSessionAction(
     p_pay_first: input.pay_first,
     p_fee: input.fee,
     p_start: start,
+    p_court_formats: input.court_formats,
   });
   if (error) return { error: sessionErrorMessage(error), values };
 

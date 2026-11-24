@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCallable, pickPwestoState, queueInfo, type QueuePlayer, type RunningGame } from "./state";
+import { callSizeFor, isCallable, pickPwestoState, queueInfo, type QueuePlayer, type RunningGame } from "./state";
 
 const q = (id: string, status: string, queuePos: number): QueuePlayer => ({ id, name: id.toUpperCase(), status, queuePos });
 
@@ -42,7 +42,7 @@ describe("queueInfo (BR5 order, next 4 eligible)", () => {
 
 describe("pickPwestoState", () => {
   const players = [q("a", "playing", 0), q("b", "playing", 0), q("c", "playing", 0), q("me", "queued", 4), q("d", "queued", 3)];
-  const games: RunningGame[] = [{ id: "g1", number: 1, courtLabel: "Court 2", playerIds: ["a", "b", "me", "c"] }];
+  const games: RunningGame[] = [{ id: "g1", number: 1, courtLabel: "Court 2", format: "doubles", playerIds: ["a", "b", "me", "c"] }];
   const me = (status: string, notReady = false) => ({ id: "me", name: "Me", status, notReady });
 
   it("queued", () => {
@@ -65,6 +65,7 @@ describe("pickPwestoState", () => {
       kind: "playing",
       gameId: "g1",
       courtLabel: "Court 2",
+      format: "doubles",
       withNames: ["A", "B", "C"],
       notReady: false,
     });
@@ -75,5 +76,34 @@ describe("pickPwestoState", () => {
     expect(pickPwestoState({ sessionStatus: "live", me: null, players, games })).toEqual({ kind: "left" });
     expect(pickPwestoState({ sessionStatus: "live", me: me("left"), players, games })).toEqual({ kind: "left" });
     expect(pickPwestoState({ sessionStatus: "ended", me: me("queued"), players, games })).toEqual({ kind: "ended" });
+  });
+});
+
+describe("singles", () => {
+  it("a singles game shows the 1 opponent", () => {
+    const players = [q("me", "playing", 0), q("b", "playing", 0)];
+    const games: RunningGame[] = [{ id: "g9", number: 9, courtLabel: "Court 3", format: "singles", playerIds: ["b", "me"] }];
+    expect(pickPwestoState({ sessionStatus: "live", me: { id: "me", name: "Me", status: "playing", notReady: false }, players, games })).toEqual({
+      kind: "playing",
+      gameId: "g9",
+      courtLabel: "Court 3",
+      format: "singles",
+      withNames: ["B"],
+      notReady: false,
+    });
+  });
+
+  it("'next up' covers the next 2 only when every court is singles", () => {
+    expect(callSizeFor(["singles", "singles"])).toBe(2);
+    expect(callSizeFor(["singles", "doubles"])).toBe(4);
+    expect(callSizeFor(["doubles"])).toBe(4);
+    expect(callSizeFor([])).toBe(4);
+
+    const players = [q("a", "queued", 1), q("b", "queued", 2), q("me", "queued", 3)];
+    expect(queueInfo(players, "me", 2)?.nextUp).toBe(false);
+    expect(queueInfo(players, "b", 2)?.nextUp).toBe(true);
+    expect(queueInfo(players, "me", 4)?.nextUp).toBe(true);
+    expect(pickPwestoState({ sessionStatus: "live", me: { id: "me", name: "Me", status: "queued", notReady: false }, players, games: [], callSize: 2 }))
+      .toMatchObject({ kind: "queued", position: 3, nextUp: false });
   });
 });

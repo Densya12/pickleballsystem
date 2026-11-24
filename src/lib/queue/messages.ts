@@ -19,9 +19,9 @@ export function calledBanner(courtLabel: string, names: readonly string[]): stri
 export function finishedBanner(input: {
   courtLabel: string;
   gameNumber: number;
-  /** winners stay only */
+  /** winners stay only (2 in doubles, 1 in singles) */
   winners?: readonly string[] | null;
-  /** The 4 called next on this court, or null when it stays empty. */
+  /** Those called next on this court, or null when it stays empty. */
   next: readonly string[] | null;
 }): string {
   const parts = [`Tapos ang Laro #${input.gameNumber} sa ${input.courtLabel}.`];
@@ -56,6 +56,11 @@ export function swappedBanner(out: string, into: string, courtLabel: string): st
   return `Pinalitan si ${out} ni ${into} sa ${courtLabel}. Nasa unahan na ng pila si ${out}.`;
 }
 
+/** "Singles na ang Court 2." */
+export function formatChangedBanner(courtLabel: string, format: string): string {
+  return `${format === "singles" ? "Singles" : "Doubles"} na ang ${courtLabel}.`;
+}
+
 export function notReadyText(name: string): string {
   return `Hindi pa handa si ${name}`;
 }
@@ -68,6 +73,7 @@ export const QUEUE_ERRORS = {
   notLive: "Hindi live ang session na ito.",
   notFound: "Hindi makita. I-refresh ang page.",
   notOnCourt: "Wala na sa court ang player na iyon.",
+  invalidFormat: "Pumili ng Doubles o Singles.",
 } as const;
 
 type DbErrorLike = { code?: string; message?: string; details?: string | null };
@@ -90,6 +96,8 @@ export function queueErrorMessage(error: DbErrorLike): string {
       return QUEUE_ERRORS.playerChanged;
     case "session_not_live":
       return QUEUE_ERRORS.notLive;
+    case "invalid_format":
+      return QUEUE_ERRORS.invalidFormat;
     case "player_not_on_court":
       return QUEUE_ERRORS.notOnCourt;
     case "court_not_found":

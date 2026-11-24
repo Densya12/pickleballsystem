@@ -5,7 +5,11 @@ import { Button, Card } from "@/components/ui";
 import { AlertIcon } from "@/components/ui/icons";
 import type { LiveCourt } from "@/lib/queue/data";
 import { needPlayersText, notReadyText } from "@/lib/queue/messages";
+import { winnersFor } from "@/lib/queue/winners";
+import { courtFormatLabel, courtSize } from "@/lib/session/validation";
 import { WinnerPicker } from "./WinnerPicker";
+
+type Format = "doubles" | "singles";
 
 type Props = {
   court: LiveCourt;
@@ -16,20 +20,33 @@ type Props = {
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
   /** BR19: replace a player who said "Hindi pa ako handa". */
   onSwap: (courtId: string, playerId: string) => void;
+  /** Doubles <-> singles while the court is empty. */
+  onSetFormat: (courtId: string, format: Format) => void;
 };
 
-/** One court: the 4 names in a 2×2 grid (no "VS": they pick partners on court, D11). */
-export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFinish, onSwap }: Props) {
+/**
+ * One court: its format, and the players in a grid (4 in doubles, 2 in
+ * singles). No "VS": doubles players pick partners on court (D11).
+ */
+export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFinish, onSwap, onSetFormat }: Props) {
   const [picking, setPicking] = useState(false);
+  const [confirmFormat, setConfirmFormat] = useState(false);
   const game = court.game;
   const headingId = `court-${court.id}`;
+  const size = courtSize(court.format);
+  const otherFormat: Format = court.format === "singles" ? "doubles" : "singles";
 
   return (
     <Card className="flex flex-col gap-4" aria-labelledby={headingId} role="region">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 id={headingId} className="text-xl">
-          {court.label}
-        </h3>
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <h3 id={headingId} className="text-xl">
+            {court.label}
+          </h3>
+          <span className="rounded-full border border-default bg-subtle px-2.5 py-0.5 text-sm font-semibold">
+            {courtFormatLabel(court.format)}
+          </span>
+        </div>
         <p className="text-muted">{game ? `Laro #${game.number}` : "Bakante"}</p>
       </div>
 
@@ -66,6 +83,7 @@ export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFini
           {picking ? (
             <WinnerPicker
               players={game.players}
+              needed={winnersFor(game.format)}
               busy={busy}
               onConfirm={(winners) => {
                 setPicking(false);
@@ -84,14 +102,46 @@ export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFini
             </Button>
           )}
         </>
-      ) : eligibleCount >= 4 ? (
-        <Button size="lg" variant="accent" fullWidth disabled={busy} onClick={() => onCall(court.id)}>
-          Tawagin ang susunod
-        </Button>
       ) : (
-        <p className="rounded-control bg-subtle px-4 py-3 text-center font-semibold">
-          {needPlayersText(4 - eligibleCount)}
-        </p>
+        <>
+          {eligibleCount >= size ? (
+            <Button size="lg" variant="accent" fullWidth disabled={busy} onClick={() => onCall(court.id)}>
+              Tawagin ang susunod
+            </Button>
+          ) : (
+            <p className="rounded-control bg-subtle px-4 py-3 text-center font-semibold">
+              {needPlayersText(size - eligibleCount)}
+            </p>
+          )}
+          {confirmFormat ? (
+            <div
+              role="group"
+              aria-label={`Gawing ${courtFormatLabel(otherFormat)} ang ${court.label}?`}
+              className="flex flex-col gap-2 rounded-control border-[1.5px] border-ink bg-surface p-4"
+            >
+              <p className="font-semibold">
+                Gawing {courtFormatLabel(otherFormat)} ang {court.label}?
+              </p>
+              <Button
+                fullWidth
+                disabled={busy}
+                onClick={() => {
+                  setConfirmFormat(false);
+                  onSetFormat(court.id, otherFormat);
+                }}
+              >
+                Oo, gawing {courtFormatLabel(otherFormat)}
+              </Button>
+              <Button variant="secondary" fullWidth disabled={busy} onClick={() => setConfirmFormat(false)}>
+                Huwag
+              </Button>
+            </div>
+          ) : (
+            <Button variant="secondary" fullWidth disabled={busy} onClick={() => setConfirmFormat(true)}>
+              Gawing {courtFormatLabel(otherFormat)}
+            </Button>
+          )}
+        </>
       )}
     </Card>
   );

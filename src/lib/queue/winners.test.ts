@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canConfirmWinners, toggleWinner, winnersHint } from "./winners";
+import { canConfirmWinners, toggleWinner, winnersFor, winnersHint } from "./winners";
 
 describe("winner picker", () => {
   it("picks up to 2", () => {
@@ -25,5 +25,25 @@ describe("winner picker", () => {
     expect(winnersHint([])).toBe("Pumili ng 2 pa.");
     expect(winnersHint(["a"])).toBe("Pumili ng 1 pa.");
     expect(winnersHint(["a", "b"])).toBe("Handa na. Pindutin ang Kumpirmahin.");
+  });
+});
+
+describe("winner picker for singles (1 winner)", () => {
+  it("needs 1 in singles, 2 in doubles", () => {
+    expect(winnersFor("singles")).toBe(1);
+    expect(winnersFor("doubles")).toBe(2);
+  });
+
+  it("a second tap replaces the pick", () => {
+    expect(toggleWinner([], "a", 1)).toEqual(["a"]);
+    expect(toggleWinner(["a"], "b", 1)).toEqual(["b"]);
+    expect(toggleWinner(["a"], "a", 1)).toEqual([]);
+  });
+
+  it("confirms with exactly 1", () => {
+    expect(canConfirmWinners([], 1)).toBe(false);
+    expect(canConfirmWinners(["a"], 1)).toBe(true);
+    expect(winnersHint([], 1)).toBe("Pumili ng 1 pa.");
+    expect(winnersHint(["a"], 1)).toBe("Handa na. Pindutin ang Kumpirmahin.");
   });
 });

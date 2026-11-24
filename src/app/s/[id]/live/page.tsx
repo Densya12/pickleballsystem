@@ -9,6 +9,7 @@ import { formatCourts, formatGcashNumber, formatPeso } from "@/lib/format";
 import { getLiveState } from "@/lib/queue/data";
 import { walkInBanner } from "@/lib/queue/messages";
 import { getSession, type Session } from "@/lib/session/data";
+import { courtFormatLabel } from "@/lib/session/validation";
 import { formatDay, formatSchedule, formatTime } from "@/lib/session/time";
 import { LiveView } from "./LiveView";
 import { SessionControls } from "./SessionControls";
@@ -109,6 +110,9 @@ function Details({ session }: { session: Session }) {
       <h2 className="sr-only">Detalye ng session</h2>
       <dl className="flex flex-col divide-y divide-default">
         <Row term="Courts">{formatCourts(session.courts_count)}</Row>
+        <Row term="Doubles o Singles">
+          {session.court_formats.map((format, index) => `Court ${index + 1}: ${courtFormatLabel(format)}`).join(" · ")}
+        </Row>
         <Row term="Hanggang">{session.points_to} points</Row>
         <Row term="Pagkatapos ng laro">{rotationLabel(session.rotation)}</Row>
         <Row term="Bayad muna bago pumila">{session.pay_first ? "Oo" : "Hindi"}</Row>

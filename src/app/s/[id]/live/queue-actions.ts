@@ -6,6 +6,7 @@ import { getGame, playerNames } from "@/lib/queue/data";
 import {
   calledBanner,
   finishedBanner,
+  formatChangedBanner,
   pausedBanner,
   queueErrorMessage,
   removedBanner,
@@ -93,6 +94,24 @@ export async function swapNotReadyAction(
   const [out, into] = await playerNames([playerId, newcomerId]);
   refresh();
   return { banner: swappedBanner(out, into, courtRow?.label ?? "court") };
+}
+
+/** Doubles <-> singles on an empty court. */
+export async function setCourtFormatAction(
+  sessionId: string,
+  courtId: string,
+  format: "doubles" | "singles",
+): Promise<QueueActionResult> {
+  const denied = await authorize(sessionId);
+  if (denied) return denied;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_court_format", { p_court_id: courtId, p_format: format });
+  if (error) return { error: queueErrorMessage(error) };
+
+  const { data: courtRow } = await supabase.from("courts").select("label").eq("id", courtId).maybeSingle();
+  refresh();
+  return { banner: formatChangedBanner(courtRow?.label ?? "court", format) };
 }
 
 type PlayerRpc = "pause_player" | "resume_player" | "remove_player";

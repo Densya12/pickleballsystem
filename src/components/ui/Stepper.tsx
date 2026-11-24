@@ -15,6 +15,8 @@ export type StepperProps = {
   formatValue?: (value: number) => string;
   hint?: string;
   error?: string;
+  /** Called after each step (e.g. to show one row per court). */
+  onValueChange?: (value: number) => void;
   className?: string;
 };
 
@@ -31,6 +33,7 @@ export function Stepper({
   formatValue = String,
   hint,
   error,
+  onValueChange,
   className,
 }: StepperProps) {
   const [value, setValue] = useState(() => Math.min(max, Math.max(min, defaultValue)));
@@ -38,6 +41,11 @@ export function Stepper({
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
+
+  function step(next: number) {
+    setValue(next);
+    onValueChange?.(next);
+  }
 
   const buttonClass = cn(
     "inline-flex min-h-14 shrink-0 items-center justify-center gap-1.5 rounded-control border-[1.5px] border-ink bg-surface px-3.5",
@@ -63,7 +71,7 @@ export function Stepper({
           type="button"
           className={buttonClass}
           disabled={value <= min}
-          onClick={() => setValue((v) => Math.max(min, v - 1))}
+          onClick={() => step(Math.max(min, value - 1))}
         >
           <MinusIcon />
           <span>Bawas</span>
@@ -75,7 +83,7 @@ export function Stepper({
           type="button"
           className={buttonClass}
           disabled={value >= max}
-          onClick={() => setValue((v) => Math.min(max, v + 1))}
+          onClick={() => step(Math.min(max, value + 1))}
         >
           <PlusIcon />
           <span>Dagdag</span>

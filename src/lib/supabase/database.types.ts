@@ -79,14 +79,14 @@ isOneToOne: false
                   ]
                 },"courts": {
                   Row: {
-                    "current_game_id": string | null,"id": string,"label": string,"number": number,"session_id": string,"winner_streak": number
+                    "current_game_id": string | null,"format": string,"id": string,"label": string,"number": number,"session_id": string,"winner_streak": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "current_game_id"?: string | null,"id"?: string,"label": string,"number": number,"session_id": string,"winner_streak"?: number
+                    "current_game_id"?: string | null,"format"?: string,"id"?: string,"label": string,"number": number,"session_id": string,"winner_streak"?: number
                   }
                   Update: {
-                    "current_game_id"?: string | null,"id"?: string,"label"?: string,"number"?: number,"session_id"?: string,"winner_streak"?: number
+                    "current_game_id"?: string | null,"format"?: string,"id"?: string,"label"?: string,"number"?: number,"session_id"?: string,"winner_streak"?: number
                   }
                   Relationships: [
                     {
@@ -105,14 +105,14 @@ isOneToOne: false
                   ]
                 },"games": {
                   Row: {
-                    "court_id": string,"ended_at": string | null,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"winner_ids": (string)[] | null
+                    "court_id": string,"ended_at": string | null,"format": string,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"winner_ids": (string)[] | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "court_id": string,"ended_at"?: string | null,"id"?: string,"number": number,"player_ids": (string)[],"session_id": string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                    "court_id": string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number": number,"player_ids": (string)[],"session_id": string,"started_at"?: string,"winner_ids"?: (string)[] | null
                   }
                   Update: {
-                    "court_id"?: string,"ended_at"?: string | null,"id"?: string,"number"?: number,"player_ids"?: (string)[],"session_id"?: string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                    "court_id"?: string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number"?: number,"player_ids"?: (string)[],"session_id"?: string,"started_at"?: string,"winner_ids"?: (string)[] | null
                   }
                   Relationships: [
                     {
@@ -151,14 +151,14 @@ isOneToOne: false
                   ]
                 },"sessions": {
                   Row: {
-                    "club_id": string,"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"name": string,"pay_first": boolean,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
+                    "club_id": string,"court_formats": (string)[],"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"name": string,"pay_first": boolean,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "club_id": string,"courts_count": number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at": string,"fee": number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name": string,"pay_first"?: boolean,"points_to": number,"rotation": string,"started_at"?: string | null,"starts_at": string,"status"?: string
+                    "club_id": string,"court_formats": (string)[],"courts_count": number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at": string,"fee": number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name": string,"pay_first"?: boolean,"points_to": number,"rotation": string,"started_at"?: string | null,"starts_at": string,"status"?: string
                   }
                   Update: {
-                    "club_id"?: string,"courts_count"?: number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at"?: string,"fee"?: number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"pay_first"?: boolean,"points_to"?: number,"rotation"?: string,"started_at"?: string | null,"starts_at"?: string,"status"?: string
+                    "club_id"?: string,"court_formats"?: (string)[],"courts_count"?: number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at"?: string,"fee"?: number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"pay_first"?: boolean,"points_to"?: number,"rotation"?: string,"started_at"?: string | null,"starts_at"?: string,"status"?: string
                   }
                   Relationships: [
                     {
@@ -193,7 +193,7 @@ isOneToOne: false
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
                            },
 "create_session":
-{ Args: { "p_club_id": string,"p_courts_count": number,"p_ends_at": string,"p_fee"?: number,"p_name": string,"p_pay_first"?: boolean,"p_points_to"?: number,"p_rotation"?: string,"p_start"?: boolean,"p_starts_at": string }; Returns: string
+{ Args: { "p_club_id": string,"p_court_formats"?: (string)[],"p_courts_count": number,"p_ends_at": string,"p_fee"?: number,"p_name": string,"p_pay_first"?: boolean,"p_points_to"?: number,"p_rotation"?: string,"p_start"?: boolean,"p_starts_at": string }; Returns: string
                            },
 "delete_draft_session":
 { Args: { "p_session_id": string }; Returns: undefined
@@ -263,6 +263,9 @@ isOneToOne: false
                            },
 "session_eligible_count":
 { Args: { "p_session_id": string }; Returns: number
+                           },
+"set_court_format":
+{ Args: { "p_court_id": string,"p_format": string }; Returns: undefined
                            },
 "start_session":
 { Args: { "p_session_id": string }; Returns: undefined

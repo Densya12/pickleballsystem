@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { Button, Card, Input, Notice, PageShell, RadioGroup, Stepper, Toggle } from "@/components/ui";
 import { POINTS_CHOICES, ROTATION_CHOICES } from "@/lib/club/options";
 import { formatCourts, formatGcashNumber } from "@/lib/format";
-import { COURTS_MAX, COURTS_MIN, type SessionField } from "@/lib/session/validation";
+import { COURTS_MAX, COURTS_MIN, type CourtFormat, type SessionField } from "@/lib/session/validation";
 import { createSessionAction, type NewSessionState } from "./actions";
+import { CourtFormats } from "./CourtFormats";
 
 type Props = {
   header: ReactNode;
@@ -19,6 +20,10 @@ export function NewSessionForm({ header, defaults, gcash }: Props) {
   const [state, formAction, pending] = useActionState<NewSessionState, FormData>(createSessionAction, {});
   const value = (field: SessionField) => state.values?.[field] ?? defaults[field];
   const errors = state.fieldErrors ?? {};
+  const [courtCount, setCourtCount] = useState(() => Number(defaults.courts_count) || COURTS_MIN);
+  const [formats, setFormats] = useState<CourtFormat[]>(() =>
+    (defaults.court_formats ? defaults.court_formats.split(",") : []) as CourtFormat[],
+  );
 
   return (
     <PageShell
@@ -74,6 +79,19 @@ export function NewSessionForm({ header, defaults, gcash }: Props) {
             defaultValue={Number(value("courts_count")) || COURTS_MIN}
             formatValue={formatCourts}
             error={errors.courts_count}
+            onValueChange={setCourtCount}
+          />
+          <CourtFormats
+            count={courtCount}
+            formats={formats}
+            onChange={(index, format) =>
+              setFormats((current) => {
+                const next = [...current];
+                next[index] = format;
+                return next;
+              })
+            }
+            error={errors.court_formats}
           />
           <RadioGroup
             legend="Hanggang ilang points?"

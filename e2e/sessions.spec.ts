@@ -71,7 +71,7 @@ test.describe("sessions (organizer)", () => {
     await expect(page.getByText(/Tapos na ang session na ito/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Tapusin ang session" })).toHaveCount(0);
     // The ended page lists the details that were entered.
-    await expect(page.getByRole("definition")).toHaveText(["3 courts", "15 points", "Mananatili ang nanalo", "Oo", "₱200", "Wala"]);
+    await expect(page.getByRole("definition")).toHaveText(["3 courts", "Court 1: Doubles · Court 2: Doubles · Court 3: Doubles", "15 points", "Mananatili ang nanalo", "Oo", "₱200", "Wala"]);
     await expect(page.getByText("Biyernes, Nob 27 · 6:00 PM – 9:00 PM", { exact: true })).toBeVisible();
 
     // Home: no live card; the session is under Nakaraang session
