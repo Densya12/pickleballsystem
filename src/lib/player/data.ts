@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { CourtGame, CourtInfo } from "./courts";
 import type { CallRules, Me, QueuePlayer, RunningGame } from "./state";
 
 /**
@@ -59,6 +60,9 @@ export type PlayerSessionView = {
   games: RunningGame[];
   /** One entry per court (for the "next up" window). */
   courtFormats: string[];
+  /** Mga court (D14): every court in order, and the running game on each. */
+  courts: CourtInfo[];
+  courtGames: CourtGame[];
   /** The session's payment rule (BR6) and what to pay. */
   rules: CallRules;
   gcash: { name: string | null; number: string | null };
@@ -126,6 +130,8 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       playerIds: g.player_ids,
     })),
     courtFormats: (courts.data ?? []).map((c) => c.format),
+    courts: (courts.data ?? []).map((c) => ({ id: c.id, label: c.label, format: c.format })),
+    courtGames: (games.data ?? []).map((g) => ({ id: g.id, number: g.number, courtId: g.court_id, playerIds: g.player_ids })),
     rules: { payFirst: session.pay_first, fee: session.fee },
     gcash: { name: session.gcash_name, number: session.gcash_number },
     payment: {

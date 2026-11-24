@@ -1,33 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Button, Card, Notice, PageShell } from "@/components/ui";
-import { BallIcon, PauseIcon } from "@/components/ui/icons";
-import { playCalledAlert, unlockAudio } from "@/lib/player/alert";
+import { ChevronRightIcon, PauseIcon } from "@/components/ui/icons";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { playerErrorMessage } from "@/lib/player/messages";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
+import { useCalledAlert } from "@/lib/player/useCalledAlert";
+import { useScreenWakeLock } from "@/lib/player/useScreenWakeLock";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
-import { PaymentPanel } from "./PaymentPanel";
 import { createClient } from "@/lib/supabase/client";
+import { CalledBanner, KeepScreenOnNote } from "./CalledBanner";
+import { PaymentPanel } from "./PaymentPanel";
 
 type PlayerRpc = "player_pause" | "player_resume" | "player_leave" | "player_not_ready";
-
-const ACK_KEY = (gameId: string) => `opq:ack:${gameId}`;
-
-function subscribeToStorage(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
-}
-
-function readAck(gameId: string): boolean {
-  try {
-    return window.localStorage.getItem(ACK_KEY(gameId)) === "1";
-  } catch {
-    return false;
-  }
-}
 
 /** "Pwesto sa pila": queued, called/playing, or paused. Updates live (NF9). */
 export function PlayerView({ code, view }: { code: string; view: PlayerSessionView }) {
@@ -46,30 +33,11 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState<"leave" | "not_ready" | null>(null);
-  const [acked, setAcked] = useState<Record<string, boolean>>({});
 
   const playingGame = state.kind === "playing" ? state.gameId : null;
-  // "Papunta na ako" is remembered per game on this phone, so a reload doesn't alert again.
-  const storedAck = useSyncExternalStore(
-    subscribeToStorage,
-    () => (playingGame ? readAck(playingGame) : false),
-    () => false,
-  );
-  const isAcked = playingGame ? (acked[playingGame] ?? false) || storedAck : false;
-
-  // A reload loses the audio unlock from "Pumila na"; any tap here restores it.
-  useEffect(() => {
-    window.addEventListener("pointerdown", unlockAudio);
-    return () => window.removeEventListener("pointerdown", unlockAudio);
-  }, []);
-
-  // Called: chime and vibrate once per game, unless already acknowledged.
-  const alertedFor = useRef<string | null>(null);
-  useEffect(() => {
-    if (!playingGame || alertedFor.current === playingGame) return;
-    alertedFor.current = playingGame;
-    if (!readAck(playingGame)) playCalledAlert();
-  }, [playingGame]);
+  const { acked: isAcked, acknowledge } = useCalledAlert(playingGame);
+  // Screen stays on while waiting or playing; released when paused, left or ended.
+  const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing");
 
   async function act(rpc: PlayerRpc) {
     if (!view.me) return;
@@ -87,15 +55,6 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
       return;
     }
     router.refresh();
-  }
-
-  function acknowledge(gameId: string) {
-    try {
-      window.localStorage.setItem(ACK_KEY(gameId), "1");
-    } catch {
-      // Remembered for this page view only.
-    }
-    setAcked((current) => ({ ...current, [gameId]: true }));
   }
 
   const leaveButtons = (
@@ -182,13 +141,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         {isAcked ? (
           <Header eyebrow={view.session.name} title={`Naglalaro ka sa ${state.courtLabel}`} />
         ) : (
-          <div role="alert" className="flex flex-col gap-3 rounded-card border-[1.5px] border-ink bg-accent p-5">
-            <p className="inline-flex items-center gap-2 text-lg font-bold">
-              <BallIcon />
-              Ikaw na, {name}!
-            </p>
-            <p className="font-display text-3xl font-bold">Pumunta ka na sa {state.courtLabel}</p>
-          </div>
+          <CalledBanner name={name} courtLabel={state.courtLabel} />
         )}
         {state.format === "singles" ? (
           <p className="rounded-control bg-primary-tint px-4 py-3 text-xl font-semibold [overflow-wrap:anywhere]">
@@ -214,7 +167,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         {paymentPanel}
         <div className="flex flex-col gap-3">
           {!isAcked && (
-            <Button size="lg" fullWidth onClick={() => acknowledge(state.gameId)}>
+            <Button size="lg" fullWidth onClick={acknowledge}>
               Papunta na ako
             </Button>
           )}
@@ -241,6 +194,13 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         {sync === "lost" && <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>}
         {error && <Notice kind="error">{error}</Notice>}
         {body}
+        {(state.kind === "queued" || state.kind === "playing" || state.kind === "paused") && (
+          <Button href={`/j/${code}/courts`} variant="secondary" fullWidth>
+            Tingnan ang mga court
+            <ChevronRightIcon />
+          </Button>
+        )}
+        {!wakeLock.supported && (state.kind === "queued" || state.kind === "playing") && <KeepScreenOnNote />}
       </div>
     </PageShell>
   );

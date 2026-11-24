@@ -70,13 +70,21 @@ export function useSessionSync(sessionId: string): SyncStatus {
       }
     };
 
+    // Back in the foreground (phones pause background pages): refetch at once,
+    // so a player called meanwhile sees "Ikaw na!" immediately.
+    const visible = () => {
+      if (document.visibilityState === "visible") refetch();
+    };
+
     window.addEventListener("offline", lost);
     window.addEventListener("online", online);
+    document.addEventListener("visibilitychange", visible);
     return () => {
       cancelled = true;
       clearTimeout(timer);
       window.removeEventListener("offline", lost);
       window.removeEventListener("online", online);
+      document.removeEventListener("visibilitychange", visible);
       if (channel) void supabase.removeChannel(channel);
     };
   }, [sessionId, router]);
