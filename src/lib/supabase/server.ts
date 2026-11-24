@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 
@@ -15,6 +16,10 @@ export async function createClient() {
   // Read cookies first: during prerendering this postpones the component
   // before the env check runs, so builds work without env vars.
   const cookieStore = await cookies();
+  // Supabase compares token expiry with the current time. Prefetch prerenders
+  // (partialPrefetching) can read cookies but not the clock, so wait for the
+  // real request; Supabase-backed content is never prerendered.
+  await connection();
   const { url, key } = getSupabaseEnv();
 
   return createServerClient<Database>(url, key, {

@@ -9,9 +9,13 @@ import {
   PageShell,
   RadioGroup,
   StatusLabel,
+  Stepper,
+  Toggle,
   type ButtonVariant,
   type StatusKind,
 } from "@/components/ui";
+import { ROTATION_CHOICES } from "@/lib/club/options";
+import { SessionStatusLabel } from "@/components/session/SessionStatusLabel";
 
 export const metadata: Metadata = {
   title: "Design System · Open Play Queue",
@@ -127,6 +131,27 @@ export default function DesignSystemPage() {
           </div>
         </Section>
 
+        <Section title="SessionStatusLabel">
+          <div className="flex flex-wrap gap-2">
+            <SessionStatusLabel status="draft" />
+            <SessionStatusLabel status="live" />
+            <SessionStatusLabel status="ended" />
+          </div>
+        </Section>
+
+        <Section title="Stepper">
+          <Card>
+            <Stepper label="Ilang court?" name="ds-courts" min={1} max={8} defaultValue={2} />
+          </Card>
+        </Section>
+
+        <Section title="Toggle">
+          <Card className="flex flex-col gap-3">
+            <Toggle label="Bayad muna bago pumila" description="Lalaktawan ang hindi pa bayad" name="ds-pay-first" />
+            <Toggle label="Naka-on na halimbawa" name="ds-on" defaultChecked />
+          </Card>
+        </Section>
+
         <Section title="Card">
           <Card className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
@@ -180,18 +205,7 @@ export default function DesignSystemPage() {
               legend="Rotation"
               name="ds-rotation"
               defaultValue="all_off"
-              options={[
-                {
-                  value: "all_off",
-                  label: "Lahat ng apat aalis",
-                  description: "Pagkatapos ng laro, babalik sa pila ang apat na naglaro.",
-                },
-                {
-                  value: "winners_stay",
-                  label: "Mananatili ang nanalo",
-                  description: "Maglalaro ulit ang nanalong pares laban sa susunod.",
-                },
-              ]}
+              options={ROTATION_CHOICES}
             />
             <RadioGroup
               legend="Laki ng court"

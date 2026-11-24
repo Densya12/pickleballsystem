@@ -38,4 +38,11 @@ describe("loginErrorMessage", () => {
     expect(loginErrorMessage("auth")).toBe(AUTH_MESSAGES.callbackFailed);
     expect(loginErrorMessage(undefined)).toBeUndefined();
   });
+
+  it("a failed login link names the usual cause (another browser) and the way out", () => {
+    expect(loginErrorMessage("link")).toBe(
+      "Hindi gumana ang login link. Baka expired na, nagamit na, o binuksan sa ibang browser. " +
+        "Humingi ng bago at buksan ito sa parehong browser kung saan ka humingi, o gamitin ang Google sign-in.",
+    );
+  });
 });
