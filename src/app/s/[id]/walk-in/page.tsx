@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BackLink, Card, PageShell } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
+import { getMembers } from "@/lib/members/data";
 import { getSession } from "@/lib/session/data";
 import { WalkInForm } from "./WalkInForm";
 
@@ -31,6 +32,7 @@ async function WalkInContent({ params }: Pick<PageProps<"/s/[id]/walk-in">, "par
   if (!session) notFound();
   // Walk-ins only join a live queue.
   if (session.status !== "live") redirect(`/s/${session.id}/live`);
+  const members = await getMembers(session.club_id);
 
   return (
     <PageShell
@@ -43,7 +45,7 @@ async function WalkInContent({ params }: Pick<PageProps<"/s/[id]/walk-in">, "par
       }
     >
       <Card className="mt-2">
-        <WalkInForm sessionId={session.id} fee={session.fee} />
+        <WalkInForm sessionId={session.id} fee={session.fee} members={members} />
       </Card>
     </PageShell>
   );

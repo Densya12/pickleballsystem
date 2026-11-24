@@ -43,6 +43,7 @@ async function PaymentsContent({ params }: Pick<PageProps<"/s/[id]/payments">, "
         name: session.name,
         fee: session.fee,
         payFirst: session.pay_first,
+        status: session.status,
         gcashName: session.gcash_name,
         gcashNumber: session.gcash_number,
       }}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button, Notice } from "@/components/ui";
 import { BallIcon, StopIcon } from "@/components/ui/icons";
+import { isNetworkError, ONLINE_ONLY_MESSAGE } from "@/lib/outbox/rules";
 import type { SessionStatus } from "@/lib/session/data";
 import {
   deleteDraftSessionAction,
@@ -20,10 +21,21 @@ export function SessionControls({ sessionId, status }: { sessionId: string; stat
   const [busy, startTransition] = useTransition();
 
   function run(action: (id: string) => Promise<SessionActionResult>) {
+    // Never queued offline (NF10): starting and ending need the server's answer now.
+    if (!navigator.onLine) {
+      setError(ONLINE_ONLY_MESSAGE);
+      return;
+    }
     setError(undefined);
     startTransition(async () => {
-      const result = await action(sessionId);
-      if (result.error) setError(result.error);
+      try {
+        const result = await action(sessionId);
+        if (result.error) setError(result.error);
+      } catch (caught) {
+        // Anything else (including Next's redirect after deleting a draft) is handled as before.
+        if (!isNetworkError(caught)) throw caught;
+        setError(ONLINE_ONLY_MESSAGE);
+      }
       setConfirming(null);
     });
   }

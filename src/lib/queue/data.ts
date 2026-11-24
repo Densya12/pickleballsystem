@@ -16,6 +16,8 @@ export type LivePlayer = {
   notReady: boolean;
   /** unpaid | pending | confirmed (Phase 5) */
   paymentStatus: string;
+  /** Linked club member (Phase 7), if any. */
+  memberId: string | null;
 };
 export type LiveGame = {
   id: string;
@@ -44,7 +46,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
     supabase.from("games").select("id, court_id, number, format, player_ids").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
-      .select("id, display_name, level, status, games_played, queue_pos, not_ready_at, payment_status")
+      .select("id, display_name, level, status, games_played, queue_pos, not_ready_at, payment_status, member_id")
       .eq("session_id", sessionId)
       .order("queue_pos"),
     supabase.rpc("session_eligible_count", { p_session_id: sessionId }),
@@ -68,6 +70,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
         gamesPlayed: p.games_played,
         notReady: p.not_ready_at !== null,
         paymentStatus: p.payment_status,
+        memberId: p.member_id,
       },
     ]),
   );

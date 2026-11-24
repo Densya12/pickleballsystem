@@ -1,3 +1,4 @@
+import { isNetworkError, NETWORK_ERROR_MESSAGE } from "@/lib/outbox/rules";
 import { paymentErrorMessage } from "@/lib/payments/messages";
 
 /** Taglish copy and error messages for the player screens. */
@@ -31,6 +32,8 @@ export function playerErrorMessage(error: DbErrorLike): string {
       return PLAYER_ERRORS.noRow;
   }
   if (error.code === "23514" || error.code === "23502") return PLAYER_ERRORS.invalidInput;
+  // supabase-js reports a failed fetch as an error object, not a throw.
+  if (isNetworkError(new Error(error.message ?? ""))) return NETWORK_ERROR_MESSAGE;
   return PLAYER_ERRORS.generic;
 }
 

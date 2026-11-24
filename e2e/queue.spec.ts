@@ -117,7 +117,8 @@ test.describe("queue engine and Live screen", () => {
 
     // Losing the connection shows a notice; back online, it refetches what was missed.
     await other.setOffline(true);
-    await expect(second.getByText("Nawalan ng koneksyon.", { exact: false })).toBeVisible();
+    // NF10 (Phase 7): offline, the organizer's phone says taps will be saved.
+    await expect(second.getByText("Offline — ise-save pagbalik ng signal")).toBeVisible();
     await addWalkIn(page, "Vic");
     await other.setOffline(false);
     await expect(queue(second).getByText("Vic")).toBeVisible({ timeout: 15_000 });

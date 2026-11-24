@@ -16,6 +16,8 @@ type Props = {
   rotation: string;
   eligibleCount: number;
   busy: boolean;
+  /** An action for this court is waiting for signal (NF10). */
+  waiting?: boolean;
   onCall: (courtId: string) => void;
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
   /** BR19: replace a player who said "Hindi pa ako handa". */
@@ -28,7 +30,8 @@ type Props = {
  * One court: its format, and the players in a grid (4 in doubles, 2 in
  * singles). No "VS": doubles players pick partners on court (D11).
  */
-export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFinish, onSwap, onSetFormat }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, busy: actionBusy, waiting = false, onCall, onFinish, onSwap, onSetFormat }: Props) {
+  const busy = actionBusy || waiting;
   const [picking, setPicking] = useState(false);
   const [confirmFormat, setConfirmFormat] = useState(false);
   const game = court.game;
@@ -49,6 +52,9 @@ export function CourtCard({ court, rotation, eligibleCount, busy, onCall, onFini
         </div>
         <p className="text-muted">{game ? `Laro #${game.number}` : "Bakante"}</p>
       </div>
+      {waiting && (
+        <p className="rounded-control bg-subtle px-4 py-2 font-semibold">Hinihintay ang signal</p>
+      )}
 
       {game ? (
         <>

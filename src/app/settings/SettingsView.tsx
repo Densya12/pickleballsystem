@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
-import { Button, Card, Input, Notice, PageShell, RadioGroup } from "@/components/ui";
+import { Button, Card, FeedbackLink, Input, Notice, PageShell, RadioGroup } from "@/components/ui";
 import { POINTS_CHOICES, ROTATION_CHOICES } from "@/lib/club/options";
 import { saveSettingsAction, signOutAction, type SettingsState } from "./actions";
 import { ClubQrCard, type ClubQr } from "./ClubQrCard";
@@ -154,6 +154,13 @@ export function SettingsView({ header, club, isOwner, staff, invites, clubQr }: 
 
         <div className="flex flex-col gap-8 print:hidden">
           <StaffSection isOwner={isOwner} staff={staff} invites={invites} />
+        </div>
+
+        <div className="flex flex-col gap-2 print:hidden">
+          <Button href="/guide" variant="secondary" fullWidth>
+            Gabay para sa organizer
+          </Button>
+          <FeedbackLink />
         </div>
 
         <form action={signOutAction} className="print:hidden">

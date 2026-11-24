@@ -11,6 +11,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export type PaymentActionResult = {
   error?: string;
+  /** The database's error message (e.g. "game_already_finished"), for outbox replays. */
+  code?: string;
   banner?: string;
   /** Set when "Ibalik" can undo this action (D18). */
   undo?: { banner: string };
@@ -29,7 +31,7 @@ export async function confirmPaymentAction(sessionId: string, playerId: string):
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("confirm_payment", { p_player_id: playerId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const [[name], { data: payment }] = await Promise.all([
     playerNames([playerId]),
@@ -49,7 +51,7 @@ export async function undoPaymentAction(sessionId: string, playerId: string): Pr
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("undo_payment", { p_player_id: playerId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   const [name] = await playerNames([playerId]);
   refresh();

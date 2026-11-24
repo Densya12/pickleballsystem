@@ -1,6 +1,8 @@
 /**
- * The Bayad screen's numbers. Players who left without paying don't count
- * toward what's expected; everyone else does (including those who left after paying).
+ * The Bayad screen's numbers. While the session is live, players who left
+ * without paying don't count toward what's expected; everyone else does
+ * (including those who left after paying). Once it has ended, everyone is
+ * "left", so the rule becomes: whoever played at least one game, or paid.
  */
 export type PaymentStatus = "unpaid" | "pending" | "confirmed";
 
@@ -14,6 +16,8 @@ export type PayingPlayer = {
   referenceDigits: string | null;
   /** The amount recorded on the payment row (the fee at that time), if any. */
   amount: number | null;
+  /** Finished games; used once the session has ended. */
+  gamesPlayed?: number;
 };
 
 export type PaymentSummary = {
@@ -27,8 +31,16 @@ export type PaymentSummary = {
   expectedTotal: number;
 };
 
-export function summarizePayments(players: readonly PayingPlayer[], fee: number): PaymentSummary {
-  const counted = players.filter((p) => p.status !== "left" || p.paymentStatus !== "unpaid");
+export function summarizePayments(
+  players: readonly PayingPlayer[],
+  fee: number,
+  { sessionEnded = false }: { sessionEnded?: boolean } = {},
+): PaymentSummary {
+  const counted = players.filter((p) =>
+    sessionEnded
+      ? p.paymentStatus !== "unpaid" || (p.gamesPlayed ?? 0) > 0
+      : p.status !== "left" || p.paymentStatus !== "unpaid",
+  );
   const confirmed = counted.filter((p) => p.paymentStatus === "confirmed");
   return {
     counted,

@@ -2,16 +2,21 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
+import { OutboxStatus } from "@/components/session/OutboxStatus";
 import { Button, Card, Notice, PageShell, StatusLabel } from "@/components/ui";
 import { AlertIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/format";
+import { isNetworkError, ONLINE_ONLY_MESSAGE } from "@/lib/outbox/rules";
+import { useOutbox } from "@/lib/outbox/useOutbox";
 import { reminderMessage } from "@/lib/payments/messages";
+import { sendReminder } from "@/lib/payments/remind";
 import { maskReference } from "@/lib/payments/reference";
 import { duplicateReferences, summarizePayments, type PayingPlayer } from "@/lib/payments/summary";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { undoDeadlineFromNow } from "@/lib/undo/countdown";
 import { undoLastAction } from "../undo-actions";
-import { confirmPaymentAction, undoPaymentAction, type PaymentActionResult } from "./actions";
+import { sendOrganizerAction } from "../outbox-send";
+import { undoPaymentAction, type PaymentActionResult } from "./actions";
 
 type Props = {
   header: ReactNode;
@@ -20,6 +25,7 @@ type Props = {
     name: string;
     fee: number;
     payFirst: boolean;
+    status: string;
     gcashName: string | null;
     gcashNumber: string | null;
   };
@@ -35,27 +41,66 @@ export function PaymentsView({ header, session, players }: Props) {
   // D18: "Ibalik" for the last "Natanggap na", for 30 seconds from the tap.
   const [undoOffer, setUndoOffer] = useState<UndoOffer | null>(null);
 
-  const summary = summarizePayments(players, session.fee);
+  const summary = summarizePayments(players, session.fee, { sessionEnded: session.status === "ended" });
   const duplicates = duplicateReferences(players);
 
-  function run(action: () => Promise<PaymentActionResult>) {
+  // NF10: "Natanggap na" without signal waits in the outbox.
+  const outbox = useOutbox(session.id, sendOrganizerAction);
+
+  function confirm(player: PayingPlayer) {
     const deadline = undoDeadlineFromNow();
     startTransition(async () => {
-      const result = await action();
+      const outcome = await outbox.perform({
+        kind: "confirm_payment",
+        args: { playerId: player.id },
+        label: `Natanggap na: ${player.name}`,
+      });
+      if (outcome.queued) {
+        setError(null);
+        setBanner(null);
+        setUndoOffer(null);
+        return;
+      }
+      const { result } = outcome;
       setError(result.error ?? null);
       setBanner(result.error ? null : (result.banner ?? null));
-      setUndoOffer(
-        !result.error && result.undo ? { deadline, doneBanner: result.undo.banner } : null,
-      );
+      setUndoOffer(!result.error && result.undo ? { deadline, doneBanner: result.undo.banner } : null);
+    });
+  }
+
+  function run(action: () => Promise<PaymentActionResult>) {
+    if (!navigator.onLine) {
+      setError(ONLINE_ONLY_MESSAGE);
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const result = await action();
+        setError(result.error ?? null);
+        setBanner(result.error ? null : (result.banner ?? null));
+        setUndoOffer(null);
+      } catch (caught) {
+        if (!isNetworkError(caught)) throw caught;
+        setError(ONLINE_ONLY_MESSAGE);
+      }
     });
   }
 
   function undo(offer: UndoOffer) {
+    if (!navigator.onLine) {
+      setError(ONLINE_ONLY_MESSAGE);
+      return;
+    }
     startTransition(async () => {
-      const result = await undoLastAction(session.id);
-      setUndoOffer(null);
-      setError(result.error ?? null);
-      setBanner(result.error ? null : offer.doneBanner);
+      try {
+        const result = await undoLastAction(session.id);
+        setUndoOffer(null);
+        setError(result.error ?? null);
+        setBanner(result.error ? null : offer.doneBanner);
+      } catch (caught) {
+        if (!isNetworkError(caught)) throw caught;
+        setError(ONLINE_ONLY_MESSAGE);
+      }
     });
   }
 
@@ -69,21 +114,9 @@ export function PaymentsView({ header, session, players }: Props) {
     });
     setError(null);
     setUndoOffer(null);
-    if (typeof navigator.share === "function") {
-      try {
-        await navigator.share({ text });
-        setBanner(`Naipadala ang paalala para kay ${player.name}.`);
-        return;
-      } catch (shareError) {
-        if (shareError instanceof DOMException && shareError.name === "AbortError") return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      setBanner(`Nakopya ang paalala para kay ${player.name}. I-paste sa Messenger.`);
-    } catch {
-      setError("Hindi makopya ang paalala. Subukan ulit.");
-    }
+    const outcome = await sendReminder(player.name, text);
+    if (outcome.banner) setBanner(outcome.banner);
+    if (outcome.error) setError(outcome.error);
   }
 
   return (
@@ -99,7 +132,8 @@ export function PaymentsView({ header, session, players }: Props) {
     >
       <div className="flex flex-col gap-6" data-live-sync={sync}>
         <div className="flex flex-col gap-2" aria-live="polite">
-          {sync === "lost" && <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>}
+          <OutboxStatus online={outbox.online} pending={outbox.pending} failed={outbox.failed} onDiscard={outbox.discardFailed} />
+          {sync === "lost" && outbox.online && <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>}
           {error && <Notice kind="error">{error}</Notice>}
           {banner && (
             <FeedbackBanner
@@ -115,6 +149,8 @@ export function PaymentsView({ header, session, players }: Props) {
 
         {session.fee === 0 ? (
           <Notice kind="info">Libre ang session na ito. Walang bayad na kailangang i-check.</Notice>
+        ) : players.length === 0 ? (
+          <Empty>Wala pang player kaya wala pang bayad. Ipakita ang QR o magdagdag ng walk-in.</Empty>
         ) : (
           <>
             <Card className="flex flex-col gap-1">
@@ -146,7 +182,7 @@ export function PaymentsView({ header, session, players }: Props) {
                         <span>Parehong reference kay {duplicates.get(player.id)!.join(", ")}</span>
                       </p>
                     )}
-                    <Button fullWidth disabled={busy} onClick={() => run(() => confirmPaymentAction(session.id, player.id))}>
+                    <Button fullWidth disabled={busy} onClick={() => confirm(player)}>
                       <CheckIcon />
                       Natanggap na
                     </Button>
@@ -168,7 +204,7 @@ export function PaymentsView({ header, session, players }: Props) {
                         {player.method === "cash" ? " · cash ang sabi" : ""}
                       </p>
                     </div>
-                    <Button fullWidth disabled={busy} onClick={() => run(() => confirmPaymentAction(session.id, player.id))}>
+                    <Button fullWidth disabled={busy} onClick={() => confirm(player)}>
                       <CheckIcon />
                       Natanggap na (cash)
                     </Button>

@@ -7,7 +7,7 @@ import { getSession } from "@/lib/session/data";
 import { SESSION_ERRORS } from "@/lib/session/messages";
 import { createClient } from "@/lib/supabase/server";
 
-export type UndoActionResult = { error?: string };
+export type UndoActionResult = { error?: string; code?: string };
 
 /**
  * "Ibalik" (D18), from Live or Bayad. undo_last decides on the server whether
@@ -20,7 +20,7 @@ export async function undoLastAction(sessionId: string): Promise<UndoActionResul
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("undo_last", { p_session_id: sessionId });
-  if (error) return { error: queueErrorMessage(error) };
+  if (error) return { error: queueErrorMessage(error), code: error.message };
 
   refresh();
   return {};
