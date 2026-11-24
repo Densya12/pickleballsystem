@@ -193,6 +193,12 @@ begin
     raise exception 'not_authenticated' using errcode = '42501';
   end if;
 
+  -- Players will use Supabase anonymous sign-in (Phase 4), which also gets the
+  -- authenticated role. Only real organizer accounts may become staff.
+  if coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) then
+    raise exception 'not_organizer_account' using errcode = '42501';
+  end if;
+
   insert into public.clubs (name, city, created_by)
   values (p_name, p_city, v_uid)
   returning id into v_club_id;
@@ -218,6 +224,12 @@ declare
 begin
   if v_uid is null then
     raise exception 'not_authenticated' using errcode = '42501';
+  end if;
+
+  -- Players will use Supabase anonymous sign-in (Phase 4), which also gets the
+  -- authenticated role. Only real organizer accounts may become staff.
+  if coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) then
+    raise exception 'not_organizer_account' using errcode = '42501';
   end if;
 
   select * into v_invite

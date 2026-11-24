@@ -7,6 +7,9 @@ export const AUTH_MESSAGES = {
   googleFailed: "Hindi mabuksan ang Google sign-in. Subukan ulit.",
   callbackFailed: "Hindi natuloy ang pag-sign in. Subukan ulit.",
   linkExpired: "Expired o nagamit na ang login link. Humingi ng bago.",
+  /** Anonymous (player) sessions can't create or join a club as staff. */
+  notOrganizerAccount:
+    "Kailangan ng organizer account para dito. Mag-sign out, tapos mag-sign in gamit ang Google o email.",
 } as const;
 
 export function validateEmail(raw: string): string | undefined {

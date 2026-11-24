@@ -1,3 +1,5 @@
+import { AUTH_MESSAGES } from "@/lib/auth/messages";
+
 /** Maps errors raised by the club RPCs / RLS to plain-Taglish messages. */
 export const CLUB_ERRORS = {
   generic: "May problema. Subukan ulit.",
@@ -44,6 +46,8 @@ export function clubErrorMessage(error: DbErrorLike): string {
       return CLUB_ERRORS.inviteUsed;
     case "invite_revoked":
       return CLUB_ERRORS.inviteRevoked;
+    case "not_organizer_account":
+      return AUTH_MESSAGES.notOrganizerAccount;
   }
   if (error.code === "42501") return CLUB_ERRORS.ownerOnly;
   if (error.code === "23514" || error.code === "22P02") return CLUB_ERRORS.invalidInput;

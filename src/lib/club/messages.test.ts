@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AUTH_MESSAGES } from "@/lib/auth/messages";
 import { CLUB_ERRORS, clubErrorMessage, inviteExpiryText, inviteStatusMessage } from "./messages";
 
 describe("clubErrorMessage", () => {
@@ -9,6 +10,8 @@ describe("clubErrorMessage", () => {
     [{ message: "invite_revoked", code: "P0001" }, CLUB_ERRORS.inviteRevoked],
     [{ message: "invite_invalid", code: "P0001" }, CLUB_ERRORS.inviteInvalid],
     [{ message: "not_owner", code: "42501" }, CLUB_ERRORS.ownerOnly],
+    // Same errcode as not_owner, but must not be shown as "owner only".
+    [{ message: "not_organizer_account", code: "42501" }, AUTH_MESSAGES.notOrganizerAccount],
     [{ message: "new row violates row-level security policy", code: "42501" }, CLUB_ERRORS.ownerOnly],
     [{ message: "violates check constraint", code: "23514" }, CLUB_ERRORS.invalidInput],
     [{ message: "fetch failed" }, CLUB_ERRORS.generic],
