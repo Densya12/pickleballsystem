@@ -3,7 +3,18 @@
  * in the queue. Pure functions, shared by the page and its tests.
  */
 
-export type QueuePlayer = { id: string; name: string; status: string; queuePos: number };
+export type QueuePlayer = {
+  id: string;
+  name: string;
+  status: string;
+  queuePos: number;
+  /** unpaid | pending | confirmed (Phase 5) */
+  paymentStatus?: string;
+};
+
+/** The session's payment rule (BR6): pay_first only matters when there is a fee. */
+export type CallRules = { payFirst: boolean; fee: number };
+export const NO_PAYMENT_RULES: CallRules = { payFirst: false, fee: 0 };
 export type RunningGame = { id: string; number: number; courtLabel: string; format: string; playerIds: string[] };
 export type Me = { id: string; name: string; status: string; notReady: boolean };
 
@@ -20,11 +31,20 @@ export function callSizeFor(courtFormats: readonly string[]): number {
 export const AHEAD_SHOWN = 3;
 
 /**
- * Who can be called now. Mirrors private.eligible_players in the database
- * (status 'queued'); Phase 5 adds the payment condition in both places.
+ * Who can be called now. Mirrors private.eligible_players in the database:
+ * queued, and with pay_first (and a fee) a pending or confirmed payment (BR14).
+ * Both are checked against supabase/tests/database/eligibility_cases.inc.
  */
-export function isCallable(player: Pick<QueuePlayer, "status">): boolean {
-  return player.status === "queued";
+export function isCallable(player: Pick<QueuePlayer, "status" | "paymentStatus">, rules: CallRules = NO_PAYMENT_RULES): boolean {
+  return (
+    player.status === "queued" &&
+    (!rules.payFirst || rules.fee === 0 || player.paymentStatus === "pending" || player.paymentStatus === "confirmed")
+  );
+}
+
+/** Waiting but skipped until they pay (pay_first, fee > 0, unpaid). */
+export function isHeld(player: Pick<QueuePlayer, "status" | "paymentStatus">, rules: CallRules): boolean {
+  return player.status === "queued" && rules.payFirst && rules.fee > 0 && !isCallable(player, rules);
 }
 
 export type QueueInfo = {
@@ -36,7 +56,12 @@ export type QueueInfo = {
   ahead: string[];
 };
 
-export function queueInfo(players: readonly QueuePlayer[], meId: string, callSize = CALL_SIZE): QueueInfo | null {
+export function queueInfo(
+  players: readonly QueuePlayer[],
+  meId: string,
+  callSize = CALL_SIZE,
+  rules: CallRules = NO_PAYMENT_RULES,
+): QueueInfo | null {
   const waiting = players
     .filter((p) => p.status === "queued" || p.status === "paused")
     .sort((a, b) => a.queuePos - b.queuePos);
@@ -47,7 +72,7 @@ export function queueInfo(players: readonly QueuePlayer[], meId: string, callSiz
   const me = waiting[index];
   return {
     position: index + 1,
-    nextUp: isCallable(me) && before.filter(isCallable).length < callSize,
+    nextUp: isCallable(me, rules) && before.filter((p) => isCallable(p, rules)).length < callSize,
     ahead: before.slice(-AHEAD_SHOWN).map((p) => p.name),
   };
 }
@@ -74,8 +99,9 @@ export function pickPwestoState(input: {
   games: readonly RunningGame[];
   /** From callSizeFor(court formats); defaults to doubles (4). */
   callSize?: number;
+  rules?: CallRules;
 }): PwestoState {
-  const { sessionStatus, me, players, games, callSize = CALL_SIZE } = input;
+  const { sessionStatus, me, players, games, callSize = CALL_SIZE, rules = NO_PAYMENT_RULES } = input;
   if (sessionStatus === "ended") return { kind: "ended" };
   if (!me || me.status === "left") return { kind: "left" };
 
@@ -95,7 +121,7 @@ export function pickPwestoState(input: {
     }
   }
 
-  const info = queueInfo(players, me.id, callSize);
+  const info = queueInfo(players, me.id, callSize, rules);
   if (me.status === "paused") return { kind: "paused", position: info?.position ?? 0 };
   return { kind: "queued", ...(info ?? { position: 0, nextUp: false, ahead: [] }) };
 }

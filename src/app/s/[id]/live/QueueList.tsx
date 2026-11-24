@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, StatusLabel } from "@/components/ui";
 import { ChevronRightIcon, PauseIcon } from "@/components/ui/icons";
 import type { QueueEntry } from "@/lib/queue/data";
+import { isHeld, type CallRules } from "@/lib/player/state";
 import { levelLabel } from "@/lib/queue/players";
 
 type Props = {
   queue: QueueEntry[];
+  /** pay_first + fee: unpaid players show "Hold · bayad muna" (BR6). */
+  rules: CallRules;
   busy: boolean;
   onPause: (playerId: string) => Promise<boolean>;
   onResume: (playerId: string) => Promise<boolean>;
@@ -15,7 +18,7 @@ type Props = {
 };
 
 /** "Susunod sa pila" (BR5 order). Tap a name for its actions; no swipe gestures. */
-export function QueueList({ queue, busy, onPause, onResume, onRemove }: Props) {
+export function QueueList({ queue, rules, busy, onPause, onResume, onRemove }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = queue.find((p) => p.id === openId) ?? null;
 
@@ -45,6 +48,7 @@ export function QueueList({ queue, busy, onPause, onResume, onRemove }: Props) {
                 <span className="font-semibold [overflow-wrap:anywhere]">{player.name}</span>
                 <span className="text-sm text-muted">{levelLabel(player.level)}</span>
               </span>
+              {isHeld(player, rules) && <StatusLabel kind="hold" className="shrink-0 text-sm" />}
               {player.status === "paused" && (
                 <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warn px-2.5 py-1 text-sm font-semibold text-warn">
                   <PauseIcon className="size-4" />

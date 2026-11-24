@@ -30,6 +30,8 @@ async function joinLink(organizer: Page): Promise<string> {
 async function checkIn(player: Page, path: string, name: string) {
   await player.goto(path);
   await player.getByLabel("Pangalan mo").fill(name);
+  // Phase 5 (BR13): with a fee, pick GCash or cash. These sessions don't use pay_first.
+  await player.getByRole("switch", { name: "Cash ang ibabayad ko" }).check();
   await player.getByRole("button", { name: "Pumila na" }).click();
   await expect(player).toHaveURL(new RegExp(`${path}/me$`));
   await expect(player.getByRole("heading", { level: 1, name: `Hi, ${name}!` })).toBeVisible();

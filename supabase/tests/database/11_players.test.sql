@@ -94,20 +94,20 @@ select results_eq($$ select status, name, starts_at, ends_at, courts_count, wait
   $$ values ('live'::text, 'Friday Open Play'::text, '2026-11-27 18:00+08'::timestamptz, '2026-11-27 21:00+08'::timestamptz, 1, 0) $$,
   'checkin_preview ignores case');
 select results_eq($$ select * from public.checkin_preview('ZZZZZZ') $$,
-  $$ values ('not_found'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer) $$,
+  $$ values ('not_found'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer, null::integer, null::boolean, null::text, null::text) $$,
   'Unknown code: only not_found');
 select results_eq($$ select * from public.checkin_preview(current_setting('test.code_e')) $$,
-  $$ values ('ended'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer) $$,
+  $$ values ('ended'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer, null::integer, null::boolean, null::text, null::text) $$,
   'Ended session: only its status');
 select results_eq($$ select * from public.checkin_preview(current_setting('test.code_draft')) $$,
-  $$ values ('draft'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer) $$,
+  $$ values ('draft'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer, null::integer, null::boolean, null::text, null::text) $$,
   'Draft session: only its status');
 select is(
   (select array_agg(p.parameter_name::text order by p.ordinal_position) from information_schema.parameters p
    join information_schema.routines r on r.specific_name = p.specific_name
    where r.routine_schema = 'public' and r.routine_name = 'checkin_preview' and p.parameter_mode = 'OUT'),
-  array['status', 'name', 'starts_at', 'ends_at', 'courts_count', 'waiting'],
-  'checkin_preview returns exactly these columns');
+  array['status', 'name', 'starts_at', 'ends_at', 'courts_count', 'waiting', 'fee', 'pay_first', 'gcash_name', 'gcash_number'],
+  'checkin_preview returns exactly these columns (Phase 5 adds fee, pay_first, GCash)');
 select throws_ok($$ select public.join_session(current_setting('test.code_s'), 'No Account') $$, '42501', null,
   'anon (not signed in) cannot join');
 reset role;

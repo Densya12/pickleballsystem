@@ -103,6 +103,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"events": {
+                  Row: {
+                    "actor": string | null,"created_at": string,"id": string,"payload": NonNullable<Json>,"session_id": string,"type": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor"?: string | null,"created_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"session_id": string,"type": string
+                  }
+                  Update: {
+                    "actor"?: string | null,"created_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"session_id"?: string,"type"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "events_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"games": {
                   Row: {
                     "court_id": string,"ended_at": string | null,"format": string,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"winner_ids": (string)[] | null
@@ -129,16 +149,42 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"session_players": {
+                },"payments": {
                   Row: {
-                    "created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"not_ready_at": string | null,"queue_pos": number,"session_id": string,"status": string,"user_id": string | null
+                    "amount": number,"created_at": string,"id": string,"method": string | null,"reference_digits": string | null,"session_id": string,"session_player_id": string,"status": string,"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"queue_pos"?: number,"session_id": string,"status"?: string,"user_id"?: string | null
+                    "amount": number,"created_at"?: string,"id"?: string,"method"?: string | null,"reference_digits"?: string | null,"session_id": string,"session_player_id": string,"status": string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"queue_pos"?: number,"session_id"?: string,"status"?: string,"user_id"?: string | null
+                    "amount"?: number,"created_at"?: string,"id"?: string,"method"?: string | null,"reference_digits"?: string | null,"session_id"?: string,"session_player_id"?: string,"status"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payments_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payments_session_player_id_fkey"
+      columns: ["session_player_id"]
+isOneToOne: true
+      referencedRelation: "session_players"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"session_players": {
+                  Row: {
+                    "created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"not_ready_at": string | null,"payment_status": string,"queue_pos": number,"session_id": string,"status": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id": string,"status"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id"?: string,"status"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -179,15 +225,18 @@ isOneToOne: false
 { Args: { "p_token": string }; Returns: string
                            },
 "add_walk_in":
-{ Args: { "p_display_name": string,"p_level": string,"p_session_id": string }; Returns: string
+{ Args: { "p_display_name": string,"p_level": string,"p_payment"?: string,"p_reference"?: string,"p_session_id": string }; Returns: string
                            },
 "call_next":
 { Args: { "p_court_id": string }; Returns: string
                            },
 "checkin_preview":
 { Args: { "p_join_code": string }; Returns: {
-              "courts_count": number,"ends_at": string,"name": string,"starts_at": string,"status": string,"waiting": number
+              "courts_count": number,"ends_at": string,"fee": number,"gcash_name": string,"gcash_number": string,"name": string,"pay_first": boolean,"starts_at": string,"status": string,"waiting": number
             }[]
+                           },
+"confirm_payment":
+{ Args: { "p_player_id": string }; Returns: undefined
                            },
 "create_club":
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
@@ -218,6 +267,9 @@ isOneToOne: false
 "is_club_staff":
 { Args: { "p_club_id": string }; Returns: boolean
                            },
+"is_own_player":
+{ Args: { "p_session_player_id": string }; Returns: boolean
+                           },
 "is_session_player":
 { Args: { "p_session_id": string }; Returns: boolean
                            },
@@ -225,7 +277,7 @@ isOneToOne: false
 { Args: { "p_session_id": string }; Returns: boolean
                            },
 "join_session":
-{ Args: { "p_display_name": string,"p_join_code": string,"p_level"?: string }; Returns: string
+{ Args: { "p_display_name": string,"p_join_code": string,"p_level"?: string,"p_method"?: string,"p_reference"?: string }; Returns: string
                            },
 "list_club_staff":
 { Args: { "p_club_id": string }; Returns: {
@@ -252,6 +304,9 @@ isOneToOne: false
 "player_resume":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
+"player_submit_reference":
+{ Args: { "p_player_id": string,"p_reference": string }; Returns: undefined
+                           },
 "remove_player":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
@@ -272,6 +327,9 @@ isOneToOne: false
                            },
 "swap_not_ready":
 { Args: { "p_court_id": string,"p_player_id": string }; Returns: string
+                           },
+"undo_payment":
+{ Args: { "p_player_id": string }; Returns: undefined
                            }
           }
           Enums: {

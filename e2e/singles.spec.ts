@@ -38,6 +38,7 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   const player = await (await browser.newContext()).newPage();
   await player.goto(path);
   await player.getByLabel("Pangalan mo").fill("Phone Pia");
+  await player.getByRole("switch", { name: "Cash ang ibabayad ko" }).check();
   await player.getByRole("button", { name: "Pumila na" }).click();
   await expect(player.getByTestId("position")).toHaveText("#5");
   await expect(player.locator('[data-live-sync="connected"]')).toBeVisible();

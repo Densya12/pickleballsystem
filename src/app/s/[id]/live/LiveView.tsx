@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { BackLink, Button, Notice, PageShell } from "@/components/ui";
-import { DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
+import Link from "next/link";
+import { ChevronRightIcon, DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 import { formatCourts } from "@/lib/format";
 import type { LiveState } from "@/lib/queue/data";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
@@ -22,7 +23,16 @@ import { QueueList } from "./QueueList";
 import { SessionControls } from "./SessionControls";
 
 type Props = {
-  session: { id: string; name: string; rotation: string; startsAt: string; endsAt: string; courtsCount: number };
+  session: {
+    id: string;
+    name: string;
+    rotation: string;
+    startsAt: string;
+    endsAt: string;
+    courtsCount: number;
+    fee: number;
+    payFirst: boolean;
+  };
   state: LiveState;
   /** A banner from another page (adding a walk-in), keyed so each one shows once. */
   incomingBanner?: { key: string; text: string } | null;
@@ -107,10 +117,24 @@ export function LiveView({ session, state, incomingBanner }: Props) {
           )}
         </div>
 
-        <dl className="grid grid-cols-2 gap-3">
-          <Stat label="Naglalaro" value={state.playingCount} />
-          <Stat label="Nakapila" value={nakapila} />
-        </dl>
+        <div className="flex flex-col gap-3">
+          <dl className="grid grid-cols-2 gap-3">
+            <Stat label="Naglalaro" value={state.playingCount} />
+            <Stat label="Nakapila" value={nakapila} />
+          </dl>
+          {session.fee > 0 && (
+            <Link
+              href={`/s/${session.id}/payments`}
+              className="flex min-h-14 items-center justify-between gap-3 rounded-card border border-default bg-surface px-4 py-3 shadow-card hover:bg-subtle focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <span className="text-muted">Bayad</span>
+              <span className="flex items-center gap-1 font-display text-2xl font-semibold">
+                {state.payments.paid}/{state.payments.total}
+                <ChevronRightIcon className="size-5 text-muted" />
+              </span>
+            </Link>
+          )}
+        </div>
 
         <section aria-labelledby="courts-heading" className="flex flex-col gap-3">
           <h2 id="courts-heading" className="text-2xl">
@@ -139,6 +163,7 @@ export function LiveView({ session, state, incomingBanner }: Props) {
           </h2>
           <QueueList
             queue={state.queue}
+            rules={{ payFirst: session.payFirst, fee: session.fee }}
             busy={busy}
             onPause={(playerId) => run(() => pausePlayerAction(session.id, playerId))}
             onResume={(playerId) => run(() => resumePlayerAction(session.id, playerId))}

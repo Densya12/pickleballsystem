@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const TABLES = ["session_players", "courts", "games"] as const;
+const TABLES = ["session_players", "courts", "games", "payments"] as const;
 
 export type SyncStatus = "connecting" | "connected" | "lost";
 
