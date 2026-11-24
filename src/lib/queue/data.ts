@@ -12,8 +12,10 @@ export type LivePlayer = {
   level: string;
   status: "queued" | "playing" | "paused";
   gamesPlayed: number;
+  /** BR19: the player said "Hindi pa ako handa" from their phone. */
+  notReady: boolean;
 };
-export type LiveGame = { id: string; number: number; players: { id: string; name: string }[] };
+export type LiveGame = { id: string; number: number; players: { id: string; name: string; notReady: boolean }[] };
 export type LiveCourt = { id: string; number: number; label: string; game: LiveGame | null };
 export type QueueEntry = LivePlayer & { position: number };
 
@@ -33,7 +35,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
     supabase.from("games").select("id, court_id, number, player_ids").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
-      .select("id, display_name, level, status, games_played, queue_pos")
+      .select("id, display_name, level, status, games_played, queue_pos, not_ready_at")
       .eq("session_id", sessionId)
       .neq("status", "left")
       .order("queue_pos"),
@@ -52,6 +54,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
         level: p.level,
         status: p.status as LivePlayer["status"],
         gamesPlayed: p.games_played,
+        notReady: p.not_ready_at !== null,
       },
     ]),
   );
@@ -67,7 +70,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
         ? {
             id: game.id,
             number: game.number,
-            players: game.player_ids.map((id) => ({ id, name: byId.get(id)?.name ?? "?" })),
+            players: game.player_ids.map((id) => ({ id, name: byId.get(id)?.name ?? "?", notReady: byId.get(id)?.notReady ?? false })),
           }
         : null,
     };

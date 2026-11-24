@@ -131,14 +131,14 @@ isOneToOne: false
                   ]
                 },"session_players": {
                   Row: {
-                    "created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"queue_pos": number,"session_id": string,"status": string
+                    "created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"not_ready_at": string | null,"queue_pos": number,"session_id": string,"status": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"queue_pos"?: number,"session_id": string,"status"?: string
+                    "created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"queue_pos"?: number,"session_id": string,"status"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"queue_pos"?: number,"session_id"?: string,"status"?: string
+                    "created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"queue_pos"?: number,"session_id"?: string,"status"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -184,6 +184,11 @@ isOneToOne: false
 "call_next":
 { Args: { "p_court_id": string }; Returns: string
                            },
+"checkin_preview":
+{ Args: { "p_join_code": string }; Returns: {
+              "courts_count": number,"ends_at": string,"name": string,"starts_at": string,"status": string,"waiting": number
+            }[]
+                           },
 "create_club":
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
                            },
@@ -213,15 +218,38 @@ isOneToOne: false
 "is_club_staff":
 { Args: { "p_club_id": string }; Returns: boolean
                            },
+"is_session_player":
+{ Args: { "p_session_id": string }; Returns: boolean
+                           },
 "is_session_staff":
 { Args: { "p_session_id": string }; Returns: boolean
+                           },
+"join_session":
+{ Args: { "p_display_name": string,"p_join_code": string,"p_level"?: string }; Returns: string
                            },
 "list_club_staff":
 { Args: { "p_club_id": string }; Returns: {
               "created_at": string,"display_name": string,"email": string,"role": string,"user_id": string
             }[]
                            },
+"my_player":
+{ Args: { "p_session_id": string }; Returns: {
+              "display_name": string,"games_played": number,"id": string,"level": string,"not_ready_at": string,"queue_pos": number,"status": string
+            }[]
+                           },
 "pause_player":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"player_leave":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"player_not_ready":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"player_pause":
+{ Args: { "p_player_id": string }; Returns: undefined
+                           },
+"player_resume":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
 "remove_player":
@@ -238,6 +266,9 @@ isOneToOne: false
                            },
 "start_session":
 { Args: { "p_session_id": string }; Returns: undefined
+                           },
+"swap_not_ready":
+{ Args: { "p_court_id": string,"p_player_id": string }; Returns: string
                            }
           }
           Enums: {

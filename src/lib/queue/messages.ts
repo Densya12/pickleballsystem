@@ -51,6 +51,15 @@ export function removedBanner(name: string): string {
   return `Inalis si ${name} sa pila.`;
 }
 
+/** BR19: "Pinalitan si Ana ni Ben sa Court 1. Nasa unahan na ng pila si Ana." */
+export function swappedBanner(out: string, into: string, courtLabel: string): string {
+  return `Pinalitan si ${out} ni ${into} sa ${courtLabel}. Nasa unahan na ng pila si ${out}.`;
+}
+
+export function notReadyText(name: string): string {
+  return `Hindi pa handa si ${name}`;
+}
+
 export const QUEUE_ERRORS = {
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
   courtBusy: "May naglalaro pa sa court na ito.",
@@ -58,6 +67,7 @@ export const QUEUE_ERRORS = {
   playerChanged: "Nagbago na ang status ng player na ito. Tingnan ulit ang pila.",
   notLive: "Hindi live ang session na ito.",
   notFound: "Hindi makita. I-refresh ang page.",
+  notOnCourt: "Wala na sa court ang player na iyon.",
 } as const;
 
 type DbErrorLike = { code?: string; message?: string; details?: string | null };
@@ -80,6 +90,8 @@ export function queueErrorMessage(error: DbErrorLike): string {
       return QUEUE_ERRORS.playerChanged;
     case "session_not_live":
       return QUEUE_ERRORS.notLive;
+    case "player_not_on_court":
+      return QUEUE_ERRORS.notOnCourt;
     case "court_not_found":
     case "player_not_found":
     case "game_not_found":

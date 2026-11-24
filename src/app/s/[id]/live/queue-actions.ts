@@ -10,6 +10,7 @@ import {
   queueErrorMessage,
   removedBanner,
   resumedBanner,
+  swappedBanner,
 } from "@/lib/queue/messages";
 import { getSession } from "@/lib/session/data";
 import { SESSION_ERRORS } from "@/lib/session/messages";
@@ -73,6 +74,25 @@ export async function finishGameAction(
       ? finishedBanner({ courtLabel: finished.courtLabel, gameNumber: finished.number, winners, next })
       : undefined,
   };
+}
+
+/** BR19: replace a not-ready player with the first eligible one; they go to the front. */
+export async function swapNotReadyAction(
+  sessionId: string,
+  courtId: string,
+  playerId: string,
+): Promise<QueueActionResult> {
+  const denied = await authorize(sessionId);
+  if (denied) return denied;
+
+  const supabase = await createClient();
+  const { data: courtRow } = await supabase.from("courts").select("label").eq("id", courtId).maybeSingle();
+  const { data: newcomerId, error } = await supabase.rpc("swap_not_ready", { p_court_id: courtId, p_player_id: playerId });
+  if (error) return { error: queueErrorMessage(error) };
+
+  const [out, into] = await playerNames([playerId, newcomerId]);
+  refresh();
+  return { banner: swappedBanner(out, into, courtRow?.label ?? "court") };
 }
 
 type PlayerRpc = "pause_player" | "resume_player" | "remove_player";

@@ -10,11 +10,12 @@ const TABLES = ["session_players", "courts", "games"] as const;
 export type SyncStatus = "connecting" | "connected" | "lost";
 
 /**
- * NF9: keeps the Live screen current. Subscribes to this session's rows
- * (RLS decides what arrives) and refetches the page on any change. Reports
- * when the channel drops, and refetches once it is back.
+ * NF9: keeps a session screen current (the organizer's Live screen and the
+ * player's Pwesto screen). Subscribes to this session's rows (RLS decides what
+ * arrives) and refetches the page on any change. Reports when the channel
+ * drops, and refetches once it is back.
  */
-export function useLiveSync(sessionId: string): SyncStatus {
+export function useSessionSync(sessionId: string): SyncStatus {
   const router = useRouter();
   const [status, setStatus] = useState<SyncStatus>("connecting");
 

@@ -5,6 +5,7 @@ import { BackLink, Button, Notice, PageShell } from "@/components/ui";
 import { DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 import { formatCourts } from "@/lib/format";
 import type { LiveState } from "@/lib/queue/data";
+import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { formatTimeRange } from "@/lib/session/time";
 import { CourtCard } from "./CourtCard";
 import {
@@ -13,11 +14,11 @@ import {
   pausePlayerAction,
   removePlayerAction,
   resumePlayerAction,
+  swapNotReadyAction,
   type QueueActionResult,
 } from "./queue-actions";
 import { QueueList } from "./QueueList";
 import { SessionControls } from "./SessionControls";
-import { useLiveSync } from "./useLiveSync";
 
 type Props = {
   session: { id: string; name: string; rotation: string; startsAt: string; endsAt: string; courtsCount: number };
@@ -38,7 +39,7 @@ export function LiveView({ session, state, incomingBanner }: Props) {
   }
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
-  const sync = useLiveSync(session.id);
+  const sync = useSessionSync(session.id);
 
   // The walk-in banner arrives via ?added=…; drop it from the URL so a reload doesn't repeat it.
   useEffect(() => {
@@ -125,6 +126,7 @@ export function LiveView({ session, state, incomingBanner }: Props) {
               onFinish={(courtId, gameId, winners) =>
                 void run(() => finishGameAction(session.id, courtId, gameId, winners))
               }
+              onSwap={(courtId, playerId) => void run(() => swapNotReadyAction(session.id, courtId, playerId))}
             />
           ))}
         </section>
