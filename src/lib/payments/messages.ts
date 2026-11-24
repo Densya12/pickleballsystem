@@ -31,6 +31,11 @@ export function undoneBanner(name: string): string {
   return `Ibinalik sa hindi pa bayad si ${name}.`;
 }
 
+/** After "Ibalik" on "Natanggap na" (D18). */
+export function undoneConfirmBanner(name: string): string {
+  return `Naibalik sa dati ang bayad ni ${name}.`;
+}
+
 export const PAYMENT_ERRORS = {
   invalidReference: REFERENCE_MESSAGES.invalid,
   alreadyPaid: "Bayad na ito. I-refresh ang page.",

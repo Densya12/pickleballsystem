@@ -3,6 +3,7 @@
  * rules; this layer gives a Taglish message per field.
  */
 import { toParseResult, type ParseResult } from "@/lib/club/validation";
+import { normalizeReference, REFERENCE_MESSAGES } from "@/lib/payments/reference";
 
 export const PLAYER_NAME_MIN = 2;
 export const PLAYER_NAME_MAX = 40;
@@ -56,4 +57,32 @@ export function parseWalkIn(form: FormLike): ParseResult<WalkInInput> {
       level: LEVELS.some((l) => l.value === level) ? undefined : WALK_IN_MESSAGES.levelInvalid,
     },
   );
+}
+
+/**
+ * Walk-in payment (BR13/BR20, D18). With a fee there is no default: the
+ * organizer picks one, so a walk-in is never held under pay_first by accident.
+ */
+export const WALK_IN_PAYMENT_CHOICES = [
+  { value: "cash_received", label: "Nagbayad ng cash" },
+  { value: "gcash", label: "GCash", description: "Ilagay ang reference number sa ibaba" },
+  { value: "later", label: "Mamaya na magbabayad" },
+] as const;
+export type WalkInPayment = (typeof WALK_IN_PAYMENT_CHOICES)[number]["value"];
+
+export const WALK_IN_PAYMENT_REQUIRED = "Pumili kung paano magbabayad.";
+
+export type WalkInPaymentResult =
+  | { ok: true; payment?: WalkInPayment }
+  | { ok: false; errors: { payment?: string; reference?: string } };
+
+/** No payment step when the session is free (fee 0). */
+export function parseWalkInPayment(fee: number, payment: string, reference: string): WalkInPaymentResult {
+  if (fee <= 0) return { ok: true };
+  const choice = WALK_IN_PAYMENT_CHOICES.find((c) => c.value === payment)?.value;
+  if (!choice) return { ok: false, errors: { payment: WALK_IN_PAYMENT_REQUIRED } };
+  if (choice === "gcash" && !normalizeReference(reference)) {
+    return { ok: false, errors: { reference: REFERENCE_MESSAGES.invalid } };
+  }
+  return { ok: true, payment: choice };
 }

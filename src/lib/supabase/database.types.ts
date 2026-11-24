@@ -65,14 +65,14 @@ isOneToOne: false
                   ]
                 },"clubs": {
                   Row: {
-                    "city": string | null,"created_at": string,"created_by": string | null,"default_fee": number,"default_points": number,"default_rotation": string,"gcash_name": string | null,"gcash_number": string | null,"id": string,"name": string,"updated_at": string
+                    "city": string | null,"created_at": string,"created_by": string | null,"default_fee": number,"default_points": number,"default_rotation": string,"entry_code": string,"gcash_name": string | null,"gcash_number": string | null,"id": string,"name": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_fee"?: number,"default_points"?: number,"default_rotation"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name": string,"updated_at"?: string
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_fee"?: number,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name": string,"updated_at"?: string
                   }
                   Update: {
-                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_fee"?: number,"default_points"?: number,"default_rotation"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name"?: string,"updated_at"?: string
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_fee"?: number,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -235,6 +235,11 @@ isOneToOne: false
               "courts_count": number,"ends_at": string,"fee": number,"gcash_name": string,"gcash_number": string,"name": string,"pay_first": boolean,"starts_at": string,"status": string,"waiting": number
             }[]
                            },
+"club_entry":
+{ Args: { "p_code": string }; Returns: {
+              "club_name": string,"join_code": string,"status": string
+            }[]
+                           },
 "confirm_payment":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
@@ -284,6 +289,11 @@ isOneToOne: false
               "created_at": string,"display_name": string,"email": string,"role": string,"user_id": string
             }[]
                            },
+"my_last_profile":
+{ Args: { "p_join_code": string }; Returns: {
+              "display_name": string,"level": string
+            }[]
+                           },
 "my_player":
 { Args: { "p_session_id": string }; Returns: {
               "display_name": string,"games_played": number,"id": string,"level": string,"not_ready_at": string,"queue_pos": number,"status": string
@@ -307,6 +317,9 @@ isOneToOne: false
 "player_submit_reference":
 { Args: { "p_player_id": string,"p_reference": string }; Returns: undefined
                            },
+"regenerate_entry_code":
+{ Args: { "p_club_id": string }; Returns: string
+                           },
 "remove_player":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
@@ -327,6 +340,9 @@ isOneToOne: false
                            },
 "swap_not_ready":
 { Args: { "p_court_id": string,"p_player_id": string }; Returns: string
+                           },
+"undo_last":
+{ Args: { "p_session_id": string }; Returns: string
                            },
 "undo_payment":
 { Args: { "p_player_id": string }; Returns: undefined

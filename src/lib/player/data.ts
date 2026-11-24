@@ -39,6 +39,19 @@ export async function getCheckinPreview(code: string): Promise<CheckinPreview> {
   };
 }
 
+/**
+ * D18: a returning player's name and level, from their own latest row in this
+ * club. Null when this phone has never checked in here (or isn't signed in).
+ */
+export async function getLastProfile(code: string): Promise<{ name: string; level: string } | null> {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims?.sub) return null;
+  const { data, error } = await supabase.rpc("my_last_profile", { p_join_code: code }).maybeSingle();
+  if (error) throw new Error(`Could not load your last check-in: ${error.message}`);
+  return data ? { name: data.display_name, level: data.level } : null;
+}
+
 export type PlayerSessionView = {
   session: { id: string; name: string; status: string; startsAt: string; endsAt: string };
   me: Me | null;

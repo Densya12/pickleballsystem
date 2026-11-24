@@ -4,6 +4,7 @@ import { useActionState, useState, type ReactNode } from "react";
 import { Button, Card, Input, Notice, PageShell, RadioGroup } from "@/components/ui";
 import { POINTS_CHOICES, ROTATION_CHOICES } from "@/lib/club/options";
 import { saveSettingsAction, signOutAction, type SettingsState } from "./actions";
+import { ClubQrCard, type ClubQr } from "./ClubQrCard";
 import { StaffSection } from "./StaffSection";
 
 export type StaffItem = {
@@ -32,11 +33,13 @@ type Props = {
   isOwner: boolean;
   staff: StaffItem[];
   invites: InviteItem[];
+  /** Owners only. */
+  clubQr?: ClubQr;
 };
 
 const FORM_ID = "club-settings";
 
-export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
+export function SettingsView({ header, club, isOwner, staff, invites, clubQr }: Props) {
   const [state, dispatch, pending] = useActionState<SettingsState, FormData>(saveSettingsAction, {
     status: "idle",
   });
@@ -65,6 +68,7 @@ export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
       <div className="flex flex-col gap-8">
         {!isOwner && <Notice kind="info">Ang owner lang ang pwedeng magbago nito.</Notice>}
 
+        {/* Printing prints only the club QR. */}
         <form
           id={FORM_ID}
           noValidate
@@ -73,7 +77,7 @@ export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
             dispatch(formData);
           }}
           onChange={() => setEditedSinceSubmit(true)}
-          className="flex flex-col gap-8"
+          className="flex flex-col gap-8 print:hidden"
         >
           <fieldset disabled={!isOwner} className="min-w-0">
             <Section title="Club">
@@ -146,9 +150,13 @@ export function SettingsView({ header, club, isOwner, staff, invites }: Props) {
           </fieldset>
         </form>
 
-        <StaffSection isOwner={isOwner} staff={staff} invites={invites} />
+        {clubQr && <ClubQrCard qr={clubQr} />}
 
-        <form action={signOutAction}>
+        <div className="flex flex-col gap-8 print:hidden">
+          <StaffSection isOwner={isOwner} staff={staff} invites={invites} />
+        </div>
+
+        <form action={signOutAction} className="print:hidden">
           <Button type="submit" variant="secondary" fullWidth>
             Mag-sign out
           </Button>

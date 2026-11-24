@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { BackLink, Button, Notice, PageShell } from "@/components/ui";
 import Link from "next/link";
+import { useEffect, useState, useTransition } from "react";
+import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
+import { BackLink, Button, Notice, PageShell } from "@/components/ui";
 import { ChevronRightIcon, DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 import { formatCourts } from "@/lib/format";
 import type { LiveState } from "@/lib/queue/data";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { formatTimeRange } from "@/lib/session/time";
+import { undoDeadlineFromNow } from "@/lib/undo/countdown";
+import { undoLastAction } from "../undo-actions";
 import { CourtCard } from "./CourtCard";
 import {
   callNextAction,
@@ -44,9 +47,12 @@ export function LiveView({ session, state, incomingBanner }: Props) {
   // This component stays mounted across navigations, so pick up a new incoming
   // banner when its key changes (adjusting state during render, not in an effect).
   const [shownKey, setShownKey] = useState(incomingBanner?.key ?? null);
+  // D18: "Ibalik" for the last finish / removal, for 30 seconds from the tap.
+  const [undoOffer, setUndoOffer] = useState<UndoOffer | null>(null);
   if (incomingBanner && incomingBanner.key !== shownKey) {
     setShownKey(incomingBanner.key);
     setBanner(incomingBanner.text);
+    setUndoOffer(null);
   }
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
@@ -60,18 +66,30 @@ export function LiveView({ session, state, incomingBanner }: Props) {
   }, [incomingBanner]);
 
   function run(action: () => Promise<QueueActionResult>): Promise<boolean> {
+    const deadline = undoDeadlineFromNow();
     return new Promise((resolve) => {
       startTransition(async () => {
         const result = await action();
         if (result.error) {
           setError(result.error);
           setBanner(null);
+          setUndoOffer(null);
         } else {
           setError(null);
           setBanner(result.banner ?? null);
+          setUndoOffer(result.undo ? { deadline, doneBanner: result.undo.banner } : null);
         }
         resolve(!result.error);
       });
+    });
+  }
+
+  function undo(offer: UndoOffer) {
+    startTransition(async () => {
+      const result = await undoLastAction(session.id);
+      setUndoOffer(null);
+      setError(result.error ?? null);
+      setBanner(result.error ? null : offer.doneBanner);
     });
   }
 
@@ -102,18 +120,14 @@ export function LiveView({ session, state, incomingBanner }: Props) {
           )}
           {error && <Notice kind="error">{error}</Notice>}
           {banner && (
-            <Notice kind="success">
-              <div className="flex items-start justify-between gap-3">
-                <span>{banner}</span>
-                <button
-                  type="button"
-                  onClick={() => setBanner(null)}
-                  className="-my-2 -mr-2 min-h-12 shrink-0 rounded-control px-3 font-semibold underline underline-offset-2 focus-visible:outline-3 focus-visible:outline-focus"
-                >
-                  Isara
-                </button>
-              </div>
-            </Notice>
+            <FeedbackBanner
+              text={banner}
+              onClose={() => {
+                setBanner(null);
+                setUndoOffer(null);
+              }}
+              undo={undoOffer && { deadline: undoOffer.deadline, onUndo: () => undo(undoOffer), disabled: busy }}
+            />
           )}
         </div>
 

@@ -181,3 +181,23 @@ export function PrinterIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function UndoIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+    </Icon>
+  );
+}
+
+export function RepeatIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M17 3l3 3-3 3" />
+      <path d="M4 12V10a4 4 0 0 1 4-4h12" />
+      <path d="M7 21l-3-3 3-3" />
+      <path d="M20 12v2a4 4 0 0 1-4 4H4" />
+    </Icon>
+  );
+}

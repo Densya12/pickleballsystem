@@ -21,17 +21,23 @@ export async function startSession(
   await expect(page).toHaveURL(SESSION_URL);
 }
 
-export type WalkInPayment = { choice: "Cash, natanggap na" | "GCash" | "Mamaya na magbabayad"; reference?: string };
+export type WalkInPayment = { choice: "Nagbayad ng cash" | "GCash" | "Mamaya na magbabayad"; reference?: string };
 
+/**
+ * With a fee there is no default payment choice (D18); specs that don't care
+ * how a walk-in pays get "Mamaya na magbabayad".
+ */
 export async function addWalkIn(page: Page, name: string, level = "Hindi sigurado", payment?: WalkInPayment) {
   await page.getByRole("link", { name: "Walk-in" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Magdagdag ng walk-in" })).toBeVisible();
   await expect(page.getByText("Para sa player na walang phone o hindi makapag-scan.")).toBeVisible();
   await page.getByLabel("Pangalan", { exact: true }).fill(name);
   await page.getByRole("radio", { name: level }).check();
-  if (payment) {
-    await page.getByRole("radio", { name: payment.choice }).check();
-    if (payment.reference) await page.getByLabel("GCash reference number (kung GCash)").fill(payment.reference);
+  const choice = payment?.choice ?? "Mamaya na magbabayad";
+  const option = page.getByRole("radio", { name: choice });
+  if (payment || (await option.count()) > 0) {
+    await option.check();
+    if (payment?.reference) await page.getByLabel("GCash reference number (kung GCash)").fill(payment.reference);
   }
   await page.getByRole("button", { name: "Ilagay sa pila" }).click();
   await expect(page).toHaveURL(SESSION_URL);
@@ -39,7 +45,7 @@ export async function addWalkIn(page: Page, name: string, level = "Hindi sigurad
 }
 
 export function banner(page: Page) {
-  return page.getByRole("status").filter({ hasText: /Tinawag|Tapos ang Laro|Nasa pila|Naka-pause|Tuloy na|Inalis|Pinalitan|(Singles|Doubles) na ang/ });
+  return page.getByRole("status").filter({ hasText: /Tinawag|Tapos ang Laro|Nasa pila|Naka-pause|Tuloy na|Inalis|Pinalitan|(Singles|Doubles) na ang|Naibalik/ });
 }
 
 export function court(page: Page, label: string) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
+import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
 import { Button, Card, Notice, PageShell, StatusLabel } from "@/components/ui";
 import { AlertIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/format";
@@ -8,6 +9,8 @@ import { reminderMessage } from "@/lib/payments/messages";
 import { maskReference } from "@/lib/payments/reference";
 import { duplicateReferences, summarizePayments, type PayingPlayer } from "@/lib/payments/summary";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
+import { undoDeadlineFromNow } from "@/lib/undo/countdown";
+import { undoLastAction } from "../undo-actions";
 import { confirmPaymentAction, undoPaymentAction, type PaymentActionResult } from "./actions";
 
 type Props = {
@@ -29,15 +32,30 @@ export function PaymentsView({ header, session, players }: Props) {
   const [banner, setBanner] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
+  // D18: "Ibalik" for the last "Natanggap na", for 30 seconds from the tap.
+  const [undoOffer, setUndoOffer] = useState<UndoOffer | null>(null);
 
   const summary = summarizePayments(players, session.fee);
   const duplicates = duplicateReferences(players);
 
   function run(action: () => Promise<PaymentActionResult>) {
+    const deadline = undoDeadlineFromNow();
     startTransition(async () => {
       const result = await action();
       setError(result.error ?? null);
       setBanner(result.error ? null : (result.banner ?? null));
+      setUndoOffer(
+        !result.error && result.undo ? { deadline, doneBanner: result.undo.banner } : null,
+      );
+    });
+  }
+
+  function undo(offer: UndoOffer) {
+    startTransition(async () => {
+      const result = await undoLastAction(session.id);
+      setUndoOffer(null);
+      setError(result.error ?? null);
+      setBanner(result.error ? null : offer.doneBanner);
     });
   }
 
@@ -50,6 +68,7 @@ export function PaymentsView({ header, session, players }: Props) {
       gcashNumber: session.gcashNumber,
     });
     setError(null);
+    setUndoOffer(null);
     if (typeof navigator.share === "function") {
       try {
         await navigator.share({ text });
@@ -82,7 +101,16 @@ export function PaymentsView({ header, session, players }: Props) {
         <div className="flex flex-col gap-2" aria-live="polite">
           {sync === "lost" && <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>}
           {error && <Notice kind="error">{error}</Notice>}
-          {banner && <Notice kind="success">{banner}</Notice>}
+          {banner && (
+            <FeedbackBanner
+              text={banner}
+              onClose={() => {
+                setBanner(null);
+                setUndoOffer(null);
+              }}
+              undo={undoOffer && { deadline: undoOffer.deadline, onUndo: () => undo(undoOffer), disabled: busy }}
+            />
+          )}
         </div>
 
         {session.fee === 0 ? (

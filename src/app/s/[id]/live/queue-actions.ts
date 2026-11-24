@@ -12,12 +12,19 @@ import {
   removedBanner,
   resumedBanner,
   swappedBanner,
+  undoneFinishBanner,
+  undoneRemoveBanner,
 } from "@/lib/queue/messages";
 import { getSession } from "@/lib/session/data";
 import { SESSION_ERRORS } from "@/lib/session/messages";
 import { createClient } from "@/lib/supabase/server";
 
-export type QueueActionResult = { error?: string; banner?: string };
+export type QueueActionResult = {
+  error?: string;
+  banner?: string;
+  /** Set when "Ibalik" can undo this action (D18): the banner to show after undoing. */
+  undo?: { banner: string };
+};
 
 /**
  * Re-checks the user and that they can see this session (staff, via RLS).
@@ -74,6 +81,7 @@ export async function finishGameAction(
     banner: finished
       ? finishedBanner({ courtLabel: finished.courtLabel, gameNumber: finished.number, winners, next })
       : undefined,
+    undo: { banner: finished ? undoneFinishBanner(finished.courtLabel, finished.number) : "Naibalik ang laro." },
   };
 }
 
@@ -121,6 +129,7 @@ async function playerAction(
   playerId: string,
   rpc: PlayerRpc,
   banner: (name: string) => string,
+  undoBanner?: (name: string) => string,
 ): Promise<QueueActionResult> {
   const denied = await authorize(sessionId);
   if (denied) return denied;
@@ -131,7 +140,7 @@ async function playerAction(
   if (error) return { error: queueErrorMessage(error) };
 
   refresh();
-  return { banner: banner(name) };
+  return { banner: banner(name), undo: undoBanner ? { banner: undoBanner(name) } : undefined };
 }
 
 export async function pausePlayerAction(sessionId: string, playerId: string) {
@@ -143,5 +152,5 @@ export async function resumePlayerAction(sessionId: string, playerId: string) {
 }
 
 export async function removePlayerAction(sessionId: string, playerId: string) {
-  return playerAction(sessionId, playerId, "remove_player", removedBanner);
+  return playerAction(sessionId, playerId, "remove_player", removedBanner, undoneRemoveBanner);
 }

@@ -103,6 +103,19 @@ export async function removeStaffAction(userId: string): Promise<StaffActionResu
   return {};
 }
 
+/** "Palitan ang QR": a new club entry code; printed copies of the old one stop working. */
+export async function regenerateEntryCodeAction(): Promise<StaffActionResult> {
+  const { club, role } = await requireClub("/settings");
+  if (role !== "owner") return { error: CLUB_ERRORS.ownerOnly };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("regenerate_entry_code", { p_club_id: club.id });
+  if (error) return { error: clubErrorMessage(error) };
+
+  refresh();
+  return {};
+}
+
 export async function signOutAction(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();

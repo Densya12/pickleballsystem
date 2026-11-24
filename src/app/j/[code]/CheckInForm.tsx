@@ -7,7 +7,7 @@ import { formatGcashNumber, formatPeso } from "@/lib/format";
 import { normalizeReference, REFERENCE_MESSAGES } from "@/lib/payments/reference";
 import { unlockAudio } from "@/lib/player/alert";
 import { PLAYER_ERRORS, playerErrorMessage } from "@/lib/player/messages";
-import { LEVELS, parseWalkIn, PLAYER_NAME_MAX } from "@/lib/queue/players";
+import { levelLabel, LEVELS, parseWalkIn, PLAYER_NAME_MAX } from "@/lib/queue/players";
 import { createClient } from "@/lib/supabase/client";
 
 export type CheckInPayment = {
@@ -17,15 +17,29 @@ export type CheckInPayment = {
   gcashNumber: string | null;
 };
 
+/** A returning player's name and level from their last row in this club (my_last_profile). */
+export type LastProfile = { name: string; level: string };
+
 type Errors = { display_name?: string; reference?: string; form?: string };
 
 export const PAYMENT_CHOICE_REQUIRED = "Ilagay ang GCash reference number, o piliin ang cash.";
 
-export function CheckInForm({ code, payment }: { code: string; payment: CheckInPayment }) {
+export function CheckInForm({
+  code,
+  payment,
+  lastProfile = null,
+}: {
+  code: string;
+  payment: CheckInPayment;
+  lastProfile?: LastProfile | null;
+}) {
   const router = useRouter();
   const [errors, setErrors] = useState<Errors>({});
   const [pending, setPending] = useState(false);
   const [cash, setCash] = useState(false);
+  // D18: a returning player checks in with one tap; "Hindi ako si …" shows the empty form.
+  const [returning, setReturning] = useState(lastProfile !== null);
+  const remembered = returning ? lastProfile : null;
   const needsPayment = payment.fee > 0;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -34,6 +48,10 @@ export function CheckInForm({ code, payment }: { code: string; payment: CheckInP
     unlockAudio();
 
     const form = new FormData(event.currentTarget);
+    if (remembered) {
+      form.set("display_name", remembered.name);
+      form.set("level", remembered.level);
+    }
     // Level is optional; no answer means "Hindi sigurado".
     if (!form.get("level")) form.set("level", "unsure");
     const parsed = parseWalkIn(form);
@@ -90,16 +108,26 @@ export function CheckInForm({ code, payment }: { code: string; payment: CheckInP
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
       {errors.form && <Notice kind="error">{errors.form}</Notice>}
-      <Input
-        label="Pangalan mo"
-        name="display_name"
-        required
-        maxLength={PLAYER_NAME_MAX}
-        autoComplete="nickname"
-        placeholder="hal. Tito Boy"
-        error={errors.display_name}
-      />
-      <RadioGroup legend="Level mo? (optional)" name="level" options={LEVELS} />
+      {remembered ? (
+        <div className="flex flex-col gap-1 rounded-control bg-subtle px-4 py-3">
+          <p className="text-muted">Nakapila ka na dati bilang</p>
+          <p className="text-xl font-semibold [overflow-wrap:anywhere]">{remembered.name}</p>
+          <p className="text-muted">{levelLabel(remembered.level)}</p>
+        </div>
+      ) : (
+        <>
+          <Input
+            label="Pangalan mo"
+            name="display_name"
+            required
+            maxLength={PLAYER_NAME_MAX}
+            autoComplete="nickname"
+            placeholder="hal. Tito Boy"
+            error={errors.display_name}
+          />
+          <RadioGroup legend="Level mo? (optional)" name="level" options={LEVELS} />
+        </>
+      )}
 
       {needsPayment && (
         <section aria-labelledby="bayad-heading" className="flex flex-col gap-4 rounded-control border-[1.5px] border-strong p-4">
@@ -139,8 +167,21 @@ export function CheckInForm({ code, payment }: { code: string; payment: CheckInP
         <p>Walang account o app na kailangan.</p>
       </div>
       <Button type="submit" size="lg" variant="accent" fullWidth disabled={pending}>
-        {pending ? "Pumipila…" : "Pumila na"}
+        {pending ? "Pumipila…" : remembered ? `Pumila bilang ${remembered.name}` : "Pumila na"}
       </Button>
+      {remembered && (
+        <Button
+          variant="secondary"
+          fullWidth
+          disabled={pending}
+          onClick={() => {
+            setErrors({});
+            setReturning(false);
+          }}
+        >
+          Hindi ako si {remembered.name}
+        </Button>
+      )}
     </form>
   );
 }

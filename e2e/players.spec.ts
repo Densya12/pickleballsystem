@@ -100,7 +100,10 @@ test("a player checks in by link, gets called, swaps out, pauses, leaves, rejoin
   await expect(player.getByRole("heading", { level: 1, name: "Salamat sa paglalaro!" })).toBeVisible();
   await expect(queue(organizer).getByText("Phone Pia")).toHaveCount(0, { timeout: 2_000 });
   await player.getByRole("link", { name: "Pumila ulit" }).click();
-  await checkIn(player, path, "Phone Pia");
+  // D18: this phone is remembered, so re-joining is one tap (plus the payment choice).
+  await player.getByRole("switch", { name: "Cash ang ibabayad ko" }).check();
+  await player.getByRole("button", { name: "Pumila bilang Phone Pia" }).click();
+  await expect(player.getByRole("heading", { level: 1, name: "Hi, Phone Pia!" })).toBeVisible();
   await expect(position(player)).toHaveText("#2");
   await expect(player.getByRole("region", { name: "Mga nauuna sa iyo" }).getByRole("listitem")).toHaveText(["Walk Five"]);
 
