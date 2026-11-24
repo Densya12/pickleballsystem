@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
-import { BackLink, Button, Notice, PageShell } from "@/components/ui";
+import { BackLink, Button, Notice, PageShell, Toggle } from "@/components/ui";
 import { ChevronRightIcon, DotIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 import { formatCourts } from "@/lib/format";
 import type { LiveState } from "@/lib/queue/data";
@@ -24,6 +24,7 @@ import {
 } from "./queue-actions";
 import { QueueList } from "./QueueList";
 import { SessionControls } from "./SessionControls";
+import { useTagatawag } from "./useTagatawag";
 
 type Props = {
   session: {
@@ -57,6 +58,8 @@ export function LiveView({ session, state, incomingBanner }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
   const sync = useSessionSync(session.id);
+  // D17: read new calls aloud on this phone.
+  const tagatawag = useTagatawag(state.courts, sync);
 
   // The walk-in banner arrives via ?added=…; drop it from the URL so a reload doesn't repeat it.
   useEffect(() => {
@@ -194,6 +197,16 @@ export function LiveView({ session, state, incomingBanner }: Props) {
             <QrIcon />
             Ipakita ang QR
           </Button>
+          {tagatawag.supported && (
+            <div onChange={(event) => tagatawag.setEnabled((event.target as HTMLInputElement).checked)}>
+              <Toggle
+                label="Tagatawag (basahin nang malakas ang tawag)"
+                description="Isang phone lang ang naka-on, para hindi doble ang boses"
+                name="tagatawag"
+                defaultChecked={tagatawag.enabled}
+              />
+            </div>
+          )}
           <SessionControls sessionId={session.id} status="live" />
         </section>
       </div>

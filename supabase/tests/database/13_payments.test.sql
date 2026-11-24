@@ -205,7 +205,9 @@ select is(pg_temp.pay(pg_temp.sid('p1')), '-|-|unpaid|150/unpaid', 'Undo: back t
 -- ===========================================================================
 select is((select count(*)::int from public.events where session_id = pg_temp.sid('s1')), 9,
   'BR16: 9 payment changes in the pay-first session, 9 events');
-select ok((select bool_and(actor is not null and created_at is not null and payload ? 'from' and payload ? 'to') from public.events),
+-- Only this file's sessions: other rows in the database (e.g. left by e2e runs) aren't payment fixtures.
+select ok((select bool_and(actor is not null and created_at is not null and payload ? 'from' and payload ? 'to') from public.events
+           where session_id in (pg_temp.sid('s1'), pg_temp.sid('s2'), pg_temp.sid('s0'))),
   'Every event has an actor, a time, and from/to');
 select results_eq(
   $$ select type, actor, payload ->> 'from', payload ->> 'to' from public.events
