@@ -82,7 +82,7 @@ select ok(not exists (
   'PUBLIC has no execute grant');
 
 -- ===========================================================================
--- 2. The owner switches All off -> Winners stay: streaks reset, event written
+-- 2. The owner switches All off -> Winners stay: streaks kept (QA-12), event written
 -- ===========================================================================
 update public.courts set winner_streak = 1 where session_id = pg_temp.sid('live') and number = 1;
 update public.courts set winner_streak = 2 where session_id = pg_temp.sid('live') and number = 2;
@@ -92,7 +92,7 @@ select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select is(pg_temp.err($$ select public.set_session_rotation(pg_temp.sid('live'), 'winners_stay') $$), 'no error', 'The owner can change the rotation while live');
 reset role;
 select is(pg_temp.rotation(pg_temp.sid('live')), 'winners_stay', 'The session is now Winners stay');
-select is(pg_temp.streaks(pg_temp.sid('live')), '0,0', 'Every court''s winner streak is back to 0');
+select is(pg_temp.streaks(pg_temp.sid('live')), '1,2', 'QA-12: the winner streaks are kept (only Done reads or resets them)');
 select is(pg_temp.rotation_events(pg_temp.sid('live')), 1, 'One rotation_changed event is written');
 select is((select payload::text from public.events where session_id = pg_temp.sid('live') and type = 'rotation_changed'),
   '{"to": "winners_stay", "from": "all_off"}', 'The event says from and to');
@@ -100,19 +100,18 @@ select is((select actor from public.events where session_id = pg_temp.sid('live'
   '11111111-1111-1111-1111-111111111111'::uuid, 'The event records who changed it');
 
 -- Same mode again: nothing changes (safe to replay from the offline outbox).
-update public.courts set winner_streak = 1 where session_id = pg_temp.sid('live') and number = 1;
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select is(pg_temp.err($$ select public.set_session_rotation(pg_temp.sid('live'), 'winners_stay') $$), 'no error', 'Choosing the current mode again is accepted');
 reset role;
 select is(pg_temp.rotation_events(pg_temp.sid('live')), 1, 'It writes no second event');
-select is(pg_temp.streaks(pg_temp.sid('live')), '1,0', 'And leaves the streaks alone (the mode didn''t change)');
+select is(pg_temp.streaks(pg_temp.sid('live')), '1,2', 'And leaves the streaks alone (the mode didn''t change)');
 
 -- A co-organizer (not the owner) can switch it back.
 select pg_temp.as_user('33333333-3333-3333-3333-333333333333');
 select is(pg_temp.err($$ select public.set_session_rotation(pg_temp.sid('live'), 'all_off') $$), 'no error', 'A co-organizer of the club can change it');
 reset role;
 select is(pg_temp.rotation(pg_temp.sid('live')), 'all_off', 'Back to All off');
-select is(pg_temp.streaks(pg_temp.sid('live')), '0,0', 'Streaks reset again');
+select is(pg_temp.streaks(pg_temp.sid('live')), '1,2', 'QA-12: streaks still kept');
 select is(pg_temp.rotation_events(pg_temp.sid('live')), 2, 'A second event is written');
 
 -- ===========================================================================

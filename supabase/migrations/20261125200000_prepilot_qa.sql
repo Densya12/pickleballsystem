@@ -618,3 +618,52 @@ begin
   end if;
 end;
 $$;
+
+-- ===========================================================================
+-- QA-12 (BR11): changing the rotation no longer resets winner_streak.
+-- Winners stay (P1+P2 win, streak 1) -> All off -> Winners stay let P1+P2's
+-- next win count as their first, so they played a 3rd game in a row.
+--
+-- Why keeping the streak is safe:
+--  1. winner_streak is read in one place only: finish_game_rotate's Winners
+--     stay path, and only counts when this game's winners are the first
+--     players of the current game, i.e. the winners who stayed on
+--     (start_game(v_winners || next)). A stale value can't attach to anyone
+--     else: a different pair winning starts again at 1.
+--  2. Every All off Done sets the court's streak to 0, so a streak only
+--     survives a rotation change while the same game is still being played.
+--     Switching to All off and finishing a game clears it as before.
+--  3. The other resets are unchanged: end_session, set_court_format, a
+--     court's 2nd win, D23 (fewer than 2 waiting).
+-- Same signature, grants, SECURITY DEFINER and search_path = ''.
+-- ===========================================================================
+
+create or replace function public.set_session_rotation(p_session_id uuid, p_rotation text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_session public.sessions%rowtype;
+begin
+  -- Signed in and not anonymous (players sign in anonymously).
+  perform private.assert_organizer_account();
+  -- Staff of the session's club, session live; locks the session row first.
+  v_session := private.lock_live_session(p_session_id);
+
+  if p_rotation is null or p_rotation not in ('all_off', 'winners_stay') then
+    raise exception 'invalid_rotation' using errcode = 'P0001';
+  end if;
+  if v_session.rotation = p_rotation then
+    return;
+  end if;
+
+  -- QA-12: winner_streak is kept (see above).
+  update public.sessions set rotation = p_rotation where id = p_session_id;
+
+  insert into public.events (session_id, actor, type, payload)
+  values (p_session_id, auth.uid(), 'rotation_changed',
+          jsonb_build_object('from', v_session.rotation, 'to', p_rotation));
+end;
+$$;
