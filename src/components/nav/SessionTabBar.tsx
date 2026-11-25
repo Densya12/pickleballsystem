@@ -29,7 +29,8 @@ export function SessionTabBar({
   const t = useT();
   const items: TabItem[] = [
     { key: "courts", label: t.nav.courts, href: `/s/${sessionId}`, icon: <GridIcon /> },
-    { key: "queue", label: queueCount === null ? t.nav.queue : t.nav.queueCount(queueCount), href: `/s/${sessionId}/queue`, icon: <ListIcon /> },
+    { key: "queue", label: queueCount === null ? t.nav.queue : t.nav.queueCount(queueCount),
+      navLabel: t.nav.queue, href: `/s/${sessionId}/queue`, icon: <ListIcon /> },
   ];
   if (showPayments) {
     items.push({

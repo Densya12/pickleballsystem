@@ -123,6 +123,8 @@ const en = {
   undoNotAvailable: "Can't undo: 30 seconds have passed or something else changed.",
   // Offline outbox (NF10)
   offline: "Offline — will save when signal returns",
+  /** QA-01: a link tapped without signal. */
+  needsSignal: (target: string) => `Needs signal to open ${target}. Your taps are saved and will send when you're back online.`,
   waitingForSignal: (n: number) => `Waiting for signal (${n})`,
   failedAction: (label: string, message: string) => `Not sent: ${label}. ${message}`,
   discard: "Discard this action",
@@ -258,6 +260,8 @@ const fil: typeof en = {
   undo: (s: number) => `Ibalik (${s}s)`,
   undoNotAvailable: "Hindi na maibabalik: lumipas na ang 30 segundo o may nagbago na.",
   offline: "Offline — ise-save pagbalik ng signal",
+  needsSignal: (target: string) =>
+    `Kailangan ng signal para buksan ang ${target}. Naka-save ang mga tap mo at ipapadala pagbalik ng signal.`,
   waitingForSignal: (n: number) => `Hinihintay ang signal (${n})`,
   failedAction: (label: string, message: string) => `Hindi naituloy: ${label}. ${message}`,
   discard: "Itapon ang aksyon na ito",

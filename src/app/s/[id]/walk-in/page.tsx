@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { OfflineNavGuard } from "@/components/session/OfflineNavGuard";
 import { BackLink, PageShell } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { en } from "@/lib/i18n/dictionary";
@@ -22,7 +23,9 @@ export default function WalkInPage({ params }: PageProps<"/s/[id]/walk-in">) {
   );
 }
 
-async function WalkInContent({ params }: Pick<PageProps<"/s/[id]/walk-in">, "params">) {
+async function WalkInContent({
+  params,
+}: Pick<PageProps<"/s/[id]/walk-in">, "params">) {
   const { id } = await params;
   await requireUser(`/s/${encodeURIComponent(id)}/walk-in`);
   const session = await getSession(id);
@@ -32,12 +35,20 @@ async function WalkInContent({ params }: Pick<PageProps<"/s/[id]/walk-in">, "par
   const [members, t] = await Promise.all([getMembers(session.club_id), getT()]);
 
   return (
-    <PageShell
-      top={<BackLink href={`/s/${session.id}/queue`} label={t.nav.queue} />}
-      title={t.live.walkInTitle}
-      subtitle={t.live.walkInSubtitle}
-    >
-      <WalkInForm sessionId={session.id} fee={session.fee} members={members} />
-    </PageShell>
+    <>
+      {/* QA-01: no navigating away without signal. */}
+      <OfflineNavGuard />
+      <PageShell
+        top={<BackLink href={`/s/${session.id}/queue`} label={t.nav.queue} />}
+        title={t.live.walkInTitle}
+        subtitle={t.live.walkInSubtitle}
+      >
+        <WalkInForm
+          sessionId={session.id}
+          fee={session.fee}
+          members={members}
+        />
+      </PageShell>
+    </>
   );
 }

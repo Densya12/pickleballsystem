@@ -5,6 +5,8 @@ import { cn } from "@/lib/cn";
 export type TabItem = {
   key: string;
   label: string;
+  /** The tab's plain name for messages ("Queue", not "Queue · 8"). Defaults to label. */
+  navLabel?: string;
   icon: ReactNode;
   href?: string;
   onClick?: () => void;
@@ -43,7 +45,14 @@ export function TabBar({ label, items, current, width = "w-[84px]" }: { label: s
           </>
         );
         return tab.href ? (
-          <Link key={tab.key} href={tab.href} aria-current={active ? "page" : undefined} aria-label={name} className={className}>
+          <Link
+            key={tab.key}
+            href={tab.href}
+            aria-current={active ? "page" : undefined}
+            aria-label={name}
+            data-nav-label={tab.navLabel ?? tab.label}
+            className={className}
+          >
             {content}
           </Link>
         ) : (

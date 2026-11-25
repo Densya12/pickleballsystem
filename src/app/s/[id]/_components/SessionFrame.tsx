@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useTransition, type ReactNode } from "react";
 import { SessionTabBar, type SessionTab } from "@/components/nav/SessionTabBar";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
+import { OfflineNavGuard } from "@/components/session/OfflineNavGuard";
 import { OutboxStatus } from "@/components/session/OutboxStatus";
 import { BackLink, BottomSheet, Button, ListGroup, ListRow, Notice, PageShell, RadioGroup, Toggle } from "@/components/ui";
 import { ChevronRightIcon } from "@/components/ui/icons";
@@ -229,6 +230,7 @@ export function SessionFrame({
         </div>
       </PageShell>
 
+      <OfflineNavGuard aboveTabBar={!ended} />
       <MoreSheet
         open={moreOpen}
         onClose={() => setMoreOpen(false)}
