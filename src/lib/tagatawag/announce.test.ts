@@ -1,17 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AnnouncementQueue, announcementText, createSpeaker, pickVoice, readTagatawagEnabled, SPEECH_RATE, writeTagatawagEnabled } from "./announce";
 import { takeNewCalls } from "./newCalls";
+import { en, fil } from "@/lib/i18n/dictionary";
 
 describe("announcementText", () => {
   it("doubles: the four names, with 'at' before the last", () => {
-    expect(announcementText("Court 2", ["Ana", "Ben", "Carlo", "Dina"])).toBe("Court 2: Ana, Ben, Carlo, at Dina.");
+    expect(announcementText("Court 2", ["Ana", "Ben", "Carlo", "Dina"], en)).toBe("Court 2: Ana, Ben, Carlo, and Dina.");
+    expect(announcementText("Court 2", ["Ana", "Ben", "Carlo", "Dina"], fil)).toBe("Court 2: Ana, Ben, Carlo, at Dina.");
   });
   it("singles: two names", () => {
-    expect(announcementText("Court 2", ["Ana", "Ben"])).toBe("Court 2: Ana at Ben.");
+    expect(announcementText("Court 2", ["Ana", "Ben"], en)).toBe("Court 2: Ana and Ben.");
+    expect(announcementText("Court 2", ["Ana", "Ben"], fil)).toBe("Court 2: Ana at Ben.");
   });
   it("handles one or no names", () => {
-    expect(announcementText("Court 1", ["Ana"])).toBe("Court 1: Ana.");
-    expect(announcementText("Court 1", [])).toBe("Court 1.");
+    expect(announcementText("Court 1", ["Ana"], en)).toBe("Court 1: Ana.");
+    expect(announcementText("Court 1", [], en)).toBe("Court 1.");
   });
 });
 
@@ -25,6 +28,11 @@ describe("pickVoice", () => {
   });
   it("then English (Philippines)", () => {
     expect(pickVoice([v("en-US"), v("en-PH")])?.lang).toBe("en-PH");
+  });
+  it("English: en-PH, then any English voice", () => {
+    expect(pickVoice([v("fil-PH"), v("en-US"), v("en-PH")], "en")?.lang).toBe("en-PH");
+    expect(pickVoice([v("fil-PH"), v("en-US")], "en")?.lang).toBe("en-US");
+    expect(pickVoice([v("fil-PH")], "en")).toBeNull();
   });
   it("then the default (null)", () => {
     expect(pickVoice([v("en-US"), v("ja-JP")])).toBeNull();

@@ -1,7 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { BackLink, Button, Card, Notice, PageShell } from "@/components/ui";
+import { MiniCourt } from "@/components/court/MiniCourt";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { BackLink, Button, EmptyState, ListGroup, Notice, PageShell, Section, StatusChip } from "@/components/ui";
+import { BellIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/cn";
+import { useT } from "@/lib/i18n/client";
 import { courtCards, courtsLineup, type LineupPlayer } from "@/lib/player/courts";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
@@ -9,10 +13,10 @@ import { useCalledAlert } from "@/lib/player/useCalledAlert";
 import { useScreenWakeLock } from "@/lib/player/useScreenWakeLock";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
 import { courtFormatLabel } from "@/lib/session/validation";
-import { CalledBanner, KeepScreenOnNote } from "../me/CalledBanner";
 
-/** Mga court (D14, BR21). Updates live (NF9), like Pwesto. */
+/** Courts for players (D14, BR21): who is playing and who is next. Updates live (NF9). */
 export function CourtsView({ code, view }: { code: string; view: PlayerSessionView }) {
+  const t = useT();
   const sync = useSessionSync(view.session.id);
   const meId = view.me?.id ?? null;
   const state = pickPwestoState({
@@ -24,7 +28,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
     rules: view.rules,
   });
 
-  // Called while looking at the courts: the same alert as on Pwesto.
+  // Called while looking at the courts: the same alert as on My place.
   const { acked, acknowledge } = useCalledAlert(state.kind === "playing" ? state.gameId : null);
   const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing");
 
@@ -33,136 +37,115 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
 
   return (
     <PageShell
-      header={
-        <div className="flex flex-col gap-1">
-          <BackLink href={`/j/${code}/me`} label="Bumalik sa pwesto ko" />
-          <p className="text-muted [overflow-wrap:anywhere]">{view.session.name}</p>
-          <h1 className="text-3xl">Mga court</h1>
-        </div>
+      top={
+        <>
+          <BackLink href={`/j/${code}/me`} label={t.player.backToPlace} />
+          <LanguageSwitch />
+        </>
       }
+      eyebrow={view.session.name}
+      title={t.player.courtsTitle}
     >
-      <div className="flex flex-col gap-6" data-live-sync={sync} data-state={state.kind}>
-        {sync === "lost" && <Notice kind="error">Nawalan ng koneksyon. Sinusubukang kumonekta ulit…</Notice>}
+      <div className="flex flex-col gap-5" data-live-sync={sync} data-state={state.kind}>
+        {sync === "lost" && <Notice kind="error">{t.live.connectionLost}</Notice>}
 
         {state.kind === "playing" && !acked && (
-          <div className="flex flex-col gap-3">
-            <CalledBanner name={view.me?.name ?? ""} courtLabel={state.courtLabel} />
-            <Button size="lg" fullWidth onClick={acknowledge}>
-              Papunta na ako
+          <div role="alert" className="flex flex-col gap-3 rounded-card bg-primary p-4 text-on-primary">
+            <p className="inline-flex items-center gap-2 self-start rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-on-accent">
+              <BellIcon className="size-3.5" />
+              {t.player.youreUp}
+            </p>
+            <p className="font-display text-2xl font-semibold">
+              {t.player.yourTurn(view.me?.name.split(/\s+/)[0] ?? "")} {t.player.headTo} <span className="text-accent">{state.courtLabel}</span>
+            </p>
+            <Button variant="lime" size="lg" fullWidth onClick={acknowledge}>
+              {t.player.onMyWay}
             </Button>
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {cards.map((card) => (
-            <Card key={card.id} role="region" aria-labelledby={`court-${card.id}`} className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <h2 id={`court-${card.id}`} className="text-2xl">
+            <section key={card.id} aria-labelledby={`court-${card.id}`} className="flex flex-col gap-2.5 rounded-card bg-surface p-3.5">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 id={`court-${card.id}`} className="text-base font-semibold">
                   {card.label}
                 </h2>
-                <p className="text-muted">
-                  {courtFormatLabel(card.format)}
-                  {card.game && ` · Laro #${card.game.number}`}
-                </p>
+                <span className="text-xs text-muted">
+                  {courtFormatLabel(card.format, t)}
+                  {card.game ? ` · #${card.game.number}` : ` · ${t.live.empty}`}
+                </span>
               </div>
+              <MiniCourt format={card.format} players={(card.game?.players ?? []).map((p) => ({ ...p, highlight: p.id === meId }))} />
               {card.game ? (
-                <ul aria-label={`Naglalaro sa ${card.label}`} className="grid grid-cols-2 gap-2">
+                <ul aria-label={t.live.playingOn(card.label)} className="sr-only">
                   {card.game.players.map((player) => (
-                    <li key={player.id} className="rounded-control bg-primary-tint px-3 py-3 font-semibold">
-                      <PlayerName player={player} meId={meId} />
-                    </li>
+                    <li key={player.id}>{player.id === meId ? `${player.name} (${t.player.you})` : player.name}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="rounded-control border border-dashed border-strong px-3 py-3 font-semibold text-muted">
-                  Bakante
-                </p>
+                <p className="sr-only">{t.live.empty}</p>
               )}
-            </Card>
+            </section>
           ))}
         </div>
 
-        <Section id="ready" title="Maghanda na" hint="Sila ang tatawagin sa susunod na bakanteng court.">
-          {lineup.ready.length > 0 ? (
-            <NameList players={lineup.ready} meId={meId} ordered />
-          ) : (
-            <Empty>Wala pang nakapila.</Empty>
-          )}
+        <Section id="get-ready" label={t.player.getReady}>
+          {lineup.ready.length > 0 ? <NameList players={lineup.ready} meId={meId} /> : <EmptyState>{t.player.nobodyWaiting}</EmptyState>}
+          <p className="mx-1 mt-2 text-xs text-muted">{t.player.getReadyHint}</p>
         </Section>
 
         {lineup.after.length > 0 && (
-          <Section id="after" title="Susunod pagkatapos">
-            <NameList players={lineup.after} meId={meId} ordered />
+          <Section id="after-them" label={t.player.afterThem}>
+            <NameList players={lineup.after} meId={meId} start={lineup.ready.length + 1} />
           </Section>
         )}
 
         {lineup.notCallable.length > 0 && (
-          <Section id="waiting" title="Hindi pa matatawag">
-            <ul className="flex flex-col divide-y divide-default rounded-card border border-default bg-surface">
+          <Section id="on-hold" label={t.player.notCallable}>
+            <ListGroup>
               {lineup.notCallable.map((player) => (
                 <li key={player.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                  <span className="min-w-0 font-semibold">
-                    <PlayerName player={player} meId={meId} />
-                  </span>
-                  <span className="shrink-0 rounded-full bg-warn px-2.5 py-1 text-sm font-semibold text-warn">
-                    {player.reason}
-                  </span>
+                  <PlayerName player={player} meId={meId} />
+                  <StatusChip kind={player.reason} />
                 </li>
               ))}
-            </ul>
+            </ListGroup>
           </Section>
         )}
 
-        {!wakeLock.supported && (state.kind === "queued" || state.kind === "playing") && <KeepScreenOnNote />}
+        {!wakeLock.supported && (state.kind === "queued" || state.kind === "playing") && (
+          <p className="px-6 text-center text-xs text-muted">{t.player.keepScreenOn}</p>
+        )}
       </div>
     </PageShell>
   );
 }
 
-/** The player's own name is marked "Ikaw" (text, not color alone). */
+/** The player's own name is marked "You" (text, not color alone). */
 function PlayerName({ player, meId }: { player: LineupPlayer; meId: string | null }) {
+  const t = useT();
   const isMe = player.id === meId;
   return (
-    <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1" data-me={isMe || undefined}>
-      <span className={isMe ? "[overflow-wrap:anywhere] underline decoration-2 underline-offset-4" : "[overflow-wrap:anywhere]"}>
-        {player.name}
-      </span>
-      {isMe && <span className="rounded-full bg-primary px-2 py-0.5 text-sm font-bold text-on-primary">Ikaw</span>}
+    <span className="inline-flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium" data-me={isMe || undefined}>
+      <span className="[overflow-wrap:anywhere]">{player.name}</span>
+      {isMe && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.player.you}</span>}
     </span>
   );
 }
 
-function NameList({ players, meId, ordered }: { players: LineupPlayer[]; meId: string | null; ordered?: boolean }) {
-  const List = ordered ? "ol" : "ul";
+function NameList({ players, meId, start = 1 }: { players: LineupPlayer[]; meId: string | null; start?: number }) {
   return (
-    <List className="flex flex-col divide-y divide-default rounded-card border border-default bg-surface">
+    <ol className="divide-y divide-hairline overflow-hidden rounded-group bg-surface">
       {players.map((player, index) => (
-        <li key={player.id} className="flex items-center gap-3 px-4 py-3 font-semibold">
-          {ordered && (
-            <span className="font-display text-muted">
-              <span className="sr-only">Pang-</span>
-              {index + 1}.
-            </span>
-          )}
+        <li key={player.id} className={cn("flex items-center gap-3 px-4 py-[11px]", player.id === meId && "bg-accent-faint")}>
+          <span className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-semibold">
+            <span className="sr-only">#</span>
+            {start + index}
+          </span>
           <PlayerName player={player} meId={meId} />
         </li>
       ))}
-    </List>
+    </ol>
   );
-}
-
-function Section({ id, title, hint, children }: { id: string; title: string; hint?: string; children: ReactNode }) {
-  return (
-    <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-2">
-      <h2 id={`${id}-heading`} className="text-2xl">
-        {title}
-      </h2>
-      {hint && <p className="text-muted">{hint}</p>}
-      {children}
-    </section>
-  );
-}
-
-function Empty({ children }: { children: ReactNode }) {
-  return <p className="rounded-card border border-dashed border-strong px-5 py-4 text-muted">{children}</p>;
 }

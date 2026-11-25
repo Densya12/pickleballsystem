@@ -1,90 +1,65 @@
 import { describe, expect, it } from "vitest";
-import { AUTH_MESSAGES } from "@/lib/auth/messages";
-import { SESSION_ERRORS } from "@/lib/session/messages";
-import {
-  calledBanner,
-  finishedBanner,
-  formatChangedBanner,
-  needPlayersText,
-  pausedBanner,
-  QUEUE_ERRORS,
-  queueErrorMessage,
-  notReadyText,
-  removedBanner,
-  resumedBanner,
-  swappedBanner,
-  walkInBanner,
-} from "./messages";
+import { en, fil } from "@/lib/i18n/dictionary";
+import { queueErrorMessage } from "./messages";
 
-describe("banners (NF8)", () => {
-  it("names who was called and where", () => {
-    expect(calledBanner("Court 2", ["Ana", "Ben", "Carlo", "Dina"])).toBe("Tinawag sa Court 2: Ana, Ben, Carlo, Dina");
+/** Banners after each queue action (NF8), now in the dictionaries (D20). */
+describe("queue banners", () => {
+  it("names who was called, in English and Taglish", () => {
+    expect(en.live.called("Court 2", ["Ana", "Ben", "Carlo", "Dina"])).toBe("Called to Court 2: Ana, Ben, Carlo, Dina");
+    expect(fil.live.called("Court 2", ["Ana", "Ben", "Carlo", "Dina"])).toBe("Tinawag sa Court 2: Ana, Ben, Carlo, Dina");
   });
 
-  it("after a game in all off, names the next four", () => {
-    expect(finishedBanner({ courtLabel: "Court 1", gameNumber: 3, next: ["Eli", "Fe", "Gil", "Hans"] })).toBe(
-      "Tapos ang Laro #3 sa Court 1. Tinawag: Eli, Fe, Gil, Hans",
+  it("finished: the game, the winners (winners stay) and who's next", () => {
+    expect(en.live.finished({ courtLabel: "Court 1", gameNumber: 3, winners: ["Ana", "Ben"], next: ["Carlo", "Dina", "Ana", "Ben"] })).toBe(
+      "Game #3 on Court 1 is done. Won: Ana and Ben. Called: Carlo, Dina, Ana, Ben",
+    );
+    expect(fil.live.finished({ courtLabel: "Court 1", gameNumber: 3, winners: ["Ana", "Ben"], next: ["Carlo", "Dina", "Ana", "Ben"] })).toBe(
+      "Tapos ang Laro #3 sa Court 1. Panalo: Ana at Ben. Tinawag: Carlo, Dina, Ana, Ben",
     );
   });
 
-  it("in winners stay, names the winners too", () => {
-    expect(
-      finishedBanner({ courtLabel: "Court 1", gameNumber: 4, winners: ["Ana", "Ben"], next: ["Ana", "Ben", "Eli", "Fe"] }),
-    ).toBe("Tapos ang Laro #4 sa Court 1. Panalo: Ana at Ben. Tinawag: Ana, Ben, Eli, Fe");
-  });
-
-  it("says when the court stays empty", () => {
-    expect(finishedBanner({ courtLabel: "Court 2", gameNumber: 5, next: null })).toBe(
-      "Tapos ang Laro #5 sa Court 2. Bakante muna ang Court 2; kulang pa ang nakapila.",
+  it("finished with nobody to call says the court stays empty", () => {
+    expect(en.live.finished({ courtLabel: "Court 2", gameNumber: 1, next: null })).toBe(
+      "Game #1 on Court 2 is done. Court 2 stays empty; not enough players waiting.",
     );
   });
 
-  it("walk-in, pause, resume and remove", () => {
-    expect(walkInBanner("Tito Boy", 7)).toBe("Nasa pila na si Tito Boy (pang-7).");
-    expect(walkInBanner("Tito Boy", null)).toBe("Nasa pila na si Tito Boy.");
-    expect(pausedBanner("Ana")).toBe("Naka-pause si Ana. Hindi siya tatawagin hanggang ituloy.");
-    expect(resumedBanner("Ana")).toBe("Tuloy na si Ana, sa dati niyang puwesto sa pila.");
-    expect(removedBanner("Ana")).toBe("Inalis si Ana sa pila.");
-    expect(needPlayersText(3)).toBe("Kailangan pa ng 3 player");
-  });
-
-  it("singles: 1 winner, and format changes", () => {
-    expect(finishedBanner({ courtLabel: "Court 2", gameNumber: 2, winners: ["Ana"], next: ["Ana", "Eli"] })).toBe(
-      "Tapos ang Laro #2 sa Court 2. Panalo: Ana. Tinawag: Ana, Eli",
-    );
-    expect(formatChangedBanner("Court 2", "singles")).toBe("Singles na ang Court 2.");
-    expect(formatChangedBanner("Court 1", "doubles")).toBe("Doubles na ang Court 1.");
-    expect(queueErrorMessage({ message: "invalid_format", code: "P0001" })).toBe(QUEUE_ERRORS.invalidFormat);
-  });
-
-  it("BR19: not ready and swap", () => {
-    expect(notReadyText("Ana")).toBe("Hindi pa handa si Ana");
-    expect(swappedBanner("Ana", "Ben", "Court 1")).toBe("Pinalitan si Ana ni Ben sa Court 1. Nasa unahan na ng pila si Ana.");
-    expect(queueErrorMessage({ message: "player_not_on_court", code: "P0001" })).toBe(QUEUE_ERRORS.notOnCourt);
+  it("walk-in, pause, resume, remove, swap, format, undo", () => {
+    expect(en.live.walkInAdded("Ana", 7)).toBe("Ana is in the queue (#7).");
+    expect(en.live.walkInAdded("Ana", null)).toBe("Ana is in the queue.");
+    expect(fil.live.walkInAdded("Ana", 7)).toBe("Nasa pila na si Ana (pang-7).");
+    expect(en.live.paused("Ana")).toMatch(/paused/);
+    expect(en.live.resumed("Ana")).toMatch(/back in their place/);
+    expect(en.live.removed("Ana")).toBe("Ana was removed from the queue.");
+    expect(en.live.swapped("Ana", "Ben", "Court 1")).toBe("Ben replaced Ana on Court 1. Ana is now first in the queue.");
+    expect(en.live.formatChanged("Court 2", "Singles")).toBe("Court 2 is now singles.");
+    expect(en.live.undoneFinish("Court 1", 3)).toBe("Game #3 on Court 1 is back on. Keep playing.");
   });
 });
 
 describe("queueErrorMessage", () => {
-  it("uses the number still needed from the error detail", () => {
-    expect(queueErrorMessage({ message: "not_enough_players", code: "P0001", details: "2" })).toBe(
-      "Kailangan pa ng 2 player bago makatawag.",
-    );
-    expect(queueErrorMessage({ message: "not_enough_players", code: "P0001", details: null })).toBe(
-      "Kulang pa ang nakapila para makatawag.",
-    );
+  it("says how many more players are needed", () => {
+    expect(queueErrorMessage({ message: "not_enough_players", details: "2" }, en)).toBe("Need 2 more players to call.");
+    expect(queueErrorMessage({ message: "not_enough_players", details: "1" }, en)).toBe("Need 1 more player to call.");
+    expect(queueErrorMessage({ message: "not_enough_players", details: "x" }, en)).toBe(en.live.notEnough);
+    expect(queueErrorMessage({ message: "not_enough_players", details: "2" }, fil)).toBe("Kailangan pa ng 2 player bago makatawag.");
   });
 
   it.each([
-    [{ message: "game_already_finished", code: "P0001" }, QUEUE_ERRORS.alreadyFinished],
-    [{ message: "court_busy", code: "P0001" }, QUEUE_ERRORS.courtBusy],
-    [{ message: "invalid_winners", code: "P0001" }, QUEUE_ERRORS.invalidWinners],
-    [{ message: "invalid_player_status", code: "P0001" }, QUEUE_ERRORS.playerChanged],
-    [{ message: "session_not_live", code: "P0001" }, QUEUE_ERRORS.notLive],
-    [{ message: "court_not_found", code: "P0001" }, QUEUE_ERRORS.notFound],
-    [{ message: "player_not_found", code: "P0001" }, QUEUE_ERRORS.notFound],
-    [{ message: "not_organizer_account", code: "42501" }, AUTH_MESSAGES.notOrganizerAccount],
-    [{ message: "session_not_found", code: "P0001" }, SESSION_ERRORS.notFound],
-    [{ message: 'violates check constraint "session_players_display_name_length"', code: "23514" }, SESSION_ERRORS.invalidInput],
-    [{ message: "fetch failed" }, SESSION_ERRORS.generic],
-  ])("%j", (error, expected) => expect(queueErrorMessage(error)).toBe(expected));
+    ["game_already_finished", en.live.alreadyFinished],
+    ["court_busy", en.live.courtBusy],
+    ["invalid_winners", en.live.invalidWinners],
+    ["invalid_player_status", en.live.playerChanged],
+    ["session_not_live", en.live.notLive],
+    ["invalid_format", en.live.invalidFormat],
+    ["player_not_on_court", en.live.notOnCourt],
+    ["undo_not_available", en.live.undoNotAvailable],
+    ["court_not_found", en.live.notFound],
+    ["already_paid", en.payments.alreadyPaid],
+    ["not_organizer_account", en.auth.notOrganizerAccount],
+  ])("%s", (message, expected) => expect(queueErrorMessage({ message }, en)).toBe(expected));
+
+  it("falls back to the session messages", () => {
+    expect(queueErrorMessage({ message: "session_not_found" }, en)).toBe(en.session.notFound);
+  });
 });

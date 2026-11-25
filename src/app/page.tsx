@@ -1,207 +1,180 @@
 import Link from "next/link";
-import { Suspense, type ReactNode } from "react";
-import { Button, Card, PageShell } from "@/components/ui";
-import { BallIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "@/components/ui/icons";
+import { Suspense } from "react";
+import { MainTabBar } from "@/components/nav/MainTabBar";
+import { Button, EmptyState, ListGroup, ListRow, PageShell, Section } from "@/components/ui";
+import { ArrowRightIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "@/components/ui/icons";
 import { requireClub } from "@/lib/auth/dal";
-import { formatCourts, formatPeso } from "@/lib/format";
+import { formatPeso } from "@/lib/format";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import type { Locale } from "@/lib/i18n/locale";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { getLiveState } from "@/lib/queue/data";
 import { getHomeSessions, type Session } from "@/lib/session/data";
-import { dateBadge, formatDate, formatSchedule, formatTimeRange, greeting } from "@/lib/session/time";
+import { dateBadge, dayPart, formatShortDate, formatTime, formatTimeRange } from "@/lib/session/time";
 
 /**
- * Home: the live session (BR1: at most one), upcoming drafts and past sessions.
- * Past sessions show players and the ₱ collected. "Mga member", Settings and
- * the guide are at the bottom.
+ * Home (D19): the live session as a dark card, New session / Repeat last,
+ * then upcoming and past sessions. Members and Settings are in the tab bar.
  */
 export default function Home() {
   return (
-    <Suspense fallback={<HomeSkeleton />}>
+    <Suspense fallback={<PageShell tabBar={<MainTabBar current="home" />}>{null}</PageShell>}>
       <HomeContent />
     </Suspense>
   );
 }
 
 async function HomeContent() {
-  const { user, club } = await requireClub();
+  const [{ user, club }, t, locale] = await Promise.all([requireClub(), getT(), getLocale()]);
   const { live, drafts, ended, endedStats, lastRepeatable } = await getHomeSessions(club.id);
+  const liveState = live ? await getLiveState(live.id) : null;
   const firstName = user.name?.split(/\s+/)[0];
 
   return (
     <PageShell
-      header={
-        <div className="flex flex-col gap-1 pt-6">
-          <p className="text-muted">
-            {greeting(new Date())}
-            {firstName ? `, ${firstName}` : ""}!
-          </p>
-          <h1 className="text-3xl break-words">{club.name}</h1>
-          {club.city && <p className="text-muted">{club.city}</p>}
-        </div>
-      }
+      eyebrow={t.home.greetingName(t.home.greeting[dayPart(new Date())], firstName)}
+      title={club.name}
+      titleSize="xl"
+      tabBar={<MainTabBar current="home" />}
     >
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-4">
-          {live && <LiveCard session={live} />}
-          <Button href="/sessions/new" size="lg" fullWidth>
-            <PlusIcon />
-            Bagong open play
-          </Button>
-          {lastRepeatable && (
-            // D18: same settings as last time, on the next date; then one tap on "Simulan".
-            <Button href={`/sessions/new?ulitin=${lastRepeatable.id}`} variant="secondary" fullWidth>
-              <RepeatIcon />
-              <span className="min-w-0 [overflow-wrap:anywhere]">Ulitin: {lastRepeatable.name}</span>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          {live && liveState && <LiveCard session={live} state={liveState} t={t} locale={locale} />}
+          <div className="flex gap-2.5">
+            <Button href="/sessions/new" variant="secondary" size="md" className="flex-1">
+              <PlusIcon className="size-4" />
+              {t.home.newSession}
             </Button>
-          )}
+            {lastRepeatable && (
+              // D18: same settings as last time, on the next date; then one tap on Start.
+              <Button
+                href={`/sessions/new?ulitin=${lastRepeatable.id}`}
+                variant="secondary"
+                size="md"
+                className="flex-1"
+                aria-label={t.home.repeatLastOf(lastRepeatable.name)}
+              >
+                <RepeatIcon className="size-4" />
+                {t.home.repeatLast}
+              </Button>
+            )}
+          </div>
         </div>
 
-        <Section title="Mga susunod na session" id="upcoming">
+        <Section id="upcoming" label={t.home.upcoming}>
           {drafts.length > 0 ? (
-            <SessionList>
+            <ListGroup>
               {drafts.map((session) => (
-                <UpcomingRow key={session.id} session={session} />
+                <UpcomingRow key={session.id} session={session} t={t} locale={locale} />
               ))}
-            </SessionList>
+            </ListGroup>
           ) : (
-            <EmptyState>Wala pang naka-schedule. Pindutin ang Bagong open play para gumawa.</EmptyState>
+            <EmptyState>{t.home.noUpcoming}</EmptyState>
           )}
         </Section>
 
-        <Section title="Nakaraang session" id="past">
+        <Section id="past" label={t.home.past}>
           {ended.length > 0 ? (
-            <SessionList>
-              {ended.map((session) => (
-                <PastRow key={session.id} session={session} stats={endedStats.get(session.id)} />
-              ))}
-            </SessionList>
+            <ListGroup>
+              {ended.map((session) => {
+                const stats = endedStats.get(session.id);
+                return (
+                  <ListRow
+                    key={session.id}
+                    href={`/s/${session.id}`}
+                    chevron={false}
+                    trailing={
+                      <span className="shrink-0 font-medium">
+                        {session.fee > 0 ? formatPeso(stats?.collected ?? 0) : t.common.free}
+                      </span>
+                    }
+                  >
+                    <span className="font-medium [overflow-wrap:anywhere]">{session.name}</span>
+                    <span className="text-sm text-muted">
+                      {t.home.pastLine(formatShortDate(new Date(session.starts_at), locale), t.common.players(stats?.players ?? 0))}
+                    </span>
+                  </ListRow>
+                );
+              })}
+            </ListGroup>
           ) : (
-            <EmptyState>Wala pang natapos na session.</EmptyState>
+            <EmptyState>{t.home.noPast}</EmptyState>
           )}
         </Section>
-
-        <nav aria-label="Iba pa" className="flex flex-col gap-3">
-          <Button href="/members" variant="secondary" fullWidth>
-            Mga member
-          </Button>
-          <Button href="/settings" variant="secondary" fullWidth>
-            Settings ng club
-          </Button>
-          <Button href="/guide" variant="secondary" fullWidth>
-            Gabay para sa organizer
-          </Button>
-        </nav>
       </div>
     </PageShell>
   );
 }
 
-function LiveCard({ session }: { session: Session }) {
-  const startsAt = new Date(session.starts_at);
-  const endsAt = new Date(session.ends_at);
+function LiveCard({
+  session,
+  state,
+  t,
+  locale,
+}: {
+  session: Session;
+  state: Awaited<ReturnType<typeof getLiveState>>;
+  t: Dictionary;
+  locale: Locale;
+}) {
+  const started = session.started_at ? new Date(session.started_at) : new Date(session.starts_at);
   return (
-    <section
-      aria-labelledby="live-heading"
-      className="flex flex-col gap-3 rounded-card border-[1.5px] border-ink bg-accent-soft p-5 shadow-card"
+    <Link
+      href={`/s/${session.id}`}
+      aria-label={t.home.openSession(session.name)}
+      className="block rounded-[22px] bg-primary p-[18px] text-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-      <p
-        id="live-heading"
-        className="inline-flex items-center gap-1.5 self-start rounded-full bg-accent px-3 py-1 text-sm font-bold tracking-wide text-ink"
-      >
-        <BallIcon className="size-4 shrink-0" />
-        LIVE NGAYON
-      </p>
-      <h2 className="text-2xl break-words">{session.name}</h2>
-      <p className="text-on-accent-soft">
-        {formatSchedule(startsAt, endsAt)} · {formatCourts(session.courts_count)}
-      </p>
-      <Button href={`/s/${session.id}/live`} size="lg" fullWidth>
-        Buksan ang session
-      </Button>
-    </section>
-  );
-}
-
-function UpcomingRow({ session }: { session: Session }) {
-  const startsAt = new Date(session.starts_at);
-  const badge = dateBadge(startsAt);
-  return (
-    <RowLink href={`/s/${session.id}/live`}>
-      <span
-        aria-hidden="true"
-        className="flex w-14 shrink-0 flex-col items-center rounded-control bg-subtle py-1.5 leading-tight"
-      >
-        <span className="text-sm font-semibold text-muted">{badge.month}</span>
-        <span className="font-display text-xl font-semibold">{badge.day}</span>
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="font-semibold break-words">{session.name}</span>
-        {/* The badge is hidden from screen readers; this line carries the date too. */}
-        <span className="text-muted">
-          <span className="sr-only">{formatDate(startsAt)}, </span>
-          {formatTimeRange(startsAt, new Date(session.ends_at))} · {formatCourts(session.courts_count)}
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-on-accent">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-[#1e2a06]" />
+          {t.home.live}
         </span>
-      </span>
-    </RowLink>
+        <span className="text-sm text-on-dark-muted">{t.home.startedAt(formatTime(started, locale))}</span>
+      </div>
+      <p className="mt-3.5 font-display text-[22px] font-semibold [overflow-wrap:anywhere]">{session.name}</p>
+      <div className="mt-3.5 flex items-end gap-5">
+        <Stat value={String(session.courts_count)} label={t.home.courtsLabel} />
+        <Stat value={String(state.queue.length)} label={t.home.queueLabel} />
+        {session.fee > 0 && <Stat value={`${state.payments.paid}/${state.payments.total}`} label={t.home.paidLabel} />}
+        <span aria-hidden="true" className="ml-auto flex size-9 items-center justify-center self-center rounded-full bg-accent text-on-accent">
+          <ArrowRightIcon className="size-[18px]" />
+        </span>
+      </div>
+    </Link>
   );
 }
 
-function PastRow({ session, stats }: { session: Session; stats?: { players: number; collected: number } }) {
+function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <RowLink href={`/s/${session.id}/live`}>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="font-semibold break-words">{session.name}</span>
-        <span className="text-muted">{formatDate(new Date(session.starts_at))}</span>
-        {stats && (
-          <span className="text-muted">
-            {stats.players} {stats.players === 1 ? "player" : "players"}
-            {session.fee > 0 ? ` · ${formatPeso(stats.collected)} nakolekta` : " · libre"}
-          </span>
-        )}
-      </span>
-    </RowLink>
+    <span className="flex flex-col">
+      <span className="text-xl font-semibold">{value}</span>
+      <span className="text-xs text-on-dark-muted">{label}</span>
+    </span>
   );
 }
 
-function RowLink({ href, children }: { href: string; children: ReactNode }) {
+function UpcomingRow({ session, t, locale }: { session: Session; t: Dictionary; locale: Locale }) {
+  const startsAt = new Date(session.starts_at);
+  const badge = dateBadge(startsAt, locale);
   return (
     <li>
       <Link
-        href={href}
-        className="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-subtle focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
+        href={`/s/${session.id}`}
+        className="flex min-h-14 items-center gap-3.5 px-4 py-3 hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
       >
-        {children}
-        <ChevronRightIcon className="size-5 shrink-0 text-muted" />
+        <span aria-hidden="true" className="flex w-11 shrink-0 flex-col items-center leading-tight">
+          <span className="text-2xs font-semibold text-muted">{badge.month}</span>
+          <span className="text-xl font-semibold">{badge.day}</span>
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="font-medium [overflow-wrap:anywhere]">{session.name}</span>
+          <span className="text-sm text-muted">
+            <span className="sr-only">{formatShortDate(startsAt, locale)}, </span>
+            {formatTimeRange(startsAt, new Date(session.ends_at), locale)} · {t.common.courts(session.courts_count)}
+          </span>
+        </span>
+        <ChevronRightIcon className="size-4 shrink-0 text-[#9aa09c]" />
       </Link>
     </li>
-  );
-}
-
-function SessionList({ children }: { children: ReactNode }) {
-  return (
-    <Card padding="none" className="overflow-hidden">
-      <ul className="flex flex-col divide-y divide-default">{children}</ul>
-    </Card>
-  );
-}
-
-function Section({ title, id, children }: { title: string; id: string; children: ReactNode }) {
-  return (
-    <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-3">
-      <h2 id={`${id}-heading`} className="text-2xl">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function EmptyState({ children }: { children: ReactNode }) {
-  return <p className="rounded-card border border-dashed border-strong px-5 py-4 text-muted">{children}</p>;
-}
-
-function HomeSkeleton() {
-  return (
-    <PageShell>
-      <p className="pt-10 text-muted">Sandali lang…</p>
-    </PageShell>
   );
 }

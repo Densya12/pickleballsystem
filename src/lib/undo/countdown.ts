@@ -22,7 +22,3 @@ export function undoSecondsLeft(deadline: number, now: number): number {
   const left = Math.ceil((deadline - now) / 1000);
   return Math.min(UNDO_WINDOW_SECONDS, Math.max(0, left));
 }
-
-export const UNDO_ERRORS = {
-  notAvailable: "Hindi na maibabalik: lumipas na ang 30 segundo o may nagbago na.",
-} as const;

@@ -1,30 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { duesLabel, matchesMember, MEMBER_MESSAGES, parseMember, sameNameMember } from "./members";
+import { en, fil } from "@/lib/i18n/dictionary";
+import { duesLabel, matchesMember, parseMember, sameNameMember } from "./members";
 
 const form = (values: Record<string, string>) => ({ get: (name: string) => values[name] ?? null });
 
 describe("parseMember", () => {
   it("tidies the name and defaults level and dues", () => {
-    expect(parseMember(form({ display_name: "  Ana   Reyes " }))).toEqual({
+    expect(parseMember(form({ display_name: "  Ana   Reyes " }), en)).toEqual({
       ok: true,
       data: { display_name: "Ana Reyes", level: "unsure", dues_status: "none", notes: null },
     });
   });
   it("keeps notes, trimmed", () => {
-    const parsed = parseMember(form({ display_name: "Ben", level: "advanced", dues_status: "paid", notes: "  Tuwing Biyernes " }));
+    const parsed = parseMember(form({ display_name: "Ben", level: "advanced", dues_status: "paid", notes: "  Tuwing Biyernes " }), en);
     expect(parsed).toEqual({ ok: true, data: { display_name: "Ben", level: "advanced", dues_status: "paid", notes: "Tuwing Biyernes" } });
   });
   it("refuses bad input with a message per field", () => {
-    expect(parseMember(form({ display_name: "A", level: "pro", dues_status: "maybe", notes: "x".repeat(301) }))).toEqual({
+    expect(parseMember(form({ display_name: "A", level: "pro", dues_status: "maybe", notes: "x".repeat(301) }), en)).toEqual({
       ok: false,
       errors: {
-        display_name: MEMBER_MESSAGES.nameTooShort,
-        level: MEMBER_MESSAGES.levelInvalid,
-        dues_status: MEMBER_MESSAGES.duesInvalid,
-        notes: MEMBER_MESSAGES.notesTooLong,
+        display_name: en.members.nameTooShort(2),
+        level: en.members.levelInvalid,
+        dues_status: en.members.duesInvalid,
+        notes: en.members.notesTooLong(300),
       },
     });
-    expect(parseMember(form({})).ok).toBe(false);
+    expect(parseMember(form({}), en).ok).toBe(false);
   });
 });
 
@@ -41,8 +42,9 @@ describe("member search", () => {
     expect(sameNameMember(members, "Ana")).toBeUndefined();
   });
   it("labels dues in words", () => {
-    expect(duesLabel("paid")).toBe("Bayad ang dues");
-    expect(duesLabel("unpaid")).toBe("Hindi pa bayad ang dues");
-    expect(duesLabel("none")).toBe("Walang dues");
+    expect(duesLabel("paid", en)).toBe("Dues paid");
+    expect(duesLabel("unpaid", en)).toBe("Dues unpaid");
+    expect(duesLabel("none", en)).toBe("No dues");
+    expect(duesLabel("paid", fil)).toBe("Bayad ang dues");
   });
 });

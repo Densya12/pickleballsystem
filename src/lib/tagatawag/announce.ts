@@ -1,15 +1,15 @@
 /**
- * Tagatawag (D17): the organizer's phone reads each new call aloud.
+ * Tagatawag (D17): the organizer's phone reads each new call aloud, in the
+ * device's language (D20).
  * Pure parts (text, voice choice, the queue) are here; the browser glue is
- * createSpeaker() and the Live screen's useTagatawag hook.
+ * createSpeaker() and the session screens' useTagatawag hook.
  */
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import type { Locale } from "@/lib/i18n/locale";
 
-/** "Court 2: Ana, Ben, Carlo, at Dina."  Singles: "Court 2: Ana at Ben." */
-export function announcementText(courtLabel: string, names: readonly string[]): string {
-  if (names.length === 0) return `${courtLabel}.`;
-  if (names.length === 1) return `${courtLabel}: ${names[0]}.`;
-  if (names.length === 2) return `${courtLabel}: ${names[0]} at ${names[1]}.`;
-  return `${courtLabel}: ${names.slice(0, -1).join(", ")}, at ${names[names.length - 1]}.`;
+/** "Court 2: Ana, Ben, Carlo, and Dina." (Taglish: "… at Dina."). Singles: "Court 2: Ana and Ben." */
+export function announcementText(courtLabel: string, names: readonly string[], t: Dictionary): string {
+  return t.live.announcement(courtLabel, names);
 }
 
 /** Slightly slower than normal, so names carry across a court. */
@@ -21,11 +21,18 @@ function langOf(voice: VoiceLike): string {
   return voice.lang.toLowerCase().replace("_", "-");
 }
 
-/** A Filipino voice (fil-PH, fil, tl), then en-PH, then null (the browser's default). */
-export function pickVoice<V extends VoiceLike>(voices: readonly V[]): V | null {
-  const filipino = voices.find((v) => /^(fil|tl)(-|$)/.test(langOf(v)));
-  if (filipino) return filipino;
-  return voices.find((v) => langOf(v) === "en-ph") ?? null;
+/**
+ * A voice for the chosen language (D20). Taglish: Filipino (fil-PH, fil, tl),
+ * then en-PH. English: en-PH, then any English voice. Otherwise null (the
+ * browser's default).
+ */
+export function pickVoice<V extends VoiceLike>(voices: readonly V[], locale: Locale = "fil"): V | null {
+  if (locale === "fil") {
+    const filipino = voices.find((v) => /^(fil|tl)(-|$)/.test(langOf(v)));
+    if (filipino) return filipino;
+    return voices.find((v) => langOf(v) === "en-ph") ?? null;
+  }
+  return voices.find((v) => langOf(v) === "en-ph") ?? voices.find((v) => /^en(-|$)/.test(langOf(v))) ?? null;
 }
 
 /** Speaks one text, then calls done() exactly once. */
@@ -73,7 +80,7 @@ type UtteranceCtor = new (text: string) => SpeechSynthesisUtterance;
  * Browser speech. If a browser never fires "end" (it happens), the queue moves
  * on after a generous timeout instead of getting stuck.
  */
-export function createSpeaker(synth: SynthLike, Utterance: UtteranceCtor): SpeakFn {
+export function createSpeaker(synth: SynthLike, Utterance: UtteranceCtor, locale: Locale = "fil"): SpeakFn {
   return (text, done) => {
     let settled = false;
     const finish = () => {
@@ -85,12 +92,12 @@ export function createSpeaker(synth: SynthLike, Utterance: UtteranceCtor): Speak
     const fallback = setTimeout(finish, 3_000 + text.length * 120);
     try {
       const utterance = new Utterance(text);
-      const voice = pickVoice(synth.getVoices());
+      const voice = pickVoice(synth.getVoices(), locale);
       if (voice) {
         utterance.voice = voice;
         utterance.lang = voice.lang;
       } else {
-        utterance.lang = "fil-PH";
+        utterance.lang = locale === "fil" ? "fil-PH" : "en-PH";
       }
       utterance.rate = SPEECH_RATE;
       utterance.onend = finish;

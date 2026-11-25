@@ -1,3 +1,4 @@
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { Points, Rotation } from "./validation";
 
 /** Choices shared by club defaults (Settings) and new sessions. */
@@ -8,11 +9,13 @@ export const POINTS_CHOICES: readonly { value: `${Points}`; label: string }[] = 
   { value: "21", label: "21" },
 ];
 
-export const ROTATION_CHOICES: readonly { value: Rotation; label: string; description: string }[] = [
-  { value: "all_off", label: "Lahat aalis", description: "Babalik sila sa dulo ng pila" },
-  { value: "winners_stay", label: "Mananatili ang nanalo", description: "Hanggang 2 sunod na laro lang" },
-];
+export function rotationChoices(t: Dictionary): { value: Rotation; label: string; description: string }[] {
+  return [
+    { value: "all_off", label: t.choices.allOff, description: t.choices.allOffDescription },
+    { value: "winners_stay", label: t.choices.winnersStay, description: t.choices.winnersStayDescription },
+  ];
+}
 
-export function rotationLabel(rotation: string): string {
-  return ROTATION_CHOICES.find((choice) => choice.value === rotation)?.label ?? rotation;
+export function rotationLabel(rotation: string, t: Dictionary): string {
+  return rotationChoices(t).find((choice) => choice.value === rotation)?.label ?? rotation;
 }

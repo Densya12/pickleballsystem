@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCourts, formatGcashNumber, formatPeso } from "./format";
+import { formatGcashNumber, formatPeso } from "./format";
 
 describe("format", () => {
   it("formats pesos with thousands separators", () => {
@@ -11,10 +11,5 @@ describe("format", () => {
   it("groups a GCash number for reading", () => {
     expect(formatGcashNumber("09171234567")).toBe("0917 123 4567");
     expect(formatGcashNumber("12345")).toBe("12345");
-  });
-
-  it("counts courts", () => {
-    expect(formatCourts(1)).toBe("1 court");
-    expect(formatCourts(3)).toBe("3 courts");
   });
 });

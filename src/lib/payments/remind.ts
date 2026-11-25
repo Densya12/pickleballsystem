@@ -1,22 +1,24 @@
+import type { Dictionary } from "@/lib/i18n/dictionary";
+
 /**
- * "Paalalahanan": share the reminder (the phone's share sheet), or copy it
- * where there is none. Used on Bayad and on the session summary.
+ * "Remind": share the reminder (the phone's share sheet), or copy it where
+ * there is none. Used on Payments and on the session summary.
  */
 export type RemindOutcome = { kind: "shared" | "copied" | "cancelled" | "failed"; banner?: string; error?: string };
 
-export async function sendReminder(name: string, text: string): Promise<RemindOutcome> {
+export async function sendReminder(name: string, text: string, t: Dictionary): Promise<RemindOutcome> {
   if (typeof navigator.share === "function") {
     try {
       await navigator.share({ text });
-      return { kind: "shared", banner: `Naipadala ang paalala para kay ${name}.` };
+      return { kind: "shared", banner: t.payments.reminderSent(name) };
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === "AbortError") return { kind: "cancelled" };
     }
   }
   try {
     await navigator.clipboard.writeText(text);
-    return { kind: "copied", banner: `Nakopya ang paalala para kay ${name}. I-paste sa Messenger.` };
+    return { kind: "copied", banner: t.payments.reminderCopied(name) };
   } catch {
-    return { kind: "failed", error: "Hindi makopya ang paalala. Subukan ulit." };
+    return { kind: "failed", error: t.payments.reminderFailed };
   }
 }

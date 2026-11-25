@@ -1,31 +1,26 @@
 /**
  * Player input for the queue (walk-ins, BR20). The database checks the same
- * rules; this layer gives a Taglish message per field.
+ * rules; this layer gives a message per field, in the device's language.
  */
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import { toParseResult, type ParseResult } from "@/lib/club/validation";
-import { normalizeReference, REFERENCE_MESSAGES } from "@/lib/payments/reference";
+import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 
 export const PLAYER_NAME_MIN = 2;
 export const PLAYER_NAME_MAX = 40;
 
-export const LEVELS = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
-  { value: "unsure", label: "Hindi sigurado" },
-] as const;
-export type Level = (typeof LEVELS)[number]["value"];
+export const LEVEL_VALUES = ["beginner", "intermediate", "advanced", "unsure"] as const;
+export type Level = (typeof LEVEL_VALUES)[number];
 
-export function levelLabel(level: string): string {
-  return LEVELS.find((l) => l.value === level)?.label ?? level;
+/** All four levels (organizer forms), or the three the player can pick ("unsure" when none). */
+export function levelChoices(t: Dictionary, { withUnsure = true }: { withUnsure?: boolean } = {}): { value: Level; label: string }[] {
+  return LEVEL_VALUES.filter((v) => withUnsure || v !== "unsure").map((value) => ({ value, label: t.levels[value] }));
 }
 
-export const WALK_IN_MESSAGES = {
-  nameRequired: "Pakilagay ang pangalan.",
-  nameTooShort: `Masyadong maikli. Kahit ${PLAYER_NAME_MIN} letra.`,
-  nameTooLong: `Hanggang ${PLAYER_NAME_MAX} letra lang.`,
-  levelInvalid: "Pumili ng level.",
-} as const;
+export function levelLabel(level: string, t: Dictionary): string {
+  return (LEVEL_VALUES as readonly string[]).includes(level) ? t.levels[level as Level] : level;
+}
+
 
 export type WalkInInput = { display_name: string; level: Level };
 
@@ -36,7 +31,7 @@ export function tidyName(raw: string): string {
   return raw.replace(/\s+/g, " ").trim();
 }
 
-export function parseWalkIn(form: FormLike): ParseResult<WalkInInput> {
+export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInInput> {
   const rawName = form.get("display_name");
   const name = tidyName(typeof rawName === "string" ? rawName : "");
   const rawLevel = form.get("level");
@@ -48,13 +43,13 @@ export function parseWalkIn(form: FormLike): ParseResult<WalkInInput> {
     {
       display_name:
         length === 0
-          ? WALK_IN_MESSAGES.nameRequired
+          ? t.live.nameRequired
           : length < PLAYER_NAME_MIN
-            ? WALK_IN_MESSAGES.nameTooShort
+            ? t.live.nameTooShort(PLAYER_NAME_MIN)
             : length > PLAYER_NAME_MAX
-              ? WALK_IN_MESSAGES.nameTooLong
+              ? t.live.nameTooLong(PLAYER_NAME_MAX)
               : undefined,
-      level: LEVELS.some((l) => l.value === level) ? undefined : WALK_IN_MESSAGES.levelInvalid,
+      level: (LEVEL_VALUES as readonly string[]).includes(level) ? undefined : t.live.levelInvalid,
     },
   );
 }
@@ -63,26 +58,28 @@ export function parseWalkIn(form: FormLike): ParseResult<WalkInInput> {
  * Walk-in payment (BR13/BR20, D18). With a fee there is no default: the
  * organizer picks one, so a walk-in is never held under pay_first by accident.
  */
-export const WALK_IN_PAYMENT_CHOICES = [
-  { value: "cash_received", label: "Nagbayad ng cash" },
-  { value: "gcash", label: "GCash", description: "Ilagay ang reference number sa ibaba" },
-  { value: "later", label: "Mamaya na magbabayad" },
-] as const;
-export type WalkInPayment = (typeof WALK_IN_PAYMENT_CHOICES)[number]["value"];
+export const WALK_IN_PAYMENTS = ["cash_received", "gcash", "later"] as const;
+export type WalkInPayment = (typeof WALK_IN_PAYMENTS)[number];
 
-export const WALK_IN_PAYMENT_REQUIRED = "Pumili kung paano magbabayad.";
+export function walkInPaymentChoices(t: Dictionary): { value: WalkInPayment; label: string }[] {
+  return [
+    { value: "cash_received", label: t.live.paidCash },
+    { value: "gcash", label: t.live.gcash },
+    { value: "later", label: t.live.payLater },
+  ];
+}
 
 export type WalkInPaymentResult =
   | { ok: true; payment?: WalkInPayment }
   | { ok: false; errors: { payment?: string; reference?: string } };
 
 /** No payment step when the session is free (fee 0). */
-export function parseWalkInPayment(fee: number, payment: string, reference: string): WalkInPaymentResult {
+export function parseWalkInPayment(fee: number, payment: string, reference: string, t: Dictionary): WalkInPaymentResult {
   if (fee <= 0) return { ok: true };
-  const choice = WALK_IN_PAYMENT_CHOICES.find((c) => c.value === payment)?.value;
-  if (!choice) return { ok: false, errors: { payment: WALK_IN_PAYMENT_REQUIRED } };
+  const choice = WALK_IN_PAYMENTS.find((value) => value === payment);
+  if (!choice) return { ok: false, errors: { payment: t.live.choosePayment } };
   if (choice === "gcash" && !normalizeReference(reference)) {
-    return { ok: false, errors: { reference: REFERENCE_MESSAGES.invalid } };
+    return { ok: false, errors: { reference: t.payments.invalidReference(REFERENCE_MIN, REFERENCE_MAX) } };
   }
   return { ok: true, payment: choice };
 }

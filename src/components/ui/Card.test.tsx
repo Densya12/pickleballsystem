@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Card } from "./Card";
 
 describe("Card", () => {
-  it("renders children with surface styles and keeps extra classes", () => {
+  it("is a white rounded card with no border (D19) and keeps extra classes", () => {
     render(
       <Card className="gap-3" data-testid="card">
         Court 1
@@ -11,17 +11,16 @@ describe("Card", () => {
     );
     const card = screen.getByTestId("card");
     expect(card).toHaveTextContent("Court 1");
-    expect(card).toHaveClass("bg-surface", "rounded-card", "shadow-card", "border-default", "gap-3");
+    expect(card).toHaveClass("bg-surface", "rounded-card", "p-4", "gap-3");
+    expect(card.className).not.toMatch(/\bborder\b/);
   });
-});
 
-describe("Card padding", () => {
   it("can drop its padding for row layouts", () => {
     render(
       <Card padding="none" data-testid="rows">
         rows
       </Card>,
     );
-    expect(screen.getByTestId("rows")).not.toHaveClass("p-5");
+    expect(screen.getByTestId("rows")).not.toHaveClass("p-4");
   });
 });

@@ -1,10 +1,10 @@
 /**
  * New-session input (BR2), shared by the form and its Server Action. The
- * database checks the same rules; this layer gives a Taglish message per field.
+ * database checks the same rules; this layer gives a message per field, in
+ * the device's language.
  */
 import {
   FEE_MAX,
-  MESSAGES as CLUB_MESSAGES,
   POINTS_OPTIONS,
   ROTATION_OPTIONS,
   toParseResult,
@@ -12,6 +12,7 @@ import {
   type Points,
   type Rotation,
 } from "@/lib/club/validation";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import { parseManilaLocal } from "./time";
 
 export const SESSION_NAME_MIN = 2;
@@ -22,13 +23,15 @@ export const COURTS_DEFAULT = 2;
 
 export const COURT_FORMATS = ["doubles", "singles"] as const;
 export type CourtFormat = (typeof COURT_FORMATS)[number];
-export const COURT_FORMAT_CHOICES: readonly { value: CourtFormat; label: string }[] = [
-  { value: "doubles", label: "Doubles" },
-  { value: "singles", label: "Singles" },
-];
+export function courtFormatChoices(t: Dictionary): { value: CourtFormat; label: string }[] {
+  return [
+    { value: "doubles", label: t.choices.doubles },
+    { value: "singles", label: t.choices.singles },
+  ];
+}
 
-export function courtFormatLabel(format: string): string {
-  return format === "singles" ? "Singles" : "Doubles";
+export function courtFormatLabel(format: string, t: Dictionary): string {
+  return format === "singles" ? t.choices.singles : t.choices.doubles;
 }
 
 /** Players per game: 2 singles, 4 doubles (mirrors private.court_size). */
@@ -36,20 +39,6 @@ export function courtSize(format: string): number {
   return format === "singles" ? 2 : 4;
 }
 
-export const SESSION_MESSAGES = {
-  nameRequired: "Pakilagay ang pangalan ng session.",
-  nameTooShort: `Masyadong maikli. Kahit ${SESSION_NAME_MIN} letra.`,
-  nameTooLong: `Hanggang ${SESSION_NAME_MAX} letra lang.`,
-  startsInvalid: "Pakilagay ang petsa at oras ng simula.",
-  endsInvalid: "Pakilagay ang petsa at oras ng tapos.",
-  endsBeforeStart: "Dapat mas huli ang Tapos kaysa sa Simula.",
-  courtsInvalid: `Pumili ng ${COURTS_MIN} hanggang ${COURTS_MAX} court.`,
-  pointsInvalid: CLUB_MESSAGES.pointsInvalid,
-  rotationInvalid: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
-  feeInvalid: CLUB_MESSAGES.feeInvalid,
-  feeTooHigh: CLUB_MESSAGES.feeTooHigh,
-  courtFormatsInvalid: "Pumili ng Doubles o Singles para sa bawat court.",
-} as const;
 
 /** Form field names (also the keys for field errors and kept values). */
 export const SESSION_FIELDS = [
@@ -86,7 +75,7 @@ function text(form: FormLike, field: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-export function parseNewSession(form: FormLike): ParseResult<NewSessionInput> {
+export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewSessionInput> {
   const name = text(form, "name");
   const nameLength = [...name].length;
   const startsAt = parseManilaLocal(text(form, "starts_at"));
@@ -106,30 +95,30 @@ export function parseNewSession(form: FormLike): ParseResult<NewSessionInput> {
   const errors: Partial<Record<keyof NewSessionInput, string>> = {
     name:
       nameLength === 0
-        ? SESSION_MESSAGES.nameRequired
+        ? t.session.nameRequired
         : nameLength < SESSION_NAME_MIN
-          ? SESSION_MESSAGES.nameTooShort
+          ? t.session.nameTooShort(SESSION_NAME_MIN)
           : nameLength > SESSION_NAME_MAX
-            ? SESSION_MESSAGES.nameTooLong
+            ? t.session.nameTooLong(SESSION_NAME_MAX)
             : undefined,
-    starts_at: startsAt ? undefined : SESSION_MESSAGES.startsInvalid,
+    starts_at: startsAt ? undefined : t.session.startsInvalid,
     ends_at: !endsAt
-      ? SESSION_MESSAGES.endsInvalid
+      ? t.session.endsInvalid
       : startsAt && endsAt <= startsAt
-        ? SESSION_MESSAGES.endsBeforeStart
+        ? t.session.endsBeforeStart
         : undefined,
     courts_count:
       Number.isInteger(courts) && courts >= COURTS_MIN && courts <= COURTS_MAX
         ? undefined
-        : SESSION_MESSAGES.courtsInvalid,
-    points_to: (POINTS_OPTIONS as readonly number[]).includes(points) ? undefined : SESSION_MESSAGES.pointsInvalid,
+        : t.session.courtsInvalid(COURTS_MIN, COURTS_MAX),
+    points_to: (POINTS_OPTIONS as readonly number[]).includes(points) ? undefined : t.club.pointsInvalid,
     rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotation)
       ? undefined
-      : SESSION_MESSAGES.rotationInvalid,
-    fee: Number.isNaN(fee) ? SESSION_MESSAGES.feeInvalid : fee > FEE_MAX ? SESSION_MESSAGES.feeTooHigh : undefined,
+      : t.club.rotationInvalid,
+    fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
     court_formats: courtFormats.every((f) => (COURT_FORMATS as readonly string[]).includes(f))
       ? undefined
-      : SESSION_MESSAGES.courtFormatsInvalid,
+      : t.session.courtFormatsInvalid,
   };
 
   return toParseResult(

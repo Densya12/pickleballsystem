@@ -12,6 +12,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
+    // A stuck tap fails at that step, not as a bare test timeout.
+    actionTimeout: 10_000,
   },
   // Mobile-first app: test on a phone-sized Chromium viewport.
   projects: [{ name: "mobile-chromium", use: { ...devices["Pixel 7"] } }],

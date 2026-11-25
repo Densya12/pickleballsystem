@@ -1,99 +1,78 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { Suspense } from "react";
-import { BackLink, PageShell } from "@/components/ui";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { MainTabBar } from "@/components/nav/MainTabBar";
+import { FeedbackRow, ListGroup, ListRow, PageShell, Section } from "@/components/ui";
 import { requireClub } from "@/lib/auth/dal";
-import { inviteExpiryText } from "@/lib/club/messages";
-import { originFromHeaders } from "@/lib/http/origin";
-import { qrSvg } from "@/lib/queue/qr";
+import { formatPeso } from "@/lib/format";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
-import { SettingsView, type InviteItem, type StaffItem } from "./SettingsView";
+import { signOutAction } from "./actions";
+import { ReadAloudSetting } from "./ReadAloudSetting";
 
 export const metadata: Metadata = {
-  title: "Settings ng club · Open Play Queue",
+  title: `${en.settings.pageTitle} · ${en.common.appName}`,
 };
 
+/** Settings (D19): club pages, language, read calls aloud, the guide, sign out. */
 export default function SettingsPage() {
   return (
-    <Suspense
-      fallback={
-        <PageShell header={<SettingsHeader />}>
-          <p className="text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell tabBar={<MainTabBar current="settings" />}>{null}</PageShell>}>
       <SettingsContent />
     </Suspense>
   );
 }
 
-function SettingsHeader() {
-  return (
-    <div className="flex flex-col gap-1 print:hidden">
-      <BackLink href="/" />
-      <h1 className="text-3xl">Settings ng club</h1>
-    </div>
-  );
-}
-
 async function SettingsContent() {
-  const { user, club, role } = await requireClub("/settings");
-  const isOwner = role === "owner";
+  const [{ club, role }, t] = await Promise.all([requireClub("/settings"), getT()]);
   const supabase = await createClient();
-  const now = new Date();
-
-  const [staffResult, invitesResult, headerList] = await Promise.all([
-    supabase.rpc("list_club_staff", { p_club_id: club.id }),
-    isOwner
-      ? supabase
-          .from("club_invites")
-          .select("id, token, expires_at")
-          .eq("club_id", club.id)
-          .is("used_at", null)
-          .is("revoked_at", null)
-          .gt("expires_at", now.toISOString())
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [], error: null }),
-    headers(),
-  ]);
-
-  if (staffResult.error) throw new Error(`Could not load organizers: ${staffResult.error.message}`);
-  if (invitesResult.error) throw new Error(`Could not load invites: ${invitesResult.error.message}`);
-
-  const origin = originFromHeaders(headerList);
-  const entryUrl = `${origin}/c/${club.entry_code}`;
-  const clubQr = isOwner ? { url: entryUrl, svg: await qrSvg(entryUrl), clubName: club.name } : undefined;
-
-  const staff: StaffItem[] = staffResult.data.map((s) => ({
-    userId: s.user_id,
-    role: s.role === "owner" ? "owner" : "organizer",
-    name: s.display_name,
-    email: s.email,
-    isMe: s.user_id === user.id,
-  }));
-
-  const invites: InviteItem[] = (invitesResult.data ?? []).map((i) => ({
-    id: i.id,
-    url: `${origin}/invite/${i.token}`,
-    expiryText: inviteExpiryText(i.expires_at, now),
-  }));
+  const { data: staff } = await supabase.rpc("list_club_staff", { p_club_id: club.id });
+  const value = (text: string) => <span className="max-w-[45%] truncate [font-size:14px] text-muted">{text}</span>;
 
   return (
-    <SettingsView
-      header={<SettingsHeader />}
-      club={{
-        name: club.name,
-        city: club.city ?? "",
-        gcash_name: club.gcash_name ?? "",
-        gcash_number: club.gcash_number ?? "",
-        default_fee: String(club.default_fee),
-        default_points: String(club.default_points),
-        default_rotation: club.default_rotation,
-      }}
-      isOwner={isOwner}
-      staff={staff}
-      invites={invites}
-      clubQr={clubQr}
-    />
+    <PageShell title={t.settings.title} titleSize="xl" tabBar={<MainTabBar current="settings" />}>
+      <div className="flex flex-col gap-6">
+        <Section id="club" label={t.settings.club}>
+          <ListGroup>
+            <ListRow href="/settings/club" trailing={value(club.name)}>
+              {t.settings.clubDetails}
+            </ListRow>
+            <ListRow href="/settings/payments" trailing={value(formatPeso(club.default_fee))}>
+              {t.settings.gcashAndFee}
+            </ListRow>
+            {role === "owner" && <ListRow href="/settings/qr">{t.settings.clubQr}</ListRow>}
+            <ListRow href="/settings/organizers" trailing={value(String(staff?.length ?? 1))}>
+              {t.settings.coOrganizers}
+            </ListRow>
+          </ListGroup>
+        </Section>
+
+        <Section id="app" label={t.settings.app}>
+          <ListGroup>
+            <li className="flex flex-col gap-2.5 px-4 py-3">
+              <span id="language-label">{t.settings.language}</span>
+              <LanguageSwitch look="full" label={t.settings.language} />
+            </li>
+            <ReadAloudSetting />
+          </ListGroup>
+        </Section>
+
+        <ListGroup>
+          <ListRow href="/guide">{t.settings.guide}</ListRow>
+          <FeedbackRow label={t.common.feedback} />
+          <li>
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className="flex min-h-12 w-full items-center px-4 py-3 text-left text-danger hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
+              >
+                {t.settings.signOut}
+              </button>
+            </form>
+          </li>
+        </ListGroup>
+      </div>
+    </PageShell>
   );
 }

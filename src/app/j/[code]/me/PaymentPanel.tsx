@@ -6,8 +6,8 @@ import { Button, CopyButton, Input } from "@/components/ui";
 import { AlertIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { formatGcashNumber, formatPeso } from "@/lib/format";
-import { paymentStatusText } from "@/lib/payments/messages";
-import { normalizeReference, REFERENCE_MESSAGES } from "@/lib/payments/reference";
+import { useT } from "@/lib/i18n/client";
+import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 import { playerErrorMessage } from "@/lib/player/messages";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,35 +19,38 @@ type Props = {
   payment: { status: string; method: string | null };
 };
 
-const STYLE = {
-  confirmed: { Icon: CheckIcon, className: "bg-success text-success" },
-  pending: { Icon: ClockIcon, className: "bg-subtle text-ink" },
-  unpaid: { Icon: AlertIcon, className: "bg-warn text-warn" },
-} as const;
-
-/** Pwesto: payment status, and a way to send a GCash reference while unpaid (BR13). */
-export function PaymentPanel({ playerId, fee, payFirst, gcash, payment }: Props) {
+/** A list row: the player's payment status, and a way to send a GCash reference while unpaid (BR13). */
+export function PaymentRow({ playerId, fee, payFirst, gcash, payment }: Props) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   if (fee <= 0) return null;
 
-  const status = (payment.status in STYLE ? payment.status : "unpaid") as keyof typeof STYLE;
-  const { Icon, className } = STYLE[status];
+  const status = payment.status === "confirmed" || payment.status === "pending" ? payment.status : "unpaid";
+  const Icon = status === "confirmed" ? CheckIcon : status === "pending" ? ClockIcon : AlertIcon;
+  const detail =
+    status === "confirmed"
+      ? t.player.paymentPaid
+      : status === "pending"
+        ? t.player.paymentPending
+        : payment.method === "cash"
+          ? t.player.paymentUnpaidCash
+          : t.player.paymentUnpaid;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const raw = String(new FormData(event.currentTarget).get("reference") ?? "");
     if (!normalizeReference(raw)) {
-      setError(REFERENCE_MESSAGES.invalid);
+      setError(t.payments.invalidReference(REFERENCE_MIN, REFERENCE_MAX));
       return;
     }
     setBusy(true);
     const { error: rpcError } = await createClient().rpc("player_submit_reference", { p_player_id: playerId, p_reference: raw });
     setBusy(false);
     if (rpcError) {
-      setError(playerErrorMessage(rpcError));
+      setError(playerErrorMessage(rpcError, t));
       return;
     }
     setOpen(false);
@@ -56,43 +59,44 @@ export function PaymentPanel({ playerId, fee, payFirst, gcash, payment }: Props)
   }
 
   return (
-    <section aria-label="Bayad" className="flex flex-col gap-3">
-      <p className={cn("flex items-start gap-2 rounded-control px-4 py-3 font-semibold", className)} data-payment={status}>
-        <Icon className="mt-0.5 size-5 shrink-0" />
-        <span>
-          {paymentStatusText(status)} · {formatPeso(fee)}
-          {status === "unpaid" && payment.method === "cash" && (
-            <span className="block font-normal">Cash: ibigay sa organizer.</span>
-          )}
-        </span>
-      </p>
-      {status === "unpaid" && payFirst && <p className="font-semibold">Nilalaktawan ka muna hangga&apos;t hindi bayad.</p>}
+    <li aria-label={t.player.payment} className="flex flex-col">
+      <div className="flex items-center gap-3 px-4 py-3" data-payment={status}>
+        <Icon className={cn("size-5 shrink-0", status === "unpaid" ? "text-warn" : status === "confirmed" ? "text-success" : "text-muted")} />
+        <div className="min-w-0 flex-1">
+          <p className="font-medium">{t.player.paymentRow(formatPeso(fee))}</p>
+          <p className={cn("text-sm", status === "unpaid" ? "text-warn" : "text-muted")}>{detail}</p>
+          {status === "unpaid" && payFirst && <p className="text-sm font-medium text-warn">{t.player.heldNote}</p>}
+        </div>
+      </div>
       {status === "unpaid" &&
         (open ? (
-          <form onSubmit={submit} noValidate className="flex flex-col gap-3 rounded-control border-[1.5px] border-ink bg-surface p-4">
+          <form onSubmit={submit} noValidate className="flex flex-col gap-3 border-t border-hairline px-4 py-3">
             {gcash.number && (
-              <div className="flex flex-col gap-2">
-                <p className="text-muted">I-send sa GCash ng club:</p>
-                <p className="font-semibold [overflow-wrap:anywhere]">
-                  {gcash.name ? `${gcash.name} · ` : ""}
-                  {formatGcashNumber(gcash.number)}
-                </p>
-                <CopyButton text={gcash.number} label="Kopyahin ang number" />
+              <div className="flex items-center justify-between gap-3 rounded-control bg-info px-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-sm text-muted [overflow-wrap:anywhere]">{t.player.sendTo(gcash.name)}</p>
+                  <p className="font-medium">{formatGcashNumber(gcash.number)}</p>
+                </div>
+                <CopyButton text={gcash.number} label={t.player.copyNumber} />
               </div>
             )}
-            <Input label="GCash reference number" name="reference" inputMode="numeric" autoComplete="off" hint={REFERENCE_MESSAGES.hint} error={error} />
-            <Button type="submit" fullWidth disabled={busy}>
-              {busy ? "Ipinapadala…" : "I-submit ang reference"}
-            </Button>
-            <Button variant="secondary" fullWidth disabled={busy} onClick={() => setOpen(false)}>
-              Huwag muna
-            </Button>
+            <Input label={t.player.reference} name="reference" inputMode="numeric" autoComplete="off" hint={t.payments.referenceHint} error={error} />
+            <div className="flex gap-2">
+              <Button variant="ghost" size="pill" className="flex-1" disabled={busy} onClick={() => setOpen(false)}>
+                {t.common.cancel}
+              </Button>
+              <Button type="submit" size="pill" className="flex-1" disabled={busy}>
+                {busy ? t.player.sending : t.player.sendReference}
+              </Button>
+            </div>
           </form>
         ) : (
-          <Button variant="secondary" fullWidth onClick={() => setOpen(true)}>
-            Ilagay ang GCash reference
-          </Button>
+          <div className="border-t border-hairline px-4 py-2">
+            <Button variant="ghost" size="sm" className="-ml-2" onClick={() => setOpen(true)}>
+              {t.player.addReference}
+            </Button>
+          </div>
         ))}
-    </section>
+    </li>
   );
 }

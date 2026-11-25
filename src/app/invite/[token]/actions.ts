@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/dal";
 import { clubErrorMessage } from "@/lib/club/messages";
+import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 export type JoinState = { error?: string };
@@ -13,7 +14,7 @@ export async function acceptInviteAction(token: string): Promise<JoinState> {
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("accept_invite", { p_token: token });
-  if (error) return { error: clubErrorMessage(error) };
+  if (error) return { error: clubErrorMessage(error, await getT()) };
 
   redirect("/");
 }

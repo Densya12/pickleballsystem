@@ -2,23 +2,20 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageShell } from "@/components/ui";
+import { en } from "@/lib/i18n/dictionary";
 import { getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { CourtsView } from "./CourtsView";
 
 export const metadata: Metadata = {
-  title: "Mga court · Open Play Queue",
+  title: `${en.player.courtsPageTitle} · ${en.common.appName}`,
 };
 
 /** Mga court (D14, BR21): who is playing and who is next, for players of this session. */
 export default function CourtsPage({ params }: PageProps<"/j/[code]/courts">) {
   return (
     <Suspense
-      fallback={
-        <PageShell>
-          <p className="pt-10 text-muted">Sandali lang…</p>
-        </PageShell>
-      }
+      fallback={<PageShell>{null}</PageShell>}
     >
       <CourtsContent params={params} />
     </Suspense>

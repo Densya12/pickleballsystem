@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { en } from "@/lib/i18n/dictionary";
 import {
-  MESSAGES,
   isValidGcashNumber,
   normalizeGcashNumber,
   parseClubSettings,
@@ -48,39 +48,39 @@ describe("isValidGcashNumber", () => {
 });
 
 describe("validateClubName", () => {
-  it("requires a name", () => expect(validateClubName("")).toBe(MESSAGES.nameRequired));
-  it("needs at least 2 characters", () => expect(validateClubName("A")).toBe(MESSAGES.nameTooShort));
+  it("requires a name", () => expect(validateClubName("", en)).toBe(en.club.nameRequired));
+  it("needs at least 2 characters", () => expect(validateClubName("A", en)).toBe(en.club.nameTooShort(2)));
   it("allows up to 60 characters", () => {
-    expect(validateClubName("x".repeat(60))).toBeUndefined();
-    expect(validateClubName("x".repeat(61))).toBe(MESSAGES.nameTooLong);
+    expect(validateClubName("x".repeat(60), en)).toBeUndefined();
+    expect(validateClubName("x".repeat(61), en)).toBe(en.club.tooLong(60));
   });
-  it("counts emoji as one character", () => expect(validateClubName("🏓🏓")).toBeUndefined());
+  it("counts emoji as one character", () => expect(validateClubName("🏓🏓", en)).toBeUndefined());
 });
 
 describe("parseNewClub", () => {
   it("trims and turns a blank city into null", () => {
-    expect(parseNewClub(form({ name: "  Makati Picklers ", city: "  " }))).toEqual({
+    expect(parseNewClub(form({ name: "  Makati Picklers ", city: "  " }), en)).toEqual({
       ok: true,
       data: { name: "Makati Picklers", city: null },
     });
   });
 
   it("returns a Taglish message for a missing name", () => {
-    expect(parseNewClub(form({ name: " ", city: "" }))).toEqual({
+    expect(parseNewClub(form({ name: " ", city: "" }), en)).toEqual({
       ok: false,
-      errors: { name: MESSAGES.nameRequired },
+      errors: { name: en.club.nameRequired },
     });
   });
 
   it("limits city length", () => {
-    const result = parseNewClub(form({ name: "Club", city: "x".repeat(61) }));
-    expect(result).toEqual({ ok: false, errors: { city: MESSAGES.cityTooLong } });
+    const result = parseNewClub(form({ name: "Club", city: "x".repeat(61) }), en);
+    expect(result).toEqual({ ok: false, errors: { city: en.club.tooLong(60) } });
   });
 });
 
 describe("parseClubSettings", () => {
   it("parses valid input and normalizes the GCash number", () => {
-    expect(parseClubSettings(form(validSettings))).toEqual({
+    expect(parseClubSettings(form(validSettings), en)).toEqual({
       ok: true,
       data: {
         name: "Makati Picklers",
@@ -95,41 +95,41 @@ describe("parseClubSettings", () => {
   });
 
   it("allows blank GCash fields", () => {
-    const result = parseClubSettings(form({ ...validSettings, gcash_name: "", gcash_number: "" }));
+    const result = parseClubSettings(form({ ...validSettings, gcash_name: "", gcash_number: "" }), en);
     expect(result.ok && result.data.gcash_number).toBeNull();
     expect(result.ok && result.data.gcash_name).toBeNull();
   });
 
   it("explains a bad GCash number", () => {
-    const result = parseClubSettings(form({ ...validSettings, gcash_number: "0817 123 4567" }));
-    expect(result).toEqual({ ok: false, errors: { gcash_number: MESSAGES.gcashNumberInvalid } });
+    const result = parseClubSettings(form({ ...validSettings, gcash_number: "0817 123 4567" }), en);
+    expect(result).toEqual({ ok: false, errors: { gcash_number: en.club.gcashNumberInvalid } });
   });
 
   it.each(["-1", "1.5", "abc", "", "₱150"])("rejects fee %j", (fee) => {
-    const result = parseClubSettings(form({ ...validSettings, default_fee: fee }));
-    expect(result).toEqual({ ok: false, errors: { default_fee: MESSAGES.feeInvalid } });
+    const result = parseClubSettings(form({ ...validSettings, default_fee: fee }), en);
+    expect(result).toEqual({ ok: false, errors: { default_fee: en.club.feeInvalid } });
   });
 
   it("accepts a fee of 0 and rejects absurd fees", () => {
-    expect(parseClubSettings(form({ ...validSettings, default_fee: "0" })).ok).toBe(true);
-    expect(parseClubSettings(form({ ...validSettings, default_fee: "100001" }))).toEqual({
+    expect(parseClubSettings(form({ ...validSettings, default_fee: "0" }), en).ok).toBe(true);
+    expect(parseClubSettings(form({ ...validSettings, default_fee: "100001" }), en)).toEqual({
       ok: false,
-      errors: { default_fee: MESSAGES.feeTooHigh },
+      errors: { default_fee: en.club.feeTooHigh },
     });
   });
 
   it("only allows 11, 15 or 21 points and known rotations", () => {
     const result = parseClubSettings(
-      form({ ...validSettings, default_points: "12", default_rotation: "random" }),
+      form({ ...validSettings, default_points: "12", default_rotation: "random" }), en
     );
     expect(result).toEqual({
       ok: false,
-      errors: { default_points: MESSAGES.pointsInvalid, default_rotation: MESSAGES.rotationInvalid },
+      errors: { default_points: en.club.pointsInvalid, default_rotation: en.club.rotationInvalid },
     });
   });
 
   it("reports every invalid field at once", () => {
-    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay" }));
+    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay" }), en);
     expect(result.ok).toBe(false);
     expect(!result.ok && Object.keys(result.errors).sort()).toEqual(["default_fee", "name"]);
   });

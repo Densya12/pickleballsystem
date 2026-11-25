@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/dal";
 import { clubErrorMessage } from "@/lib/club/messages";
 import { parseNewClub, type NewClubInput } from "@/lib/club/validation";
+import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 export type CreateClubState = {
@@ -17,12 +18,13 @@ export async function createClubAction(
   formData: FormData,
 ): Promise<CreateClubState> {
   await requireUser("/club/new");
+  const t = await getT();
 
   const values = {
     name: String(formData.get("name") ?? ""),
     city: String(formData.get("city") ?? ""),
   };
-  const parsed = parseNewClub(formData);
+  const parsed = parseNewClub(formData, t);
   if (!parsed.ok) return { fieldErrors: parsed.errors, values };
 
   const supabase = await createClient();
@@ -30,7 +32,7 @@ export async function createClubAction(
     p_name: parsed.data.name,
     p_city: parsed.data.city ?? undefined,
   });
-  if (error) return { error: clubErrorMessage(error), values };
+  if (error) return { error: clubErrorMessage(error, t), values };
 
   redirect("/");
 }

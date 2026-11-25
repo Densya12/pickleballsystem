@@ -15,8 +15,3 @@ export function normalizeReference(raw: string): string | null {
 export function maskReference(digits: string): string {
   return `•••• ${digits.slice(-4)}`;
 }
-
-export const REFERENCE_MESSAGES = {
-  invalid: `Mukhang mali ang reference number. ${REFERENCE_MIN} hanggang ${REFERENCE_MAX} na numero.`,
-  hint: "Okay lang kahit may space o gitling.",
-} as const;

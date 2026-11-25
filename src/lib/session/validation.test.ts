@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseNewSession, SESSION_MESSAGES } from "./validation";
+import { en } from "@/lib/i18n/dictionary";
+import { parseNewSession } from "./validation";
 
 function form(overrides: Record<string, string | null> = {}) {
   const values: Record<string, string | null> = {
@@ -19,14 +20,14 @@ function form(overrides: Record<string, string | null> = {}) {
 }
 
 function errorsOf(overrides: Record<string, string | null>) {
-  const result = parseNewSession(form(overrides));
+  const result = parseNewSession(form(overrides), en);
   if (result.ok) throw new Error("expected errors");
   return result.errors;
 }
 
 describe("parseNewSession", () => {
   it("accepts a valid form and converts Manila times to UTC", () => {
-    expect(parseNewSession(form())).toEqual({
+    expect(parseNewSession(form(), en)).toEqual({
       ok: true,
       data: {
         name: "Friday Night Open Play",
@@ -43,51 +44,51 @@ describe("parseNewSession", () => {
   });
 
   it("reads one Doubles/Singles choice per court (missing = Doubles)", () => {
-    const result = parseNewSession(form({ courts_count: "3", court_format_1: "doubles", court_format_2: "singles" }));
+    const result = parseNewSession(form({ courts_count: "3", court_format_1: "doubles", court_format_2: "singles" }), en);
     expect(result.ok && result.data.court_formats).toEqual(["doubles", "singles", "doubles"]);
   });
 
   it("ignores choices for courts beyond the count", () => {
-    const result = parseNewSession(form({ courts_count: "1", court_format_1: "singles", court_format_2: "singles" }));
+    const result = parseNewSession(form({ courts_count: "1", court_format_1: "singles", court_format_2: "singles" }), en);
     expect(result.ok && result.data.court_formats).toEqual(["singles"]);
   });
 
   it("refuses an unknown format", () => {
-    expect(errorsOf({ courts_count: "2", court_format_2: "triples" })).toEqual({ court_formats: SESSION_MESSAGES.courtFormatsInvalid });
+    expect(errorsOf({ courts_count: "2", court_format_2: "triples" })).toEqual({ court_formats: en.session.courtFormatsInvalid });
   });
 
   it("reads the pay-first switch (checked sends 'on')", () => {
-    const result = parseNewSession(form({ pay_first: "on" }));
+    const result = parseNewSession(form({ pay_first: "on" }), en);
     expect(result.ok && result.data.pay_first).toBe(true);
   });
 
   it("trims the name and allows a session that ends after midnight", () => {
-    const result = parseNewSession(form({ name: "  Late Night  ", starts_at: "2026-11-27T22:00", ends_at: "2026-11-28T01:00" }));
+    const result = parseNewSession(form({ name: "  Late Night  ", starts_at: "2026-11-27T22:00", ends_at: "2026-11-28T01:00" }), en);
     expect(result.ok && result.data.name).toBe("Late Night");
     expect(result.ok && result.data.ends_at).toBe("2026-11-27T17:00:00.000Z");
   });
 
   it.each([
-    [{ name: "" }, "name", SESSION_MESSAGES.nameRequired],
-    [{ name: "   " }, "name", SESSION_MESSAGES.nameRequired],
-    [{ name: "X" }, "name", SESSION_MESSAGES.nameTooShort],
-    [{ name: "n".repeat(61) }, "name", SESSION_MESSAGES.nameTooLong],
-    [{ starts_at: "" }, "starts_at", SESSION_MESSAGES.startsInvalid],
-    [{ starts_at: "2026-02-30T18:00" }, "starts_at", SESSION_MESSAGES.startsInvalid],
-    [{ ends_at: "" }, "ends_at", SESSION_MESSAGES.endsInvalid],
-    [{ ends_at: "2026-11-27T18:00" }, "ends_at", SESSION_MESSAGES.endsBeforeStart],
-    [{ ends_at: "2026-11-27T17:00" }, "ends_at", SESSION_MESSAGES.endsBeforeStart],
-    [{ courts_count: "0" }, "courts_count", SESSION_MESSAGES.courtsInvalid],
-    [{ courts_count: "9" }, "courts_count", SESSION_MESSAGES.courtsInvalid],
-    [{ courts_count: "2.5" }, "courts_count", SESSION_MESSAGES.courtsInvalid],
-    [{ courts_count: null }, "courts_count", SESSION_MESSAGES.courtsInvalid],
-    [{ points_to: "12" }, "points_to", SESSION_MESSAGES.pointsInvalid],
-    [{ points_to: null }, "points_to", SESSION_MESSAGES.pointsInvalid],
-    [{ rotation: "random" }, "rotation", SESSION_MESSAGES.rotationInvalid],
-    [{ fee: "" }, "fee", SESSION_MESSAGES.feeInvalid],
-    [{ fee: "-5" }, "fee", SESSION_MESSAGES.feeInvalid],
-    [{ fee: "12.50" }, "fee", SESSION_MESSAGES.feeInvalid],
-    [{ fee: "100001" }, "fee", SESSION_MESSAGES.feeTooHigh],
+    [{ name: "" }, "name", en.session.nameRequired],
+    [{ name: "   " }, "name", en.session.nameRequired],
+    [{ name: "X" }, "name", en.session.nameTooShort(2)],
+    [{ name: "n".repeat(61) }, "name", en.session.nameTooLong(60)],
+    [{ starts_at: "" }, "starts_at", en.session.startsInvalid],
+    [{ starts_at: "2026-02-30T18:00" }, "starts_at", en.session.startsInvalid],
+    [{ ends_at: "" }, "ends_at", en.session.endsInvalid],
+    [{ ends_at: "2026-11-27T18:00" }, "ends_at", en.session.endsBeforeStart],
+    [{ ends_at: "2026-11-27T17:00" }, "ends_at", en.session.endsBeforeStart],
+    [{ courts_count: "0" }, "courts_count", en.session.courtsInvalid(1, 8)],
+    [{ courts_count: "9" }, "courts_count", en.session.courtsInvalid(1, 8)],
+    [{ courts_count: "2.5" }, "courts_count", en.session.courtsInvalid(1, 8)],
+    [{ courts_count: null }, "courts_count", en.session.courtsInvalid(1, 8)],
+    [{ points_to: "12" }, "points_to", en.club.pointsInvalid],
+    [{ points_to: null }, "points_to", en.club.pointsInvalid],
+    [{ rotation: "random" }, "rotation", en.club.rotationInvalid],
+    [{ fee: "" }, "fee", en.club.feeInvalid],
+    [{ fee: "-5" }, "fee", en.club.feeInvalid],
+    [{ fee: "12.50" }, "fee", en.club.feeInvalid],
+    [{ fee: "100001" }, "fee", en.club.feeTooHigh],
   ])("%j → %s error", (overrides, field, message) => {
     expect(errorsOf(overrides)).toEqual({ [field]: message });
   });
@@ -100,10 +101,10 @@ describe("parseNewSession", () => {
     [{ rotation: "winners_stay" }],
     [{ fee: "0" }],
   ])("accepts the allowed value %j", (overrides) => {
-    expect(parseNewSession(form(overrides)).ok).toBe(true);
+    expect(parseNewSession(form(overrides), en).ok).toBe(true);
   });
 
   it("does not compare times when the start is missing", () => {
-    expect(errorsOf({ starts_at: "" })).toEqual({ starts_at: SESSION_MESSAGES.startsInvalid });
+    expect(errorsOf({ starts_at: "" })).toEqual({ starts_at: en.session.startsInvalid });
   });
 });

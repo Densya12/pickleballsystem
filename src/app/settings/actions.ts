@@ -3,7 +3,8 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireClub } from "@/lib/auth/dal";
-import { CLUB_ERRORS, clubErrorMessage } from "@/lib/club/messages";
+import { clubErrorMessage } from "@/lib/club/messages";
+import { getT } from "@/lib/i18n/server";
 import { parseClubSettings, type ClubSettingsInput } from "@/lib/club/validation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,15 +31,16 @@ export async function saveSettingsAction(
   formData: FormData,
 ): Promise<SettingsState> {
   const { club, role } = await requireClub("/settings");
+  const t = await getT();
   const values = Object.fromEntries(FIELDS.map((f) => [f, String(formData.get(f) ?? "")]));
 
-  if (role !== "owner") return { status: "error", message: CLUB_ERRORS.ownerOnly, values };
+  if (role !== "owner") return { status: "error", message: t.club.ownerOnly, values };
 
-  const parsed = parseClubSettings(formData);
+  const parsed = parseClubSettings(formData, t);
   if (!parsed.ok) {
     return {
       status: "error",
-      message: "May mali sa form. I-check ang mga naka-pula.",
+      message: t.common.formError,
       fieldErrors: parsed.errors,
       values,
     };
@@ -51,19 +53,20 @@ export async function saveSettingsAction(
     .eq("id", club.id)
     .select("id");
 
-  if (error) return { status: "error", message: clubErrorMessage(error), values };
+  if (error) return { status: "error", message: clubErrorMessage(error, t), values };
   // RLS turns a non-owner update into "0 rows" rather than an error.
-  if (!data?.length) return { status: "error", message: CLUB_ERRORS.ownerOnly, values };
+  if (!data?.length) return { status: "error", message: t.club.ownerOnly, values };
 
   refresh();
-  return { status: "saved", message: "Na-save na." };
+  return { status: "saved", message: t.common.saved };
 }
 
 export type StaffActionResult = { error?: string; token?: string };
 
 export async function createInviteAction(): Promise<StaffActionResult> {
   const { club, role } = await requireClub("/settings");
-  if (role !== "owner") return { error: CLUB_ERRORS.ownerOnly };
+  const t = await getT();
+  if (role !== "owner") return { error: t.club.ownerOnly };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -71,7 +74,7 @@ export async function createInviteAction(): Promise<StaffActionResult> {
     .insert({ club_id: club.id })
     .select("token")
     .single();
-  if (error) return { error: clubErrorMessage(error) };
+  if (error) return { error: clubErrorMessage(error, t) };
 
   refresh();
   return { token: data.token };
@@ -79,6 +82,7 @@ export async function createInviteAction(): Promise<StaffActionResult> {
 
 export async function revokeInviteAction(inviteId: string): Promise<StaffActionResult> {
   const { club } = await requireClub("/settings");
+  const t = await getT();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("club_invites")
@@ -86,8 +90,8 @@ export async function revokeInviteAction(inviteId: string): Promise<StaffActionR
     .eq("id", inviteId)
     .eq("club_id", club.id)
     .select("id");
-  if (error) return { error: clubErrorMessage(error) };
-  if (!data?.length) return { error: CLUB_ERRORS.ownerOnly };
+  if (error) return { error: clubErrorMessage(error, t) };
+  if (!data?.length) return { error: t.club.ownerOnly };
 
   refresh();
   return {};
@@ -95,22 +99,24 @@ export async function revokeInviteAction(inviteId: string): Promise<StaffActionR
 
 export async function removeStaffAction(userId: string): Promise<StaffActionResult> {
   const { club } = await requireClub("/settings");
+  const t = await getT();
   const supabase = await createClient();
   const { error } = await supabase.rpc("remove_staff", { p_club_id: club.id, p_user_id: userId });
-  if (error) return { error: clubErrorMessage(error) };
+  if (error) return { error: clubErrorMessage(error, t) };
 
   refresh();
   return {};
 }
 
-/** "Palitan ang QR": a new club entry code; printed copies of the old one stop working. */
+/** "Replace QR": a new club entry code; printed copies of the old one stop working. */
 export async function regenerateEntryCodeAction(): Promise<StaffActionResult> {
   const { club, role } = await requireClub("/settings");
-  if (role !== "owner") return { error: CLUB_ERRORS.ownerOnly };
+  const t = await getT();
+  if (role !== "owner") return { error: t.club.ownerOnly };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("regenerate_entry_code", { p_club_id: club.id });
-  if (error) return { error: clubErrorMessage(error) };
+  if (error) return { error: clubErrorMessage(error, t) };
 
   refresh();
   return {};

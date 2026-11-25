@@ -1,253 +1,128 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { MiniCourt } from "@/components/court/MiniCourt";
 import {
   BackLink,
   Button,
   Card,
+  EmptyState,
+  IconButton,
   Input,
+  ListGroup,
+  ListRow,
   Notice,
   PageShell,
   RadioGroup,
-  StatusLabel,
+  RowText,
+  Section,
+  StatusChip,
   Stepper,
   Toggle,
-  type ButtonVariant,
-  type StatusKind,
 } from "@/components/ui";
-import { ROTATION_CHOICES } from "@/lib/club/options";
-import { SessionStatusLabel } from "@/components/session/SessionStatusLabel";
+import { BellIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
   title: "Design System · Open Play Queue",
 };
 
-const VARIANTS: { variant: ButtonVariant; label: string }[] = [
-  { variant: "primary", label: "Sumali sa pila" },
-  { variant: "secondary", label: "Tingnan ang pila" },
-  { variant: "accent", label: "Simulan ang laro" },
-  { variant: "danger-outline", label: "Tanggalin sa pila" },
-];
-
-const STATUSES: StatusKind[] = ["paid", "pending", "hold", "playing"];
-
-const SWATCHES: { name: string; className: string; hex: string }[] = [
-  { name: "page", className: "bg-page", hex: "#F6F6F3" },
-  { name: "surface", className: "bg-surface", hex: "#FFFFFF" },
-  { name: "subtle", className: "bg-subtle", hex: "#F2F2EE" },
-  { name: "primary", className: "bg-primary", hex: "#111412" },
-  { name: "primary-tint", className: "bg-primary-tint", hex: "#F3F6EA" },
-  { name: "accent", className: "bg-accent", hex: "#C9F26B" },
-  { name: "accent-soft", className: "bg-accent-soft", hex: "#F1F9DC" },
-  { name: "success", className: "bg-success", hex: "#EEF5E4" },
-  { name: "warn", className: "bg-warn", hex: "#FBEEDC" },
-];
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  const id = `ds-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`;
-  return (
-    <section aria-labelledby={id} className="flex flex-col gap-3">
-      <h2 id={id} className="text-2xl">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
+/** Developer reference for the v5 "Clean 2026" components (D19). Not linked from the app. */
 export default function DesignSystemPage() {
   return (
     <PageShell
-      header={
-        <div className="flex flex-col gap-1">
-          <BackLink href="/" />
-          <h1 className="text-3xl">Design System</h1>
-          <p className="text-muted">Ink &amp; Lime · lahat ng base components, isang pahina.</p>
-        </div>
-      }
-      footer={
-        <Button fullWidth size="lg" variant="accent">
-          Mag-check in na
-        </Button>
-      }
+      top={<BackLink href="/" label="Home" />}
+      eyebrow="Ink & Lime · v5"
+      title="Design System"
+      footer={<Button fullWidth>Main button</Button>}
     >
-      <div className="flex flex-col gap-10">
-        <Section title="Colors">
-          <ul className="grid grid-cols-3 gap-3">
-            {SWATCHES.map((s) => (
-              <li key={s.name} className="flex flex-col gap-1">
-                <span className={`h-14 rounded-control border border-default ${s.className}`} />
-                <span className="text-base font-semibold">{s.name}</span>
-                <span className="text-base text-muted">{s.hex}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="flex flex-col gap-6">
+        <Section id="buttons" label="Buttons">
+          <Card className="flex flex-wrap items-center gap-2">
+            <Button size="pill">Ink pill</Button>
+            <Button variant="lime" size="pill">
+              Done
+            </Button>
+            <Button variant="lime" size="sm">
+              Received
+            </Button>
+            <Button variant="outline" size="sm">
+              Cash
+            </Button>
+            <Button variant="secondary" size="md">
+              <PlusIcon className="size-4" />
+              New session
+            </Button>
+            <Button variant="danger" size="md">
+              Leave queue
+            </Button>
+            <IconButton label="Show QR" look="outline">
+              <QrIcon className="size-[18px]" />
+            </IconButton>
+            <IconButton label="Remind" look="outline" size="sm">
+              <BellIcon className="size-4" />
+            </IconButton>
+          </Card>
         </Section>
 
-        <Section title="Typography">
+        <Section id="status" label="Status">
+          <Card className="flex flex-wrap gap-2">
+            {(["unpaid", "resting", "notReady", "toCheck", "paid", "playing", "live", "draft", "ended"] as const).map((kind) => (
+              <StatusChip key={kind} kind={kind} />
+            ))}
+          </Card>
+        </Section>
+
+        <Section id="notices" label="Notices">
+          <div className="flex flex-col gap-2">
+            <Notice kind="success">Saved.</Notice>
+            <Notice kind="warning">Offline — will save when signal returns</Notice>
+            <Notice kind="error">Something went wrong. Try again.</Notice>
+            <Notice kind="info">This is a draft.</Notice>
+          </div>
+        </Section>
+
+        <Section id="lists" label="Grouped list">
+          <ListGroup>
+            <ListRow href="/design-system">
+              <RowText title="Club details" detail="Pasig Pickleball" />
+            </ListRow>
+            <ListRow trailing={<StatusChip kind="unpaid" />}>
+              <RowText title="Mika Torres" detail="Must pay before being called" detailTone="warn" />
+            </ListRow>
+          </ListGroup>
+          <EmptyState>Nothing scheduled. Tap New session to plan one.</EmptyState>
+        </Section>
+
+        <Section id="forms" label="Forms">
+          <Card className="flex flex-col gap-4">
+            <Input label="Name" placeholder="e.g. Tito Boy" />
+            <Input label="City" labelNote="(optional)" error="Up to 60 characters." />
+            <RadioGroup legend="Level" name="level" look="chips" defaultValue="intermediate" options={[
+              { value: "beginner", label: "Beginner" },
+              { value: "intermediate", label: "Intermediate" },
+              { value: "advanced", label: "Advanced" },
+            ]} />
+            <RadioGroup legend="Payment method" name="method" look="segmented" defaultValue="gcash" options={[
+              { value: "gcash", label: "GCash" },
+              { value: "cash", label: "Cash" },
+            ]} />
+            <RadioGroup legend="After each game" name="rotation" defaultValue="all_off" options={[
+              { value: "all_off", label: "Everyone off", description: "All four go to the back of the queue" },
+              { value: "winners_stay", label: "Winners stay", description: "Up to 2 games in a row" },
+            ]} />
+            <Stepper label="Courts" name="courts" min={1} max={8} defaultValue={3} decrementLabel="Fewer courts" incrementLabel="More courts" />
+            <Toggle label="Pay before queueing" description="Unpaid players are skipped" defaultChecked />
+          </Card>
+        </Section>
+
+        <Section id="court" label="Mini court">
           <Card className="flex flex-col gap-2">
-            <p className="font-display text-4xl font-bold tracking-[-0.02em]">Court 3</p>
-            <h3 className="text-xl">Space Grotesk · headings</h3>
-            <p>Inter · body 17px. Hintayin ang tawag bago pumasok sa court.</p>
-            <p className="text-muted">Muted · Huling laro: 7:42 PM</p>
+            <MiniCourt format="doubles" players={[
+              { id: "1", name: "Dino Reyes" },
+              { id: "2", name: "Carlo Mendoza" },
+              { id: "3", name: "Bong Santos" },
+              { id: "4", name: "Fe Castillo", notReady: true },
+            ]} />
+            <MiniCourt format="singles" players={[{ id: "5", name: "Hector Cruz", highlight: true }, { id: "6", name: "Ivy Bautista" }]} />
           </Card>
-        </Section>
-
-        <Section title="Button · md (48px)">
-          <div className="flex flex-col gap-3">
-            {VARIANTS.map(({ variant, label }) => (
-              <Button key={variant} variant={variant}>
-                {label}
-              </Button>
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Button · lg (56px), fullWidth">
-          <div className="flex flex-col gap-3">
-            {VARIANTS.map(({ variant, label }) => (
-              <Button key={variant} variant={variant} size="lg" fullWidth>
-                {label}
-              </Button>
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Button · link & disabled">
-          <div className="flex flex-col gap-3">
-            <Button href="/" variant="secondary" fullWidth>
-              Pumunta sa home (link)
-            </Button>
-            <Button disabled fullWidth>
-              Puno na ang pila
-            </Button>
-          </div>
-        </Section>
-
-        <Section title="StatusLabel">
-          <div className="flex flex-wrap gap-2">
-            {STATUSES.map((kind) => (
-              <StatusLabel key={kind} kind={kind} />
-            ))}
-          </div>
-        </Section>
-
-        <Section title="SessionStatusLabel">
-          <div className="flex flex-wrap gap-2">
-            <SessionStatusLabel status="draft" />
-            <SessionStatusLabel status="live" />
-            <SessionStatusLabel status="ended" />
-          </div>
-        </Section>
-
-        <Section title="Stepper">
-          <Card>
-            <Stepper label="Ilang court?" name="ds-courts" min={1} max={8} defaultValue={2} />
-          </Card>
-        </Section>
-
-        <Section title="Toggle">
-          <Card className="flex flex-col gap-3">
-            <Toggle label="Bayad muna bago pumila" description="Lalaktawan ang hindi pa bayad" name="ds-pay-first" />
-            <Toggle label="Naka-on na halimbawa" name="ds-on" defaultChecked />
-          </Card>
-        </Section>
-
-        <Section title="Card">
-          <Card className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-xl">Tito Boy</h3>
-                <p className="text-muted">Pang-3 sa pila</p>
-              </div>
-              <StatusLabel kind="paid" />
-            </div>
-            <Button variant="secondary" fullWidth>
-              I-check ang bayad
-            </Button>
-          </Card>
-          <Card className="flex flex-col gap-1 bg-primary-tint">
-            <h3 className="text-xl">Court 1</h3>
-            <p className="text-muted">Naglalaro: Tita Mel, Jun, Ana, Paolo</p>
-          </Card>
-        </Section>
-
-        <Section title="Input">
-          <Card className="flex flex-col gap-5">
-            <Input label="Pangalan mo" placeholder="hal. Tito Boy" autoComplete="name" />
-            <Input
-              label="Mobile number"
-              hint="Para ma-text ka kapag ikaw na ang susunod."
-              inputMode="tel"
-              placeholder="0917 123 4567"
-            />
-            <Input
-              label="Palayaw sa court"
-              error="Pakilagay ang palayaw mo."
-            />
-            <Input label="Club" defaultValue="Makati Picklers" disabled />
-          </Card>
-        </Section>
-
-        <Section title="RadioGroup">
-          <Card className="flex flex-col gap-5">
-            <RadioGroup
-              legend="Points bawat laro"
-              name="ds-points"
-              layout="row"
-              defaultValue="11"
-              options={[
-                { value: "11", label: "11" },
-                { value: "15", label: "15" },
-                { value: "21", label: "21" },
-              ]}
-            />
-            <RadioGroup
-              legend="Rotation"
-              name="ds-rotation"
-              defaultValue="all_off"
-              options={ROTATION_CHOICES}
-            />
-            <RadioGroup
-              legend="Laki ng court"
-              name="ds-error"
-              error="Pumili ng isa."
-              options={[
-                { value: "a", label: "Isang court" },
-                { value: "b", label: "Dalawang court" },
-              ]}
-            />
-            <RadioGroup
-              legend="Disabled (read-only)"
-              name="ds-disabled"
-              disabled
-              defaultValue="x"
-              options={[
-                { value: "x", label: "Hindi mapalitan" },
-                { value: "y", label: "Ibang option" },
-              ]}
-            />
-          </Card>
-        </Section>
-
-        <Section title="Notice">
-          <div className="flex flex-col gap-3">
-            <Notice kind="success">Na-save na.</Notice>
-            <Notice kind="error">Hindi maipadala ang login link ngayon. Subukan ang Google sign-in.</Notice>
-            <Notice kind="info">Ang owner lang ang pwedeng magbago nito.</Notice>
-          </div>
-        </Section>
-
-        <Section title="BackLink">
-          <Card>
-            <BackLink href="/" />
-          </Card>
-        </Section>
-
-        <Section title="PageShell">
-          <p className="text-muted">
-            Ang pahinang ito mismo: header, body na nag-i-scroll, at sticky footer sa ibaba. Max 430px
-            ang lapad, naka-gitna sa malapad na screen.
-          </p>
         </Section>
       </div>
     </PageShell>

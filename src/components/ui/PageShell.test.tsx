@@ -3,21 +3,25 @@ import { describe, expect, it } from "vitest";
 import { PageShell } from "./PageShell";
 
 describe("PageShell", () => {
-  it("renders header, main and sticky footer landmarks", () => {
+  it("renders the top row, a large title, content and the main button", () => {
     render(
-      <PageShell header={<h1>Pila</h1>} footer={<button type="button">Sumali</button>}>
-        <p>Laman</p>
+      <PageShell top={<span>Home</span>} eyebrow="Biyernes Night" title="Courts" subtitle="Live" footer={<button type="button">Start</button>}>
+        <p>Content</p>
       </PageShell>,
     );
-    expect(screen.getByRole("banner")).toHaveTextContent("Pila");
-    expect(screen.getByRole("main")).toHaveTextContent("Laman");
-    expect(screen.getByRole("contentinfo")).toHaveClass("sticky", "bottom-0");
+    expect(screen.getByRole("heading", { level: 1, name: "Courts" })).toBeInTheDocument();
+    expect(screen.getByText("Biyernes Night")).toBeInTheDocument();
+    expect(screen.getByRole("main")).toHaveTextContent("Content");
+    expect(screen.getByRole("contentinfo")).toHaveTextContent("Start");
   });
 
-  it("omits header and footer when not given", () => {
-    render(<PageShell>Laman</PageShell>);
-    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
-    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
-    expect(screen.getByRole("main")).toHaveClass("max-w-app");
+  it("pads the content so nothing hides behind a tab bar", () => {
+    render(
+      <PageShell tabBar={<nav aria-label="Main menu" />}>
+        <p>Content</p>
+      </PageShell>,
+    );
+    expect(screen.getByRole("main").className).toMatch(/pb-\[calc\(7rem\+env\(safe-area-inset-bottom\)\)\]/);
+    expect(screen.getByRole("navigation", { name: "Main menu" })).toBeInTheDocument();
   });
 });

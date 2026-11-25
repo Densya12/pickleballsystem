@@ -4,6 +4,8 @@
  * so Manila is a fixed UTC+08:00.
  */
 
+import { intlLocale, type Locale } from "@/lib/i18n/locale";
+
 export const MANILA_TIME_ZONE = "Asia/Manila";
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -35,55 +37,67 @@ export function defaultSessionTimes(now: Date): { startsAt: string; endsAt: stri
   return { startsAt: toManilaLocal(start), endsAt: toManilaLocal(end) };
 }
 
-function format(date: Date, options: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat("fil-PH", { timeZone: MANILA_TIME_ZONE, ...options }).format(date);
+function format(date: Date, options: Intl.DateTimeFormatOptions, locale: Locale): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), { timeZone: MANILA_TIME_ZONE, ...options }).format(date);
 }
 
-/** "Martes, Nob 24" */
-export function formatDay(date: Date): string {
-  return format(date, { weekday: "long", month: "short", day: "numeric" });
+/** "Tuesday, Nov 24" / "Martes, Nob 24" */
+export function formatDay(date: Date, locale: Locale): string {
+  return format(date, { weekday: "long", month: "short", day: "numeric" }, locale);
 }
 
-/** "Nob 24, 2026" */
-export function formatDate(date: Date): string {
-  return format(date, { month: "short", day: "numeric", year: "numeric" });
+/** "Nov 24, 2026" */
+export function formatDate(date: Date, locale: Locale): string {
+  return format(date, { month: "short", day: "numeric", year: "numeric" }, locale);
+}
+
+/** "Nov 24" */
+export function formatShortDate(date: Date, locale: Locale): string {
+  return format(date, { month: "short", day: "numeric" }, locale);
 }
 
 /** "6:00 PM" */
-export function formatTime(date: Date): string {
-  return format(date, { hour: "numeric", minute: "2-digit" });
+export function formatTime(date: Date, locale: Locale): string {
+  return format(date, { hour: "numeric", minute: "2-digit" }, locale);
 }
 
 function sameManilaDay(a: Date, b: Date): boolean {
   return toManilaLocal(a).slice(0, 10) === toManilaLocal(b).slice(0, 10);
 }
 
-/** "6:00 PM – 9:00 PM", or "10:00 PM – Nob 25, 1:00 AM" past midnight. */
-export function formatTimeRange(start: Date, end: Date): string {
+/** "6:00 PM – 9:00 PM", or "10:00 PM – Nov 25, 1:00 AM" past midnight. */
+export function formatTimeRange(start: Date, end: Date, locale: Locale): string {
   const endText = sameManilaDay(start, end)
-    ? formatTime(end)
-    : `${format(end, { month: "short", day: "numeric" })}, ${formatTime(end)}`;
-  return `${formatTime(start)} – ${endText}`;
+    ? formatTime(end, locale)
+    : `${format(end, { month: "short", day: "numeric" }, locale)}, ${formatTime(end, locale)}`;
+  return `${formatTime(start, locale)} – ${endText}`;
 }
 
-/** "Martes, Nob 24 · 6:00 PM – 9:00 PM" */
-export function formatSchedule(start: Date, end: Date): string {
-  return `${formatDay(start)} · ${formatTimeRange(start, end)}`;
+/** "Tuesday, Nov 24 · 6:00 PM – 9:00 PM" */
+export function formatSchedule(start: Date, end: Date, locale: Locale): string {
+  return `${formatDay(start, locale)} · ${formatTimeRange(start, end, locale)}`;
 }
 
-/** { month: "NOB", day: "24" } for the date badge. */
-export function dateBadge(date: Date): { month: string; day: string } {
+/** { month: "NOV", day: "24" } for the date badge. */
+export function dateBadge(date: Date, locale: Locale): { month: string; day: string } {
   return {
-    month: format(date, { month: "short" }).toUpperCase(),
-    day: format(date, { day: "numeric" }),
+    month: format(date, { month: "short" }, locale).toUpperCase(),
+    day: format(date, { day: "numeric" }, locale),
   };
 }
 
-/** Greeting for the time of day in Manila. */
-export function greeting(now: Date): string {
+export type DayPart = "morning" | "noon" | "afternoon" | "evening";
+
+/** Part of the day in Manila, for the greeting (the words are in the dictionary). */
+export function dayPart(now: Date): DayPart {
   const hour = Number(toManilaLocal(now).slice(11, 13));
-  if (hour >= 5 && hour < 12) return "Magandang umaga";
-  if (hour >= 12 && hour < 13) return "Magandang tanghali";
-  if (hour >= 13 && hour < 18) return "Magandang hapon";
-  return "Magandang gabi";
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 13) return "noon";
+  if (hour >= 13 && hour < 18) return "afternoon";
+  return "evening";
+}
+
+/** Whole minutes since an ISO time (0 at least). */
+export function minutesSince(iso: string, now: number): number {
+  return Math.max(0, Math.floor((now - Date.parse(iso)) / 60_000));
 }

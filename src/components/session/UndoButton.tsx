@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { UndoIcon } from "@/components/ui/icons";
+import { useT } from "@/lib/i18n/client";
 import { undoSecondsLeft } from "@/lib/undo/countdown";
 
 type Props = {
@@ -11,8 +12,9 @@ type Props = {
   disabled?: boolean;
 };
 
-/** "Ibalik (28s)": counts down, then disappears. */
+/** "Undo (28s)": counts down, then disappears. */
 export function UndoButton({ deadline, onUndo, disabled }: Props) {
+  const t = useT();
   const [now, setNow] = useState(() => Date.now());
   const left = undoSecondsLeft(deadline, now);
   const expired = left === 0;
@@ -29,12 +31,10 @@ export function UndoButton({ deadline, onUndo, disabled }: Props) {
       type="button"
       onClick={onUndo}
       disabled={disabled}
-      className="inline-flex min-h-12 shrink-0 items-center gap-1.5 rounded-control border-[1.5px] border-ink bg-surface px-4 font-semibold text-ink hover:bg-subtle focus-visible:outline-3 focus-visible:outline-focus disabled:cursor-not-allowed disabled:text-muted"
+      className="touch-target inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-on-primary tabular-nums disabled:opacity-50"
     >
-      <UndoIcon />
-      <span>
-        Ibalik <span className="tabular-nums">({left}s)</span>
-      </span>
+      <UndoIcon className="size-4" />
+      {t.live.undo(left)}
     </button>
   );
 }

@@ -1,8 +1,9 @@
 /**
  * Club input validation, shared by forms (client) and Server Actions (server).
  * The database enforces the same rules with CHECK constraints; this layer
- * exists to give clear Taglish messages per field.
+ * exists to give a clear message per field, in the device's language.
  */
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export const CLUB_NAME_MIN = 2;
 export const CLUB_NAME_MAX = 60;
@@ -16,18 +17,6 @@ export type Points = (typeof POINTS_OPTIONS)[number];
 export const ROTATION_OPTIONS = ["all_off", "winners_stay"] as const;
 export type Rotation = (typeof ROTATION_OPTIONS)[number];
 
-export const MESSAGES = {
-  nameRequired: "Pakilagay ang pangalan ng club.",
-  nameTooShort: `Masyadong maikli. Kahit ${CLUB_NAME_MIN} letra.`,
-  nameTooLong: `Hanggang ${CLUB_NAME_MAX} letra lang.`,
-  cityTooLong: `Hanggang ${CITY_MAX} letra lang.`,
-  gcashNameTooLong: `Hanggang ${GCASH_NAME_MAX} letra lang.`,
-  gcashNumberInvalid: "Dapat 11 digits at nagsisimula sa 09. Hal. 0917 123 4567",
-  feeInvalid: "Buong numero lang, 0 pataas. Hal. 150",
-  feeTooHigh: "Masyadong malaki ang bayad. I-check ulit.",
-  pointsInvalid: "Pumili ng 11, 15 o 21.",
-  rotationInvalid: "Pumili ng rotation.",
-} as const;
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
 
@@ -50,11 +39,11 @@ export function isValidGcashNumber(normalized: string): boolean {
   return /^09\d{9}$/.test(normalized);
 }
 
-export function validateClubName(name: string): string | undefined {
+export function validateClubName(name: string, t: Dictionary): string | undefined {
   const length = [...name].length;
-  if (length === 0) return MESSAGES.nameRequired;
-  if (length < CLUB_NAME_MIN) return MESSAGES.nameTooShort;
-  if (length > CLUB_NAME_MAX) return MESSAGES.nameTooLong;
+  if (length === 0) return t.club.nameRequired;
+  if (length < CLUB_NAME_MIN) return t.club.nameTooShort(CLUB_NAME_MIN);
+  if (length > CLUB_NAME_MAX) return t.club.tooLong(CLUB_NAME_MAX);
   return undefined;
 }
 
@@ -64,13 +53,13 @@ function maxLength(value: string | null, max: number, message: string): string |
 
 export type NewClubInput = { name: string; city: string | null };
 
-export function parseNewClub(form: FormLike): ParseResult<NewClubInput> {
+export function parseNewClub(form: FormLike, t: Dictionary): ParseResult<NewClubInput> {
   const name = text(form, "name");
   const city = text(form, "city") || null;
 
   const errors: Partial<Record<keyof NewClubInput, string>> = {
-    name: validateClubName(name),
-    city: maxLength(city, CITY_MAX, MESSAGES.cityTooLong),
+    name: validateClubName(name, t),
+    city: maxLength(city, CITY_MAX, t.club.tooLong(CITY_MAX)),
   };
   return toParseResult({ name, city }, errors);
 }
@@ -85,7 +74,7 @@ export type ClubSettingsInput = {
   default_rotation: Rotation;
 };
 
-export function parseClubSettings(form: FormLike): ParseResult<ClubSettingsInput> {
+export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<ClubSettingsInput> {
   const name = text(form, "name");
   const city = text(form, "city") || null;
   const gcashName = text(form, "gcash_name") || null;
@@ -97,22 +86,14 @@ export function parseClubSettings(form: FormLike): ParseResult<ClubSettingsInput
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
 
   const errors: Partial<Record<keyof ClubSettingsInput, string>> = {
-    name: validateClubName(name),
-    city: maxLength(city, CITY_MAX, MESSAGES.cityTooLong),
-    gcash_name: maxLength(gcashName, GCASH_NAME_MAX, MESSAGES.gcashNameTooLong),
+    name: validateClubName(name, t),
+    city: maxLength(city, CITY_MAX, t.club.tooLong(CITY_MAX)),
+    gcash_name: maxLength(gcashName, GCASH_NAME_MAX, t.club.tooLong(GCASH_NAME_MAX)),
     gcash_number:
-      gcashNumber !== null && !isValidGcashNumber(gcashNumber) ? MESSAGES.gcashNumberInvalid : undefined,
-    default_fee: Number.isNaN(fee)
-      ? MESSAGES.feeInvalid
-      : fee > FEE_MAX
-        ? MESSAGES.feeTooHigh
-        : undefined,
-    default_points: (POINTS_OPTIONS as readonly number[]).includes(pointsRaw)
-      ? undefined
-      : MESSAGES.pointsInvalid,
-    default_rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotationRaw)
-      ? undefined
-      : MESSAGES.rotationInvalid,
+      gcashNumber !== null && !isValidGcashNumber(gcashNumber) ? t.club.gcashNumberInvalid : undefined,
+    default_fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
+    default_points: (POINTS_OPTIONS as readonly number[]).includes(pointsRaw) ? undefined : t.club.pointsInvalid,
+    default_rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotationRaw) ? undefined : t.club.rotationInvalid,
   };
 
   return toParseResult(

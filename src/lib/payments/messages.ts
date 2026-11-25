@@ -1,66 +1,40 @@
-import { AUTH_MESSAGES } from "@/lib/auth/messages";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import { formatGcashNumber, formatPeso } from "@/lib/format";
-import { REFERENCE_MESSAGES } from "./reference";
+import { REFERENCE_MAX, REFERENCE_MIN } from "./reference";
 
-/** "Paalalahanan": the message the organizer shares or copies. */
-export function reminderMessage(input: {
-  name: string;
-  session: string;
-  fee: number;
-  gcashName: string | null;
-  gcashNumber: string | null;
-}): string {
+/** "Paalalahanan": the message the organizer shares or copies, in the device's language. */
+export function reminderMessage(
+  input: { name: string; session: string; fee: number; gcashName: string | null; gcashNumber: string | null },
+  t: Dictionary,
+): string {
   const gcash = [input.gcashName, input.gcashNumber ? formatGcashNumber(input.gcashNumber) : null].filter(Boolean).join(" ");
-  return `Hi ${input.name}! Paalala lang po sa bayad para sa ${input.session}: ${formatPeso(input.fee)}.${
-    gcash ? ` GCash: ${gcash}.` : ""
-  } Salamat po!`;
+  return t.payments.reminder({ name: input.name, session: input.session, fee: formatPeso(input.fee), gcash: gcash || null });
 }
 
-/** Player-facing payment status line (Pwesto). */
-export function paymentStatusText(status: string): string {
-  if (status === "confirmed") return "Bayad na";
-  if (status === "pending") return "Hinihintay ang kumpirmasyon ng organizer";
-  return "Hindi pa bayad";
+/** Player-facing payment status line. */
+export function paymentStatusText(status: string, t: Dictionary): string {
+  if (status === "confirmed") return t.payments.statusPaid;
+  if (status === "pending") return t.payments.statusPending;
+  return t.payments.statusUnpaid;
 }
-
-export function confirmedBanner(name: string, method: "gcash" | "cash"): string {
-  return method === "cash" ? `Natanggap ang cash ni ${name}.` : `Kumpirmado ang GCash ni ${name}.`;
-}
-
-export function undoneBanner(name: string): string {
-  return `Ibinalik sa hindi pa bayad si ${name}.`;
-}
-
-/** After "Ibalik" on "Natanggap na" (D18). */
-export function undoneConfirmBanner(name: string): string {
-  return `Naibalik sa dati ang bayad ni ${name}.`;
-}
-
-export const PAYMENT_ERRORS = {
-  invalidReference: REFERENCE_MESSAGES.invalid,
-  alreadyPaid: "Bayad na ito. I-refresh ang page.",
-  notNeeded: "Libre ang session na ito; walang bayad.",
-  invalidMethod: "Pumili kung GCash o cash.",
-  statusChanged: "Nagbago na ang bayad na ito. I-refresh ang page.",
-} as const;
 
 type DbErrorLike = { code?: string; message?: string };
 
 /** Payment errors; null for anything else (the caller falls back to its own messages). */
-export function paymentErrorMessage(error: DbErrorLike): string | null {
+export function paymentErrorMessage(error: DbErrorLike, t: Dictionary): string | null {
   switch (error.message) {
     case "invalid_reference":
-      return PAYMENT_ERRORS.invalidReference;
+      return t.payments.invalidReference(REFERENCE_MIN, REFERENCE_MAX);
     case "already_paid":
-      return PAYMENT_ERRORS.alreadyPaid;
+      return t.payments.alreadyPaid;
     case "no_payment_needed":
-      return PAYMENT_ERRORS.notNeeded;
+      return t.payments.notNeeded;
     case "invalid_payment_method":
-      return PAYMENT_ERRORS.invalidMethod;
+      return t.payments.invalidMethod;
     case "invalid_payment_status":
-      return PAYMENT_ERRORS.statusChanged;
+      return t.payments.statusChanged;
     case "not_organizer_account":
-      return AUTH_MESSAGES.notOrganizerAccount;
+      return t.auth.notOrganizerAccount;
   }
   return null;
 }

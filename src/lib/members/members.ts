@@ -2,17 +2,22 @@
  * Mga member (spec data model: members). Validation shared by the form and its
  * Server Action; the database checks the same rules.
  */
-import { LEVELS, PLAYER_NAME_MAX, PLAYER_NAME_MIN, tidyName, type Level } from "@/lib/queue/players";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import { LEVEL_VALUES, PLAYER_NAME_MAX, PLAYER_NAME_MIN, tidyName, type Level } from "@/lib/queue/players";
 
-export const DUES_CHOICES = [
-  { value: "paid", label: "Bayad ang dues" },
-  { value: "unpaid", label: "Hindi pa bayad ang dues" },
-  { value: "none", label: "Walang dues" },
-] as const;
-export type DuesStatus = (typeof DUES_CHOICES)[number]["value"];
+export const DUES_VALUES = ["paid", "unpaid", "none"] as const;
+export type DuesStatus = (typeof DUES_VALUES)[number];
 
-export function duesLabel(status: string): string {
-  return DUES_CHOICES.find((c) => c.value === status)?.label ?? "Walang dues";
+export function duesChoices(t: Dictionary): { value: DuesStatus; label: string }[] {
+  return [
+    { value: "paid", label: t.choices.duesPaid },
+    { value: "unpaid", label: t.choices.duesUnpaid },
+    { value: "none", label: t.choices.duesNone },
+  ];
+}
+
+export function duesLabel(status: string, t: Dictionary): string {
+  return duesChoices(t).find((c) => c.value === status)?.label ?? t.choices.duesNone;
 }
 
 export const NOTES_MAX = 300;
@@ -22,14 +27,6 @@ export type Member = { id: string; name: string; level: string; duesStatus: stri
 export type MemberInput = { display_name: string; level: Level; dues_status: DuesStatus; notes: string | null };
 export type MemberField = keyof MemberInput;
 
-export const MEMBER_MESSAGES = {
-  nameRequired: "Pakilagay ang pangalan.",
-  nameTooShort: `Masyadong maikli. Kahit ${PLAYER_NAME_MIN} letra.`,
-  nameTooLong: `Hanggang ${PLAYER_NAME_MAX} letra lang.`,
-  levelInvalid: "Pumili ng level.",
-  duesInvalid: "Pumili kung bayad ang dues.",
-  notesTooLong: `Hanggang ${NOTES_MAX} letra lang ang notes.`,
-} as const;
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
 const text = (form: FormLike, name: string) => {
@@ -39,6 +36,7 @@ const text = (form: FormLike, name: string) => {
 
 export function parseMember(
   form: FormLike,
+  t: Dictionary,
 ): { ok: true; data: MemberInput } | { ok: false; errors: Partial<Record<MemberField, string>> } {
   const name = tidyName(text(form, "display_name"));
   const length = [...name].length;
@@ -47,12 +45,12 @@ export function parseMember(
   const notes = text(form, "notes").trim();
 
   const errors: Partial<Record<MemberField, string>> = {};
-  if (length === 0) errors.display_name = MEMBER_MESSAGES.nameRequired;
-  else if (length < PLAYER_NAME_MIN) errors.display_name = MEMBER_MESSAGES.nameTooShort;
-  else if (length > PLAYER_NAME_MAX) errors.display_name = MEMBER_MESSAGES.nameTooLong;
-  if (!LEVELS.some((l) => l.value === level)) errors.level = MEMBER_MESSAGES.levelInvalid;
-  if (!DUES_CHOICES.some((d) => d.value === dues)) errors.dues_status = MEMBER_MESSAGES.duesInvalid;
-  if ([...notes].length > NOTES_MAX) errors.notes = MEMBER_MESSAGES.notesTooLong;
+  if (length === 0) errors.display_name = t.members.nameRequired;
+  else if (length < PLAYER_NAME_MIN) errors.display_name = t.members.nameTooShort(PLAYER_NAME_MIN);
+  else if (length > PLAYER_NAME_MAX) errors.display_name = t.members.nameTooLong(PLAYER_NAME_MAX);
+  if (!(LEVEL_VALUES as readonly string[]).includes(level)) errors.level = t.members.levelInvalid;
+  if (!(DUES_VALUES as readonly string[]).includes(dues)) errors.dues_status = t.members.duesInvalid;
+  if ([...notes].length > NOTES_MAX) errors.notes = t.members.notesTooLong(NOTES_MAX);
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return {

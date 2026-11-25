@@ -1,3 +1,5 @@
+import type { Dictionary } from "@/lib/i18n/dictionary";
+
 /**
  * Winner picker (winners stay, BR11): tap the winners — 2 in doubles, 1 in
  * singles. Tapping a picked name un-picks it; tapping one more name than
@@ -19,7 +21,7 @@ export function canConfirmWinners(picked: readonly string[], needed = WINNERS_NE
   return picked.length === needed;
 }
 
-export function winnersHint(picked: readonly string[], needed = WINNERS_NEEDED): string {
+export function winnersHint(picked: readonly string[], needed: number, t: Dictionary): string {
   const left = needed - picked.length;
-  return left > 0 ? `Pumili ng ${left} pa.` : "Handa na. Pindutin ang Kumpirmahin.";
+  return left > 0 ? t.live.pickMore(left) : t.live.readyToConfirm;
 }

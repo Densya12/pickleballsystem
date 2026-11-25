@@ -4,37 +4,44 @@ import { Button } from "./Button";
 
 describe("Button", () => {
   it("renders a <button> with type=button by default", () => {
-    render(<Button>Sumali sa pila</Button>);
-    const button = screen.getByRole("button", { name: "Sumali sa pila" });
+    render(<Button>Join queue</Button>);
+    const button = screen.getByRole("button", { name: "Join queue" });
     expect(button.tagName).toBe("BUTTON");
     expect(button).toHaveAttribute("type", "button");
   });
 
   it("renders a link when href is given", () => {
-    render(<Button href="/design-system">Tingnan</Button>);
-    const link = screen.getByRole("link", { name: "Tingnan" });
-    expect(link.tagName).toBe("A");
+    render(<Button href="/design-system">View</Button>);
+    const link = screen.getByRole("link", { name: "View" });
     expect(link).toHaveAttribute("href", "/design-system");
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
   it("supports the disabled state", () => {
-    render(<Button disabled>Puno na</Button>);
-    expect(screen.getByRole("button", { name: "Puno na" })).toBeDisabled();
+    render(<Button disabled>Full</Button>);
+    expect(screen.getByRole("button", { name: "Full" })).toBeDisabled();
   });
 
-  it("applies size, variant and fullWidth classes", () => {
+  it("main button: ink, 52px (D19), by default", () => {
+    render(<Button fullWidth>Start session</Button>);
+    expect(screen.getByRole("button", { name: "Start session" })).toHaveClass("bg-primary", "min-h-[52px]", "w-full");
+  });
+
+  it("lime pill for the key row action, 40px", () => {
     render(
-      <Button size="lg" variant="accent" fullWidth>
-        Simulan
+      <Button variant="lime" size="pill">
+        Done
       </Button>,
     );
-    const button = screen.getByRole("button", { name: "Simulan" });
-    expect(button).toHaveClass("min-h-14", "bg-accent", "w-full");
+    expect(screen.getByRole("button", { name: "Done" })).toHaveClass("bg-accent", "min-h-10", "rounded-full");
   });
 
-  it("uses the 48px md size by default", () => {
-    render(<Button>Sige</Button>);
-    expect(screen.getByRole("button", { name: "Sige" })).toHaveClass("min-h-12");
+  it("36px buttons keep a 44px touch area", () => {
+    render(
+      <Button variant="outline" size="sm">
+        Cash
+      </Button>,
+    );
+    expect(screen.getByRole("button", { name: "Cash" })).toHaveClass("touch-target", "min-h-9");
   });
 });

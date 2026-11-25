@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "./Button";
-import { CheckIcon } from "./icons";
+import { useT } from "@/lib/i18n/client";
 
-/** Copies text with visible feedback ("Nakopya na"); explains how to copy by hand if blocked. */
-export function CopyButton({ text, label, className }: { text: string; label: string; className?: string }) {
+/** A small "Copy" text button with visible feedback; explains how to copy by hand if blocked. */
+export function CopyButton({ text, label, className }: { text: string; label?: string; className?: string }) {
+  const t = useT();
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   async function copy() {
@@ -19,19 +19,16 @@ export function CopyButton({ text, label, className }: { text: string; label: st
 
   return (
     <div className={className}>
-      <Button variant="secondary" fullWidth onClick={() => void copy()}>
-        {state === "copied" ? (
-          <>
-            <CheckIcon />
-            Nakopya na
-          </>
-        ) : (
-          label
-        )}
-      </Button>
+      <button
+        type="button"
+        onClick={() => void copy()}
+        className="touch-target min-h-8 rounded-control px-2 text-sm font-semibold text-ink hover:bg-surface"
+      >
+        {state === "copied" ? t.common.copied : (label ?? t.common.copy)}
+      </button>
       {state === "failed" && (
-        <p role="alert" className="mt-1.5 text-base text-danger">
-          Hindi makopya. Pindutin nang matagal ang number para kopyahin.
+        <p role="alert" className="mt-1 text-xs text-danger">
+          {t.common.copyFailed}
         </p>
       )}
     </div>

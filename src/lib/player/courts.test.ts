@@ -48,7 +48,7 @@ describe("courtsLineup", () => {
     expect(names(courtsLineup(shuffled, ["doubles"], FREE).ready)).toEqual(["Ana", "Ben", "Cara", "Dino"]);
   });
 
-  it("pay_first on: unpaid players are skipped and listed as 'bayad muna'; pending counts as paid", () => {
+  it("pay_first on: unpaid players are skipped and listed as 'unpaid'; pending counts as paid", () => {
     const list = [p("Ana", "queued", "unpaid"), p("Ben", "queued", "pending"), p("Cara", "queued", "confirmed"),
       p("Dino", "paused", "confirmed"), p("Ella"), p("Fely", "queued", "confirmed"), p("Gabe", "queued", "pending"),
       p("Hana", "queued", "confirmed")];
@@ -56,9 +56,9 @@ describe("courtsLineup", () => {
     expect(names(lineup.ready)).toEqual(["Ben", "Cara", "Fely", "Gabe"]);
     expect(names(lineup.after)).toEqual(["Hana"]);
     expect(lineup.notCallable).toEqual([
-      { id: "ana", name: "Ana", reason: "bayad muna" },
-      { id: "dino", name: "Dino", reason: "nagpapahinga" },
-      { id: "ella", name: "Ella", reason: "bayad muna" },
+      { id: "ana", name: "Ana", reason: "unpaid" },
+      { id: "dino", name: "Dino", reason: "resting" },
+      { id: "ella", name: "Ella", reason: "unpaid" },
     ]);
   });
 
@@ -66,7 +66,7 @@ describe("courtsLineup", () => {
     const list = [p("Ana"), p("Ben", "paused"), p("Cara")];
     const lineup = courtsLineup(list, ["doubles"], RELAXED);
     expect(names(lineup.ready)).toEqual(["Ana", "Cara"]);
-    expect(lineup.notCallable).toEqual([{ id: "ben", name: "Ben", reason: "nagpapahinga" }]);
+    expect(lineup.notCallable).toEqual([{ id: "ben", name: "Ben", reason: "resting" }]);
   });
 
   it("pay_first with fee 0: nobody is held", () => {

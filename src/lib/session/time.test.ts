@@ -6,7 +6,8 @@ import {
   formatDay,
   formatSchedule,
   formatTimeRange,
-  greeting,
+  dayPart,
+  minutesSince,
   parseManilaLocal,
   toManilaLocal,
 } from "./time";
@@ -53,36 +54,48 @@ describe("formatting (always Asia/Manila)", () => {
   const start = new Date("2026-11-24T10:00:00Z"); // Tue 6:00 PM Manila
   const end = new Date("2026-11-24T13:00:00Z"); // 9:00 PM
 
-  it("formats the day and date in Filipino", () => {
-    expect(formatDay(start)).toBe("Martes, Nob 24");
-    expect(formatDate(start)).toBe("Nob 24, 2026");
+  it("formats the day and date in English (default) and Filipino", () => {
+    expect(formatDay(start, "en")).toBe("Tuesday, Nov 24");
+    expect(formatDate(start, "en")).toBe("Nov 24, 2026");
+    expect(formatDay(start, "fil")).toBe("Martes, Nob 24");
+    expect(formatDate(start, "fil")).toBe("Nob 24, 2026");
   });
 
   it("formats a same-day time range", () => {
-    expect(formatTimeRange(start, end)).toBe("6:00 PM – 9:00 PM");
-    expect(formatSchedule(start, end)).toBe("Martes, Nob 24 · 6:00 PM – 9:00 PM");
+    expect(formatTimeRange(start, end, "en")).toBe("6:00 PM – 9:00 PM");
+    expect(formatSchedule(start, end, "en")).toBe("Tuesday, Nov 24 · 6:00 PM – 9:00 PM");
+    expect(formatSchedule(start, end, "fil")).toBe("Martes, Nob 24 · 6:00 PM – 9:00 PM");
   });
 
   it("names the end date when a session runs past midnight", () => {
-    expect(formatTimeRange(new Date("2026-11-24T14:00:00Z"), new Date("2026-11-24T17:00:00Z"))).toBe(
-      "10:00 PM – Nob 25, 1:00 AM",
+    expect(formatTimeRange(new Date("2026-11-24T14:00:00Z"), new Date("2026-11-24T17:00:00Z"), "en")).toBe(
+      "10:00 PM – Nov 25, 1:00 AM",
     );
   });
 
   it("uses Manila's date even when UTC is still the day before", () => {
     // 2026-11-24 23:30 UTC = Nov 25, 7:30 AM in Manila
-    expect(dateBadge(new Date("2026-11-24T23:30:00Z"))).toEqual({ month: "NOB", day: "25" });
+    expect(dateBadge(new Date("2026-11-24T23:30:00Z"), "en")).toEqual({ month: "NOV", day: "25" });
+    expect(dateBadge(new Date("2026-11-24T23:30:00Z"), "fil")).toEqual({ month: "NOB", day: "25" });
   });
 });
 
-describe("greeting", () => {
+describe("dayPart (for the greeting)", () => {
   const at = (manilaHour: number) => new Date(Date.UTC(2026, 10, 24, manilaHour - 8 < 0 ? manilaHour + 16 : manilaHour - 8));
   it.each([
-    [6, "Magandang umaga"],
-    [11, "Magandang umaga"],
-    [12, "Magandang tanghali"],
-    [15, "Magandang hapon"],
-    [19, "Magandang gabi"],
-    [2, "Magandang gabi"],
-  ])("%i:00 in Manila → %s", (hour, expected) => expect(greeting(at(hour))).toBe(expected));
+    [6, "morning"],
+    [11, "morning"],
+    [12, "noon"],
+    [15, "afternoon"],
+    [19, "evening"],
+    [2, "evening"],
+  ])("%i:00 in Manila → %s", (hour, expected) => expect(dayPart(at(hour))).toBe(expected));
+});
+
+describe("minutesSince", () => {
+  it("counts whole minutes, never below 0", () => {
+    const now = Date.parse("2026-11-24T10:12:30Z");
+    expect(minutesSince("2026-11-24T10:00:00Z", now)).toBe(12);
+    expect(minutesSince("2026-11-24T10:20:00Z", now)).toBe(0);
+  });
 });

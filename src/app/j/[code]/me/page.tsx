@@ -1,24 +1,21 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { Notice, PageShell } from "@/components/ui";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { PlayerView } from "./PlayerView";
 
 export const metadata: Metadata = {
-  title: "Pwesto sa pila · Open Play Queue",
+  title: `${en.player.placePageTitle} · ${en.common.appName}`,
 };
 
 export default function PwestoPage({ params }: PageProps<"/j/[code]/me">) {
   return (
-    <Suspense
-      fallback={
-        <PageShell>
-          <p className="pt-10 text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
       <PwestoContent params={params} />
     </Suspense>
   );
@@ -42,18 +39,19 @@ async function PwestoContent({ params }: Pick<PageProps<"/j/[code]/me">, "params
   return <PlayerView code={code} view={view} />;
 }
 
-function Ended() {
+async function Ended() {
+  const t = await getT();
   return (
     <PageShell
-      header={
-        <div className="pt-10">
-          <h1 className="text-3xl">Tapos na ang open play. Salamat!</h1>
-        </div>
+      top={
+        <>
+          <span />
+          <LanguageSwitch />
+        </>
       }
+      title={t.player.endedTitle}
     >
-      <div className="pt-4">
-        <Notice kind="info">Sarado na ang pila para sa session na ito.</Notice>
-      </div>
+      <Notice kind="info">{t.player.endedBody}</Notice>
     </PageShell>
   );
 }

@@ -1,33 +1,21 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { BackLink, Button, Notice, PageShell } from "@/components/ui";
+import { MainTabBar } from "@/components/nav/MainTabBar";
+import { Button, EmptyState, Notice, PageShell } from "@/components/ui";
 import { PlusIcon } from "@/components/ui/icons";
 import { requireClub } from "@/lib/auth/dal";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { getMembers } from "@/lib/members/data";
 import { MembersList } from "./MembersList";
 
 export const metadata: Metadata = {
-  title: "Mga member · Open Play Queue",
+  title: `${en.members.pageTitle} · ${en.common.appName}`,
 };
-
-function Header() {
-  return (
-    <div className="flex flex-col gap-1">
-      <BackLink href="/" />
-      <h1 className="text-3xl">Mga member</h1>
-    </div>
-  );
-}
 
 export default function MembersPage({ searchParams }: PageProps<"/members">) {
   return (
-    <Suspense
-      fallback={
-        <PageShell header={<Header />}>
-          <p className="text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell tabBar={<MainTabBar current="members" />}>{null}</PageShell>}>
       <MembersContent searchParams={searchParams} />
     </Suspense>
   );
@@ -35,24 +23,26 @@ export default function MembersPage({ searchParams }: PageProps<"/members">) {
 
 async function MembersContent({ searchParams }: Pick<PageProps<"/members">, "searchParams">) {
   const { club } = await requireClub("/members");
-  const [members, { saved }] = await Promise.all([getMembers(club.id), searchParams]);
+  const [members, { saved }, t] = await Promise.all([getMembers(club.id), searchParams, getT()]);
 
   return (
-    <PageShell header={<Header />}>
-      <div className="flex flex-col gap-5">
-        {typeof saved === "string" && <Notice kind="success">Na-save si {saved}.</Notice>}
-        <Button href="/members/new" size="lg" fullWidth>
-          <PlusIcon />
-          Magdagdag ng member
-        </Button>
-        {members.length > 0 ? (
-          <MembersList members={members} />
-        ) : (
-          <p className="rounded-card border border-dashed border-strong px-5 py-4 text-muted">
-            Wala pang member. Pindutin ang Magdagdag ng member, o i-save ang isang player mula sa pila o sa Buod
-            ng session.
-          </p>
-        )}
+    <PageShell
+      title={t.members.title}
+      titleSize="xl"
+      top={
+        <>
+          <span />
+          <Button href="/members/new" size="pill" className="h-10 px-4 font-medium" aria-label={t.members.addMember}>
+            <PlusIcon className="size-4" />
+            {t.members.add}
+          </Button>
+        </>
+      }
+      tabBar={<MainTabBar current="members" />}
+    >
+      <div className="flex flex-col gap-4">
+        {typeof saved === "string" && <Notice kind="success">{t.members.savedBanner(saved)}</Notice>}
+        {members.length > 0 ? <MembersList members={members} /> : <EmptyState>{t.members.empty}</EmptyState>}
       </div>
     </PageShell>
   );

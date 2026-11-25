@@ -1,127 +1,41 @@
-import { AUTH_MESSAGES } from "@/lib/auth/messages";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import { paymentErrorMessage } from "@/lib/payments/messages";
 import { sessionErrorMessage } from "@/lib/session/messages";
-import { UNDO_ERRORS } from "@/lib/undo/countdown";
 
-/** Feedback after every queue action (NF8) and Taglish errors from the queue RPCs. */
-
-export function listNames(names: readonly string[]): string {
-  return names.join(", ");
-}
-
-export function needPlayersText(count: number): string {
-  return `Kailangan pa ng ${count} player`;
-}
-
-/** "Tinawag sa Court 2: Ana, Ben, Carlo, Dina" */
-export function calledBanner(courtLabel: string, names: readonly string[]): string {
-  return `Tinawag sa ${courtLabel}: ${listNames(names)}`;
-}
-
-export function finishedBanner(input: {
-  courtLabel: string;
-  gameNumber: number;
-  /** winners stay only (2 in doubles, 1 in singles) */
-  winners?: readonly string[] | null;
-  /** Those called next on this court, or null when it stays empty. */
-  next: readonly string[] | null;
-}): string {
-  const parts = [`Tapos ang Laro #${input.gameNumber} sa ${input.courtLabel}.`];
-  if (input.winners?.length) parts.push(`Panalo: ${input.winners.join(" at ")}.`);
-  parts.push(
-    input.next
-      ? `Tinawag: ${listNames(input.next)}`
-      : `Bakante muna ang ${input.courtLabel}; kulang pa ang nakapila.`,
-  );
-  return parts.join(" ");
-}
-
-/** "Nasa pila na si Ana (pang-7)." */
-export function walkInBanner(name: string, position: number | null): string {
-  return position ? `Nasa pila na si ${name} (pang-${position}).` : `Nasa pila na si ${name}.`;
-}
-
-export function pausedBanner(name: string): string {
-  return `Naka-pause si ${name}. Hindi siya tatawagin hanggang ituloy.`;
-}
-
-export function resumedBanner(name: string): string {
-  return `Tuloy na si ${name}, sa dati niyang puwesto sa pila.`;
-}
-
-export function removedBanner(name: string): string {
-  return `Inalis si ${name} sa pila.`;
-}
-
-/** BR19: "Pinalitan si Ana ni Ben sa Court 1. Nasa unahan na ng pila si Ana." */
-export function swappedBanner(out: string, into: string, courtLabel: string): string {
-  return `Pinalitan si ${out} ni ${into} sa ${courtLabel}. Nasa unahan na ng pila si ${out}.`;
-}
-
-/** "Singles na ang Court 2." */
-export function formatChangedBanner(courtLabel: string, format: string): string {
-  return `${format === "singles" ? "Singles" : "Doubles"} na ang ${courtLabel}.`;
-}
-
-/** After "Ibalik" on a finished game (D18). */
-export function undoneFinishBanner(courtLabel: string, gameNumber: number): string {
-  return `Naibalik ang Laro #${gameNumber} sa ${courtLabel}. Tuloy pa ang laro.`;
-}
-
-/** After "Ibalik" on a removal (D18). */
-export function undoneRemoveBanner(name: string): string {
-  return `Naibalik si ${name} sa pila, sa dati niyang puwesto.`;
-}
-
-export function notReadyText(name: string): string {
-  return `Hindi pa handa si ${name}`;
-}
-
-export const QUEUE_ERRORS = {
-  alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
-  courtBusy: "May naglalaro pa sa court na ito.",
-  invalidWinners: "Pumili ng 2 nanalo mula sa 4 na naglaro.",
-  playerChanged: "Nagbago na ang status ng player na ito. Tingnan ulit ang pila.",
-  notLive: "Hindi live ang session na ito.",
-  notFound: "Hindi makita. I-refresh ang page.",
-  notOnCourt: "Wala na sa court ang player na iyon.",
-  invalidFormat: "Pumili ng Doubles o Singles.",
-} as const;
+/** Errors from the queue RPCs, in the device's language. Banners are in t.live. */
 
 type DbErrorLike = { code?: string; message?: string; details?: string | null };
 
-export function queueErrorMessage(error: DbErrorLike): string {
-  const payment = paymentErrorMessage(error);
+export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
+  const payment = paymentErrorMessage(error, t);
   if (payment) return payment;
   switch (error.message) {
     case "not_enough_players": {
       const needed = Number(error.details);
-      return Number.isInteger(needed) && needed > 0
-        ? `${needPlayersText(needed)} bago makatawag.`
-        : "Kulang pa ang nakapila para makatawag.";
+      return Number.isInteger(needed) && needed > 0 ? t.live.needPlayers(needed) : t.live.notEnough;
     }
     case "game_already_finished":
-      return QUEUE_ERRORS.alreadyFinished;
+      return t.live.alreadyFinished;
     case "court_busy":
-      return QUEUE_ERRORS.courtBusy;
+      return t.live.courtBusy;
     case "invalid_winners":
-      return QUEUE_ERRORS.invalidWinners;
+      return t.live.invalidWinners;
     case "invalid_player_status":
-      return QUEUE_ERRORS.playerChanged;
+      return t.live.playerChanged;
     case "session_not_live":
-      return QUEUE_ERRORS.notLive;
+      return t.live.notLive;
     case "invalid_format":
-      return QUEUE_ERRORS.invalidFormat;
+      return t.live.invalidFormat;
     case "player_not_on_court":
-      return QUEUE_ERRORS.notOnCourt;
+      return t.live.notOnCourt;
+    case "undo_not_available":
+      return t.live.undoNotAvailable;
     case "court_not_found":
     case "player_not_found":
     case "game_not_found":
-      return QUEUE_ERRORS.notFound;
-    case "undo_not_available":
-      return UNDO_ERRORS.notAvailable;
+      return t.live.notFound;
     case "not_organizer_account":
-      return AUTH_MESSAGES.notOrganizerAccount;
+      return t.auth.notOrganizerAccount;
   }
-  return sessionErrorMessage(error);
+  return sessionErrorMessage(error, t);
 }

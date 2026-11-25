@@ -1,44 +1,59 @@
 @import "tailwindcss";
 
 /*
- * "Ink & Lime" design tokens.
+ * "Ink & Lime" v5 ("Clean 2026", spec D19). Source of truth: docs/design/v5/.
  *
  * Colors use Tailwind v4's per-utility namespaces so each token only creates
  * the utility it is meant for:
  *   --background-color-page  -> bg-page
  *   --text-color-ink         -> text-ink
- *   --border-color-default   -> border-default
- * This keeps names semantic (no `text-page` or `bg-muted` by accident).
+ *   --border-color-hairline  -> border-hairline
+ * WCAG AA contrast of every text/background pair used is noted next to it.
  */
 @theme {
   /* Backgrounds */
-  --background-color-page: #f6f6f3;
+  --background-color-page: #f4f4f1;
   --background-color-surface: #ffffff;
-  --background-color-subtle: #f2f2ee;
+  /* Segmented-control track, number badges (text on it uses ink or secondary, never muted: 4.41:1). */
+  --background-color-subtle: #f1f1ed;
+  /* Quiet info rows inside a card (e.g. "Send to · GCash"). */
+  --background-color-info: #f7f7f4;
   --background-color-primary: #111412;
-  --background-color-primary-tint: #f3f6ea;
   --background-color-accent: #c9f26b;
-  --background-color-accent-soft: #f1f9dc;
-  --background-color-success: #eef5e4;
-  --background-color-warn: #fbeedc;
+  --background-color-accent-soft: #eef7d6;
+  --background-color-accent-faint: #f7fbea;
+  --background-color-success: #eef7d6;
+  --background-color-warn: #fbefdf;
+  /* "Resting" and other neutral chips. */
+  --background-color-chip: #efefeb;
+  /* Live dot and switch "on" (non-text, 3.25:1 on white >= 3:1). */
+  --background-color-live: #5e9f1c;
+  /* Count badge on the Payments tab. The mockup's #D9822B fails with white text (2.93:1); this is 5.02:1. */
+  --background-color-badge: #b45309;
+  /* Warning dot (non-text). */
+  --background-color-warn-dot: #d9822b;
+  --background-color-danger-soft: #fdeceb;
 
   /* Text */
-  --text-color-ink: #111412;
-  --text-color-muted: #5f6561;
-  /* Spec value #737975 is 4.45:1 on white; nudged to pass 4.5:1. */
-  --text-color-placeholder: #717773;
+  --text-color-ink: #111412; /* 18.5:1 on white, 16.8:1 on page */
+  --text-color-muted: #6b716d; /* 4.99:1 on white, 4.53:1 on page, 4.74:1 on accent-faint */
+  --text-color-secondary: #4d5350; /* labels: 7.87:1 on white, 6.83:1 on chip */
+  --text-color-placeholder: #6b716d;
   --text-color-on-primary: #ffffff;
-  --text-color-on-accent-soft: #2d3b0b;
-  --text-color-success: #2f5a12;
-  --text-color-warn: #8a4b08;
-  /* Not in the Phase 0 brief; added for danger-outline + form errors (6.5:1 on white). */
-  --text-color-danger: #b42318;
+  --text-color-on-dark-muted: #b8bdb9; /* 9.73:1 on ink */
+  --text-color-on-accent: #1e2a06; /* 11.8:1 on lime */
+  --text-color-on-accent-soft: #2d3b0b; /* 10.9:1 on accent-soft */
+  --text-color-accent: #c9f26b; /* on ink only: 14.5:1 */
+  --text-color-success: #3f7a12; /* 5.24:1 on white */
+  --text-color-warn: #8a4b08; /* 5.99:1 on warn, 6.79:1 on white */
+  --text-color-danger: #b42318; /* 6.57:1 on white */
 
   /* Borders */
-  --border-color-default: #ecece7;
-  --border-color-strong: #8c918d; /* form controls, >= 3:1 on white */
+  --border-color-hairline: #eeeeea;
+  /* Input border from the design (#DADAD4); inputs are identified by their label too. */
+  --border-color-input: #dadad4;
+  --border-color-tabbar: #e8e8e3;
   --border-color-ink: #111412;
-  --border-color-accent: #ddefa9;
   --border-color-danger: #b42318;
 
   /* Focus ring */
@@ -46,23 +61,26 @@
 
   /* Shape */
   --radius-card: 20px;
-  --radius-control: 14px;
-  --shadow-card: 0 1px 2px rgba(17, 20, 18, 0.04), 0 8px 24px -8px rgba(17, 20, 18, 0.1);
+  --radius-group: 18px;
+  --radius-button: 16px;
+  --radius-control: 12px;
+  --shadow-float: 0 8px 24px rgba(17, 20, 18, 0.1);
+  --shadow-chip: 0 1px 3px rgba(0, 0, 0, 0.18);
 
   /* Layout */
   --container-app: 430px;
 
-  /* Type */
+  /* Type (D19): body 15px, secondary 13px, caption 12px. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --text-body: 1.0625rem; /* 17px */
-  --text-body--line-height: 1.5;
-
-  /* Accessibility guard: text-xs (12px) is removed so it can't be used. */
-  --text-xs: initial;
-  /* 14px is the minimum, for chips and secondary hints only; body text uses 16px+ */
-  --text-sm: 0.875rem; /* 14px */
-  --text-sm--line-height: 1.25rem; /* 20px */
+  --text-body: 0.9375rem; /* 15px */
+  --text-body--line-height: 1.4;
+  --text-sm: 0.8125rem; /* 13px */
+  --text-sm--line-height: 1.15rem;
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: 1rem;
+  --text-2xs: 0.6875rem; /* 11px: tab bar labels, badges */
+  --text-2xs--line-height: 0.875rem;
 }
 
 @layer base {
@@ -82,14 +100,57 @@
   h2,
   h3,
   h4 {
-    font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
+    line-height: 1.2;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--outline-color-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* Printing (e.g. the QR page): plain white paper, no app background. */
+/* A control smaller than 44px keeps a 44×44 touch area (D19). */
+@utility touch-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Large titles and big numbers. */
+@utility title-large {
+  font-family: var(--font-display);
+  font-size: 1.75rem; /* 28px */
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
+
+@utility section-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-color-muted);
+}
+
+/* Printing (e.g. the QR pages): plain white paper, no app background. */
 @media print {
   body {
     background: #fff;

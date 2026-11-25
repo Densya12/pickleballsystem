@@ -1,83 +1,68 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Card, Notice, PageShell } from "@/components/ui";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { Notice, PageShell } from "@/components/ui";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getLastProfile, getPlayerSessionView } from "@/lib/player/data";
-import { waitingLine } from "@/lib/player/messages";
 import { normalizeJoinCode } from "@/lib/queue/qr";
-import { formatSchedule } from "@/lib/session/time";
 import { CheckInForm } from "./CheckInForm";
 
 export const metadata: Metadata = {
-  title: "Pumila · Open Play Queue",
+  title: `${en.player.checkInPageTitle} · ${en.common.appName}`,
 };
 
 /**
  * Player check-in from the QR link. Public: nobody signs in just to view it.
- * The anonymous sign-in happens on "Pumila na" (CheckInForm).
+ * The anonymous sign-in happens on "Join queue" (CheckInForm).
  */
 export default function CheckInPage({ params }: PageProps<"/j/[code]">) {
   return (
-    <Suspense
-      fallback={
-        <PageShell>
-          <p className="pt-10 text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
       <CheckInContent params={params} />
     </Suspense>
   );
 }
 
+const languageTop = (
+  <>
+    <span />
+    <LanguageSwitch />
+  </>
+);
+
 async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">) {
   const code = normalizeJoinCode((await params).code);
-  const preview = code ? await getCheckinPreview(code) : null;
-  if (!code || !preview || preview.status !== "live") return <Closed />;
+  const [preview, t] = await Promise.all([code ? getCheckinPreview(code) : Promise.resolve(null), getT()]);
+  if (!code || !preview || preview.status !== "live") {
+    return (
+      <PageShell top={languageTop} title={t.player.closedTitle}>
+        <Notice kind="error">{t.player.closed}</Notice>
+      </PageShell>
+    );
+  }
 
-  // Already in line on this phone: go straight to "Pwesto sa pila".
+  // Already in line on this phone: go straight to "My place".
   const [view, lastProfile] = await Promise.all([getPlayerSessionView(code), getLastProfile(code)]);
   if (view?.me) redirect(`/j/${code}/me`);
 
   return (
     <PageShell
-      header={
-        <div className="flex flex-col gap-1 pt-6">
-          <p className="text-muted">Pumila sa open play</p>
-          <h1 className="text-3xl break-words">{preview.name}</h1>
-          <p className="text-muted">{formatSchedule(new Date(preview.startsAt!), new Date(preview.endsAt!))}</p>
-          <p className="font-semibold">{waitingLine(preview.waiting ?? 0, preview.courtsCount ?? 0)}</p>
-        </div>
+      top={languageTop}
+      eyebrow={
+        <span className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="size-[7px] rounded-full bg-live" />
+          {t.player.checkInEyebrow(preview.waiting ?? 0, t.common.courts(preview.courtsCount ?? 0))}
+        </span>
       }
+      title={preview.name}
     >
-      <Card className="mt-2">
-        <CheckInForm
-          code={code}
-          payment={{
-            fee: preview.fee,
-            payFirst: preview.payFirst,
-            gcashName: preview.gcashName,
-            gcashNumber: preview.gcashNumber,
-          }}
-          lastProfile={lastProfile}
-        />
-      </Card>
-    </PageShell>
-  );
-}
-
-function Closed() {
-  return (
-    <PageShell
-      header={
-        <div className="pt-10">
-          <h1 className="text-3xl">Pumila sa open play</h1>
-        </div>
-      }
-    >
-      <div className="pt-4">
-        <Notice kind="error">Sarado na ang check-in. Tanungin ang organizer kung may bagong QR.</Notice>
-      </div>
+      <CheckInForm
+        code={code}
+        payment={{ fee: preview.fee, payFirst: preview.payFirst, gcashName: preview.gcashName, gcashNumber: preview.gcashNumber }}
+        lastProfile={lastProfile}
+      />
     </PageShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireClub } from "@/lib/auth/dal";
+import { getT } from "@/lib/i18n/server";
 import { sessionErrorMessage } from "@/lib/session/messages";
 import { parseNewSession, SESSION_FIELDS, type SessionField } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
@@ -14,16 +15,14 @@ export type NewSessionState = {
 };
 
 /**
- * "Simulan ang session" (intent=start) creates and starts in one database
- * transaction, then opens the session. "I-save muna" (intent=draft) saves a
+ * "Start session" (intent=start) creates and starts in one database
+ * transaction, then opens Courts. "Save as draft" (intent=draft) saves a
  * draft and goes back Home.
  */
-export async function createSessionAction(
-  _prev: NewSessionState,
-  formData: FormData,
-): Promise<NewSessionState> {
+export async function createSessionAction(_prev: NewSessionState, formData: FormData): Promise<NewSessionState> {
   // Owners and organizers may both run sessions; the RPC re-checks staff.
   const { club } = await requireClub("/sessions/new");
+  const t = await getT();
   const start = formData.get("intent") === "start";
 
   const values: Partial<Record<SessionField, string>> = Object.fromEntries(
@@ -34,10 +33,8 @@ export async function createSessionAction(
     .filter(Boolean)
     .join(",");
 
-  const parsed = parseNewSession(formData);
-  if (!parsed.ok) {
-    return { error: "May mali sa form. I-check ang mga naka-pula.", fieldErrors: parsed.errors, values };
-  }
+  const parsed = parseNewSession(formData, t);
+  if (!parsed.ok) return { error: t.common.formError, fieldErrors: parsed.errors, values };
 
   const input = parsed.data;
   const supabase = await createClient();
@@ -54,7 +51,7 @@ export async function createSessionAction(
     p_start: start,
     p_court_formats: input.court_formats,
   });
-  if (error) return { error: sessionErrorMessage(error), values };
+  if (error) return { error: sessionErrorMessage(error, t), values };
 
-  redirect(start ? `/s/${sessionId}/live` : "/");
+  redirect(start ? `/s/${sessionId}` : "/");
 }

@@ -6,13 +6,13 @@ import { Stepper } from "@/components/ui";
 import type { CourtFormat } from "@/lib/session/validation";
 import { CourtFormats } from "./CourtFormats";
 
-/** The same wiring as Bagong open play: the stepper drives the rows. */
+/** The same wiring as New session: the stepper drives the rows. */
 function Harness() {
   const [count, setCount] = useState(2);
   const [formats, setFormats] = useState<CourtFormat[]>([]);
   return (
     <form>
-      <Stepper label="Ilang court?" name="courts_count" min={1} max={8} defaultValue={2} onValueChange={setCount} />
+      <Stepper label="Courts" decrementLabel="Fewer courts" incrementLabel="More courts" name="courts_count" min={1} max={8} defaultValue={2} onValueChange={setCount} />
       <CourtFormats
         count={count}
         formats={formats}
@@ -24,7 +24,7 @@ function Harness() {
 
 const row = (n: number) => screen.queryByRole("group", { name: `Court ${n}` });
 
-describe("Bagong open play: court formats", () => {
+describe("New session: court formats", () => {
   it("shows one Doubles/Singles row per court, Doubles by default", () => {
     render(<Harness />);
     expect(row(1)).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("Bagong open play: court formats", () => {
   it("adding a court adds a Doubles row and keeps existing choices", async () => {
     render(<Harness />);
     await userEvent.click(screen.getAllByRole("radio", { name: "Singles" })[1]);
-    await userEvent.click(screen.getByRole("button", { name: "Dagdag" }));
+    await userEvent.click(screen.getByRole("button", { name: "More courts" }));
     expect(row(3)).toBeInTheDocument();
     const singles = screen.getAllByRole("radio", { name: "Singles" });
     const doubles = screen.getAllByRole("radio", { name: "Doubles" });
@@ -50,9 +50,9 @@ describe("Bagong open play: court formats", () => {
   it("removing a court hides its row, and adding it back restores the choice", async () => {
     render(<Harness />);
     await userEvent.click(screen.getAllByRole("radio", { name: "Singles" })[1]);
-    await userEvent.click(screen.getByRole("button", { name: "Bawas" }));
+    await userEvent.click(screen.getByRole("button", { name: "Fewer courts" }));
     expect(row(2)).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Dagdag" }));
+    await userEvent.click(screen.getByRole("button", { name: "More courts" }));
     expect(screen.getAllByRole("radio", { name: "Singles" })[1]).toBeChecked();
   });
 
