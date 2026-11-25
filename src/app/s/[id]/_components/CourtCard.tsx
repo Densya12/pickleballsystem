@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MiniCourt } from "@/components/court/MiniCourt";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/client";
 import type { LiveCourt } from "@/lib/queue/data";
 import { winnersFor } from "@/lib/queue/winners";
@@ -28,14 +29,18 @@ type Props = {
   onSwap: (courtId: string, playerId: string) => void;
   /** Doubles <-> singles while the court is empty. */
   onSetFormat: (courtId: string, format: Format) => void;
+  /** A game that started after the screen opened: highlight the card briefly. */
+  fresh?: boolean;
 };
 
 /**
  * One court (D19): a mini court with the players' names in their service
  * boxes, the minutes since the game started, and the court's actions.
  */
-export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, onFinish, onSwap, onSetFormat }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, onFinish, onSwap, onSetFormat, fresh = false }: Props) {
   const t = useT();
+  // The card is keyed by game, so this runs once per new game (cleared when the 1 s highlight ends).
+  const [highlight, setHighlight] = useState(fresh);
   const [picking, setPicking] = useState(false);
   const [confirmFormat, setConfirmFormat] = useState(false);
   const busy = actionBusy || waiting;
@@ -48,13 +53,18 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   const notReady = game?.players.filter((p) => p.notReady) ?? [];
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-2.5 rounded-card bg-surface p-3.5">
+    <section
+      aria-labelledby={headingId}
+      data-new-game={highlight || undefined}
+      onAnimationEnd={() => setHighlight(false)}
+      className={cn("flex flex-col gap-2.5 rounded-card bg-surface p-3.5", highlight && "court-new-game")}
+    >
       <div className="flex items-baseline justify-between gap-3">
         <h2 id={headingId} className="text-lg font-semibold">
           {court.label}
         </h2>
         <span className="text-xs text-muted">
-          {t.live.courtMeta(formatLabel, game ? minutesSince(game.startedAt, now) : null)}
+          {t.live.courtMeta(formatLabel, game ? { number: game.number, minutes: minutesSince(game.startedAt, now) } : null)}
         </span>
       </div>
 

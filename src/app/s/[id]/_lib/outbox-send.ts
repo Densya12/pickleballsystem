@@ -6,6 +6,7 @@ import {
   removePlayerAction,
   resumePlayerAction,
   setCourtFormatAction,
+  setRotationAction,
   swapNotReadyAction,
   type QueueActionResult,
 } from "./queue-actions";
@@ -31,6 +32,8 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
       return swapNotReadyAction(sessionId, str(args.courtId), str(args.playerId));
     case "set_court_format":
       return setCourtFormatAction(sessionId, str(args.courtId), args.format === "singles" ? "singles" : "doubles");
+    case "set_rotation":
+      return setRotationAction(sessionId, args.rotation === "winners_stay" ? "winners_stay" : "all_off");
     case "pause_player":
       return pausePlayerAction(sessionId, str(args.playerId));
     case "resume_player":

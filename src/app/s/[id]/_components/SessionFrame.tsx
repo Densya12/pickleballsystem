@@ -4,8 +4,10 @@ import { createContext, useContext, useEffect, useState, useTransition, type Rea
 import { SessionTabBar, type SessionTab } from "@/components/nav/SessionTabBar";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
 import { OutboxStatus } from "@/components/session/OutboxStatus";
-import { BackLink, BottomSheet, Button, ListGroup, ListRow, Notice, PageShell, Toggle } from "@/components/ui";
+import { BackLink, BottomSheet, Button, ListGroup, ListRow, Notice, PageShell, RadioGroup, Toggle } from "@/components/ui";
 import { ChevronRightIcon } from "@/components/ui/icons";
+import { rotationChoices, rotationLabel } from "@/lib/club/options";
+import type { Rotation } from "@/lib/club/validation";
 import { useT } from "@/lib/i18n/client";
 import { isNetworkError, type OutboxItem, type OutboxKind } from "@/lib/outbox/rules";
 import { useOutbox } from "@/lib/outbox/useOutbox";
@@ -42,7 +44,7 @@ export function useSessionFrame(): SessionContextValue {
 }
 
 type Props = {
-  session: { id: string; fee: number };
+  session: { id: string; fee: number; rotation: string };
   tab: SessionTab;
   title: string;
   subtitle?: ReactNode;
@@ -231,6 +233,8 @@ export function SessionFrame({
         open={moreOpen}
         onClose={() => setMoreOpen(false)}
         sessionId={session.id}
+        rotation={session.rotation}
+        onRotation={(rotation) => act("set_rotation", { rotation }, t.live.outboxRotation(rotationLabel(rotation, t)))}
         details={details}
         tagatawag={tagatawag}
       />
@@ -238,21 +242,29 @@ export function SessionFrame({
   );
 }
 
-/** More: Show QR, Read calls aloud, Session details, End session (with its confirm step). */
+/** More: Show QR, After a game, Read calls aloud, Session details, End session (with its confirm step). */
 function MoreSheet({
   open,
   onClose,
   sessionId,
+  rotation,
+  onRotation,
   details,
   tagatawag,
 }: {
   open: boolean;
   onClose: () => void;
   sessionId: string;
+  rotation: string;
+  /** Resolves true when changed (or saved to the outbox). */
+  onRotation: (rotation: Rotation) => Promise<boolean>;
   details: ReactNode;
   tagatawag: ReturnType<typeof useTagatawag>;
 }) {
   const t = useT();
+  // The choice shows at once; the server's value takes over once it has caught up.
+  const [chosen, setChosen] = useState<Rotation | null>(null);
+  if (chosen !== null && chosen === rotation) setChosen(null);
   const [showDetails, setShowDetails] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -288,6 +300,22 @@ function MoreSheet({
     <BottomSheet open={open} onClose={close} title={t.session.moreTitle}>
       <ListGroup>
         <ListRow href={`/s/${sessionId}/qr`}>{t.session.showQr}</ListRow>
+        <li className="px-4 py-3">
+          <RadioGroup
+            legend={t.live.afterGame}
+            hint={t.live.afterGameHint}
+            name="rotation"
+            look="list"
+            options={rotationChoices(t)}
+            value={chosen ?? (rotation as Rotation)}
+            onValueChange={(next) => {
+              setChosen(next);
+              void onRotation(next).then((ok) => {
+                if (!ok) setChosen(null);
+              });
+            }}
+          />
+        </li>
         {tagatawag.supported && (
           <li className="px-4">
             <Toggle

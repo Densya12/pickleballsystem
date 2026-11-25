@@ -26,6 +26,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.notLive;
     case "invalid_format":
       return t.live.invalidFormat;
+    case "invalid_rotation":
+      return t.live.invalidRotation;
     case "player_not_on_court":
       return t.live.notOnCourt;
     case "undo_not_available":
@@ -38,4 +40,37 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.auth.notOrganizerAccount;
   }
   return sessionErrorMessage(error, t);
+}
+
+/** True when both games have exactly the same players (in any order). */
+export function samePlayers(a: readonly string[], b: readonly string[]): boolean {
+  if (a.length !== b.length) return false;
+  const set = new Set(a);
+  return b.every((id) => set.has(id));
+}
+
+/**
+ * The banner after Done (NF8). When the next game has exactly the players who
+ * just finished (nobody else is eligible), say so: otherwise the court looks
+ * unchanged and Done looks like it did nothing.
+ */
+export function finishedBanner(
+  t: Dictionary,
+  input: {
+    courtLabel: string;
+    gameNumber: number;
+    finishedPlayerIds: readonly string[];
+    winners?: readonly string[] | null;
+    next: { playerIds: readonly string[]; names: readonly string[] } | null;
+  },
+): string {
+  if (input.next && samePlayers(input.finishedPlayerIds, input.next.playerIds)) {
+    return t.live.playAgain(input.next.names, input.courtLabel);
+  }
+  return t.live.finished({
+    courtLabel: input.courtLabel,
+    gameNumber: input.gameNumber,
+    winners: input.winners,
+    next: input.next ? input.next.names : null,
+  });
 }

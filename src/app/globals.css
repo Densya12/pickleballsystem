@@ -170,6 +170,22 @@
   color: var(--text-color-muted);
 }
 
+/* A new game started on a court: a short lime ring (1 s). None with reduced motion. */
+.court-new-game {
+  animation: court-new-game 1s ease-out;
+}
+@keyframes court-new-game {
+  from {
+    box-shadow: 0 0 0 3px var(--background-color-accent);
+    background-color: var(--background-color-accent-faint);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .court-new-game {
+    animation: none;
+  }
+}
+
 /*
  * Skeleton loading (first loads only). Each block fades in after 150 ms, so a
  * fast load goes straight to content, then pulses slowly (1.4 s). The tone

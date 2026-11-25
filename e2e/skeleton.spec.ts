@@ -95,7 +95,7 @@ async function seedClub(page: Page) {
   for (const name of ["Ana", "Ben", "Carlo", "Dina", "Eli", "Fe"]) await addWalkIn(page, name);
   await page.goto(courtsUrl);
   await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
-  await expect(page.getByText("Live · 4 playing · 2 in queue")).toBeVisible();
+  await expect(page.getByText("Live · All off · 4 playing · 2 in queue")).toBeVisible();
   return courtsUrl;
 }
 
@@ -187,6 +187,35 @@ test.describe("skeleton loading", () => {
     expect(homeCls).toBeLessThan(0.1);
   });
 
+  test("Courts: the skeleton on a slow first load, then the lime ring when a new game starts", async ({ page, context }) => {
+    test.setTimeout(90_000);
+    await signInWithNewClub(page, "skeleton-ring", "Ring Club");
+    await startSession(page, "Ring Night", { courts: 1, formats: ["Singles"] });
+    const courtsUrl = page.url();
+    for (const name of ["Ana", "Ben"]) await addWalkIn(page, name);
+    await page.goto(courtsUrl);
+    await court(page, "Court 1").getByRole("button", { name: "Call next 2" }).click();
+    await expect(court(page, "Court 1").getByText(/^Game 1 · \d+ min$/)).toBeVisible();
+
+    // First load with slow data: the skeleton, then the courts (no ring for games already on screen).
+    await watch(page);
+    await setDelay(context, page, DELAY_MS);
+    await page.goto(courtsUrl, { waitUntil: "commit" });
+    await expectSkeletonThenContent(page, async () => {
+      await expect(court(page, "Court 1").getByText(/^Game 1 · \d+ min$/)).toBeVisible({ timeout: 10_000 });
+    });
+    await expect(court(page, "Court 1")).not.toHaveAttribute("data-new-game");
+
+    // A new game on the court: the card gets the lime ring, and no skeleton comes back.
+    await setDelay(context, page, 0);
+    await resetSeen(page);
+    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    await expect(court(page, "Court 1").getByText(/^Game 2 · \d+ min$/)).toBeVisible();
+    await expect(court(page, "Court 1")).toHaveAttribute("data-new-game", "true");
+    expect(await court(page, "Court 1").evaluate((el) => getComputedStyle(el).animationName)).toBe("court-new-game");
+    expect(await seen(page)).toBe(false);
+  });
+
   test("no delay: the skeleton never appears; a Realtime update on Courts keeps the content", async ({ page, context, browser }) => {
     test.setTimeout(120_000);
     const courtsUrl = await seedClub(page);
@@ -212,7 +241,7 @@ test.describe("skeleton loading", () => {
     await second.goto(courtsUrl);
     await addWalkIn(second, "Gil");
 
-    await expect(page.getByText("Live · 4 playing · 3 in queue")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Live · All off · 4 playing · 3 in queue")).toBeVisible({ timeout: 10_000 });
     expect(await seen(page)).toBe(false);
     await expect(page.locator('[aria-busy="true"][data-skeleton]')).toHaveCount(0);
     await expect(page).toHaveURL(SESSION_URL);

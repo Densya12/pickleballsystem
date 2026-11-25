@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en, fil } from "@/lib/i18n/dictionary";
-import { queueErrorMessage } from "./messages";
+import { finishedBanner, queueErrorMessage, samePlayers } from "./messages";
 
 /** Banners after each queue action (NF8), now in the dictionaries (D20). */
 describe("queue banners", () => {
@@ -34,6 +34,55 @@ describe("queue banners", () => {
     expect(en.live.swapped("Ana", "Ben", "Court 1")).toBe("Ben replaced Ana on Court 1. Ana is now first in the queue.");
     expect(en.live.formatChanged("Court 2", "Singles")).toBe("Court 2 is now singles.");
     expect(en.live.undoneFinish("Court 1", 3)).toBe("Game #3 on Court 1 is back on. Keep playing.");
+  });
+});
+
+describe("finishedBanner (after Done)", () => {
+  const base = { courtLabel: "Court 2", gameNumber: 1, finishedPlayerIds: ["a", "b"] };
+
+  it("same two players called again (All off, nobody else waiting): says they play again", () => {
+    const next = { playerIds: ["b", "a"], names: ["Bea", "Ana"] };
+    expect(finishedBanner(en, { ...base, next })).toBe("Nobody else is waiting, so Bea and Ana play again on Court 2.");
+    expect(finishedBanner(fil, { ...base, next })).toBe("Walang ibang naghihintay, kaya Bea at Ana ulit ang maglalaro sa Court 2.");
+  });
+
+  it("four players again in doubles: lists all four", () => {
+    const next = { playerIds: ["d", "c", "b", "a"], names: ["Dina", "Carlo", "Ben", "Ana"] };
+    expect(finishedBanner(en, { ...base, finishedPlayerIds: ["a", "b", "c", "d"], next })).toBe(
+      "Nobody else is waiting, so Dina, Carlo, Ben, and Ana play again on Court 2.",
+    );
+  });
+
+  it("anyone different: the normal banner (game, winners, who was called)", () => {
+    const next = { playerIds: ["a", "c"], names: ["Ana", "Carlo"] };
+    expect(finishedBanner(en, { ...base, winners: ["Ana"], next })).toBe(
+      "Game #1 on Court 2 is done. Won: Ana. Called: Ana, Carlo",
+    );
+  });
+
+  it("nobody called: the court stays empty", () => {
+    expect(finishedBanner(en, { ...base, next: null })).toBe("Game #1 on Court 2 is done. Court 2 stays empty; not enough players waiting.");
+  });
+
+  it("samePlayers ignores order but not size", () => {
+    expect(samePlayers(["a", "b"], ["b", "a"])).toBe(true);
+    expect(samePlayers(["a", "b"], ["a", "b", "c"])).toBe(false);
+    expect(samePlayers(["a", "b"], ["a", "c"])).toBe(false);
+  });
+});
+
+describe("rotation while live", () => {
+  it("the Courts line shows the rotation, and a change is confirmed", () => {
+    expect(en.live.liveLine("All off", 4, 2)).toBe("Live · All off · 4 playing · 2 in queue");
+    expect(fil.live.liveLine("Mananatili ang nanalo", 4, 2)).toBe("Live · Mananatili ang nanalo · 4 naglalaro · 2 nakapila");
+    expect(en.live.rotationChanged("Winners stay")).toBe("After a game: Winners stay. It applies from the next Done.");
+    expect(queueErrorMessage({ message: "invalid_rotation" }, en)).toBe("Pick what happens after a game.");
+  });
+
+  it("the court header shows the game number while playing", () => {
+    expect(en.live.courtMeta("Singles", { number: 2, minutes: 0 })).toBe("Game 2 · 0 min");
+    expect(fil.live.courtMeta("Singles", { number: 2, minutes: 5 })).toBe("Laro 2 · 5 min");
+    expect(en.live.courtMeta("Doubles", null)).toBe("Doubles · Empty");
   });
 });
 

@@ -8,9 +8,12 @@ const en = {
   homeLink: "Home",
   showQr: "Show QR",
   walkIn: "Walk-in",
-  liveLine: (playing: number, waiting: number) => `Live · ${playing} playing · ${waiting} in queue`,
+  /** "Live · All off · 10 playing · 8 in queue" */
+  liveLine: (rotation: string, playing: number, waiting: number) => `Live · ${rotation} · ${playing} playing · ${waiting} in queue`,
   // Courts
-  courtMeta: (format: string, minutes: number | null) => (minutes === null ? `${format} · Empty` : `${format} · ${minutes} min`),
+  /** Court card header: "Game 3 · 12 min" while playing, "Doubles · Empty" when empty. */
+  courtMeta: (format: string, game: { number: number; minutes: number } | null) =>
+    game ? `Game ${game.number} · ${game.minutes} min` : `${format} · Empty`,
   empty: "Empty",
   playingOn: (court: string) => `Playing on ${court}`,
   done: "Done",
@@ -61,6 +64,9 @@ const en = {
   formatChanged: (court: string, format: string) => `${court} is now ${format.toLowerCase()}.`,
   undoneFinish: (court: string, n: number) => `Game #${n} on ${court} is back on. Keep playing.`,
   undoneRemove: (name: string) => `${name} is back in their place in the queue.`,
+  /** After Done, when the new game has exactly the same players. */
+  playAgain: (names: readonly string[], court: string) => `Nobody else is waiting, so ${list(names, "and")} play again on ${court}.`,
+  rotationChanged: (rotation: string) => `After a game: ${rotation}. It applies from the next Done.`,
   // Errors
   needPlayers: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call.`,
   notEnough: "Not enough players waiting to call.",
@@ -72,6 +78,7 @@ const en = {
   notFound: "Can't find that. Refresh the page.",
   notOnCourt: "That player isn't on the court anymore.",
   invalidFormat: "Pick doubles or singles.",
+  invalidRotation: "Pick what happens after a game.",
   // Walk-in
   walkInPageTitle: "Add walk-in",
   walkInTitle: "Add walk-in",
@@ -127,6 +134,7 @@ const en = {
   outboxFinish: (n: number | string, court: string) => `Done: Game #${n} on ${court}`,
   outboxSwap: (name: string, court: string) => `Swap ${name} on ${court}`,
   outboxFormat: (format: string, court: string) => `Make ${court} ${format.toLowerCase()}`,
+  outboxRotation: (rotation: string) => `After a game: ${rotation}`,
   outboxPause: (name: string) => `Pause ${name}`,
   outboxResume: (name: string) => `Resume ${name}`,
   outboxRemove: (name: string) => `Remove ${name}`,
@@ -135,6 +143,9 @@ const en = {
   // Tagatawag (D17)
   readAloud: "Read calls aloud",
   readAloudDescription: "On this phone only. Turn off if another phone already does it.",
+  // More › After a game (rotation while live)
+  afterGame: "After a game",
+  afterGameHint: "Takes effect at the next Done.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "and")}.` : `${court}.`),
 };
 
@@ -142,8 +153,9 @@ const fil: typeof en = {
   homeLink: "Home",
   showQr: "Ipakita ang QR",
   walkIn: "Walk-in",
-  liveLine: (playing: number, waiting: number) => `Live · ${playing} naglalaro · ${waiting} nakapila`,
-  courtMeta: (format: string, minutes: number | null) => (minutes === null ? `${format} · Bakante` : `${format} · ${minutes} min`),
+  liveLine: (rotation: string, playing: number, waiting: number) => `Live · ${rotation} · ${playing} naglalaro · ${waiting} nakapila`,
+  courtMeta: (format: string, game: { number: number; minutes: number } | null) =>
+    game ? `Laro ${game.number} · ${game.minutes} min` : `${format} · Bakante`,
   empty: "Bakante",
   playingOn: (court: string) => `Naglalaro sa ${court}`,
   done: "Tapos na",
@@ -192,6 +204,9 @@ const fil: typeof en = {
   formatChanged: (court: string, format: string) => `${format} na ang ${court}.`,
   undoneFinish: (court: string, n: number) => `Naibalik ang Laro #${n} sa ${court}. Tuloy pa ang laro.`,
   undoneRemove: (name: string) => `Naibalik si ${name} sa pila, sa dati niyang puwesto.`,
+  playAgain: (names: readonly string[], court: string) =>
+    `Walang ibang naghihintay, kaya ${list(names, "at")} ulit ang maglalaro sa ${court}.`,
+  rotationChanged: (rotation: string) => `Pagkatapos ng laro: ${rotation}. Simula sa susunod na Tapos na.`,
   needPlayers: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notEnough: "Kulang pa ang nakapila para makatawag.",
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
@@ -202,6 +217,7 @@ const fil: typeof en = {
   notFound: "Hindi makita. I-refresh ang page.",
   notOnCourt: "Wala na sa court ang player na iyon.",
   invalidFormat: "Pumili ng Doubles o Singles.",
+  invalidRotation: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
   walkInPageTitle: "Magdagdag ng walk-in",
   walkInTitle: "Magdagdag ng walk-in",
   walkInSubtitle: "Para sa player na walang phone o hindi makapag-scan.",
@@ -253,6 +269,7 @@ const fil: typeof en = {
   outboxFinish: (n: number | string, court: string) => `Tapos na: Laro #${n} sa ${court}`,
   outboxSwap: (name: string, court: string) => `Palitan si ${name} sa ${court}`,
   outboxFormat: (format: string, court: string) => `Gawing ${format} ang ${court}`,
+  outboxRotation: (rotation: string) => `Pagkatapos ng laro: ${rotation}`,
   outboxPause: (name: string) => `I-pause si ${name}`,
   outboxResume: (name: string) => `Ituloy si ${name}`,
   outboxRemove: (name: string) => `Alisin si ${name} sa pila`,
@@ -260,6 +277,8 @@ const fil: typeof en = {
   outboxConfirm: (name: string) => `Natanggap na: ${name}`,
   readAloud: "Tagatawag (basahin nang malakas)",
   readAloudDescription: "Sa phone na ito lang. I-off kung may ibang phone na nagbabasa.",
+  afterGame: "Pagkatapos ng laro",
+  afterGameHint: "Magsisimula sa susunod na Tapos na.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "at")}.` : `${court}.`),
 };
 

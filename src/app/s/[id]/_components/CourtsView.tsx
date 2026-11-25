@@ -7,6 +7,7 @@ import type { CallRules } from "@/lib/player/state";
 import type { LiveState } from "@/lib/queue/data";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { useNow } from "@/lib/useNow";
+import { useState } from "react";
 import { CourtCard } from "./CourtCard";
 import { useSessionFrame } from "./SessionFrame";
 
@@ -26,11 +27,15 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
     rules,
   );
 
+  // Games on screen when it opened; any other game started since, and its card is highlighted once.
+  const [initialGames] = useState(() => new Set(state.courts.flatMap((c) => (c.game ? [c.game.id] : []))));
+
   return (
     <div className="flex flex-col gap-2.5">
       {state.courts.map((court) => (
         <CourtCard
           key={`${court.id}:${court.game?.id ?? "empty"}`}
+          fresh={Boolean(court.game && !initialGames.has(court.game.id))}
           court={court}
           rotation={rotation}
           eligibleCount={state.eligibleCount}

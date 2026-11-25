@@ -114,7 +114,7 @@ export default function DesignSystemPage() {
               { value: "cash", label: "Cash" },
             ]} />
             <RadioGroup legend="After each game" name="rotation" defaultValue="all_off" options={[
-              { value: "all_off", label: "Everyone off", description: "All four go to the back of the queue" },
+              { value: "all_off", label: "All off", description: "All four go to the back of the queue" },
               { value: "winners_stay", label: "Winners stay", description: "Up to 2 games in a row" },
             ]} />
             <Stepper label="Courts" name="courts" min={1} max={8} defaultValue={3} decrementLabel="Fewer courts" incrementLabel="More courts" />

@@ -38,7 +38,7 @@ async function QueueContent({ params, searchParams }: Pick<PageProps<"/s/[id]/qu
 
   return (
     <SessionFrame
-      session={{ id: session.id, fee: session.fee }}
+      session={{ id: session.id, fee: session.fee, rotation: session.rotation }}
       tab="queue"
       title={t.live.queueTitle}
       subtitle={t.live.queueSubtitle(state.queue.length)}

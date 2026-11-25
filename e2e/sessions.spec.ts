@@ -30,7 +30,7 @@ test.describe("sessions (organizer)", () => {
 
     // Club defaults are pre-filled (BR2); the courts stepper starts at 2.
     await expect(page.getByRole("radio", { name: "11" })).toBeChecked();
-    await expect(page.getByRole("radio", { name: /Everyone off/ })).toBeChecked();
+    await expect(page.getByRole("radio", { name: /^All off/ })).toBeChecked();
     await expect(page.getByLabel("Fee per player (₱)")).toHaveValue("150");
     await expect(page.getByRole("status").filter({ hasText: "courts" })).toHaveText("2 courts");
 
@@ -48,7 +48,7 @@ test.describe("sessions (organizer)", () => {
     await expect(page).toHaveURL(SESSION_URL);
     const sessionUrl = page.url();
     await expect(page.getByRole("heading", { level: 1, name: "Friday Night Open Play" })).toBeVisible();
-    await expect(page.getByText("Live · 0 playing · 0 in queue")).toBeVisible();
+    await expect(page.getByText("Live · Winners stay · 0 playing · 0 in queue")).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: /^Court \d$/ })).toHaveCount(3);
     await expect(page.getByRole("navigation", { name: "Session" })).toBeVisible();
 
@@ -65,7 +65,7 @@ test.describe("sessions (organizer)", () => {
     await expect(more.getByText("End the session? Check-in closes.")).toBeVisible();
     await more.getByRole("button", { name: "Keep going" }).click();
     await page.keyboard.press("Escape");
-    await expect(page.getByText("Live · 0 playing · 0 in queue")).toBeVisible();
+    await expect(page.getByText("Live · Winners stay · 0 playing · 0 in queue")).toBeVisible();
 
     await endSession(page);
     await expect(page.getByText("Ended", { exact: true })).toBeVisible();
@@ -114,7 +114,7 @@ test.describe("sessions (organizer)", () => {
     await expect(page.getByText("Draft", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Delete draft" })).toBeVisible();
     await page.getByRole("button", { name: "Start session" }).click();
-    await expect(page.getByText("Live · 0 playing · 0 in queue")).toBeVisible();
+    await expect(page.getByText("Live · All off · 0 playing · 0 in queue")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Session" })).toBeVisible();
 
     await page.getByRole("link", { name: "Home" }).first().click();

@@ -15,7 +15,7 @@ import {
 import { signInWithNewClub } from "./support/organizer";
 
 function liveLine(page: Page) {
-  return page.getByText(/^Live · \d+ playing · \d+ in queue$/);
+  return page.getByText(/^Live · (All off|Winners stay) · \d+ playing · \d+ in queue$/);
 }
 
 test.describe("queue engine, Courts and Queue tabs", () => {
@@ -36,10 +36,10 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
     await expect(banner(page)).toHaveText(/Called to Court 1: Ana, Ben, Carlo, Dina/);
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
-    await expect(court(page, "Court 1").getByText(/^Doubles · \d+ min$/)).toBeVisible();
+    await expect(court(page, "Court 1").getByText(/^Game 1 · \d+ min$/)).toBeVisible();
     await court(page, "Court 2").getByRole("button", { name: "Call next 4" }).click();
     await expect(banner(page)).toHaveText(/Called to Court 2: Eli, Fe, Gil, Hans/);
-    await expect(liveLine(page)).toHaveText("Live · 8 playing · 1 in queue");
+    await expect(liveLine(page)).toHaveText("Live · All off · 8 playing · 1 in queue");
 
     // BR10: all four re-join the end; Court 1 calls Ivy and the first three of them
     await page.getByRole("button", { name: "Done on Court 1" }).click();
@@ -59,7 +59,8 @@ test.describe("queue engine, Courts and Queue tabs", () => {
 
     await openTab(page, "Courts");
     await page.getByRole("button", { name: "Done on Court 2" }).click();
-    await expect(banner(page)).toHaveText(/Game #2 on Court 2 is done\. Called: Eli, Fe, Gil, Hans/);
+    // Dina is paused, so the same four are the only ones waiting: they play again, and the banner says so.
+    await expect(banner(page)).toHaveText(/Nobody else is waiting, so Eli, Fe, Gil, and Hans play again on Court 2\./);
 
     // BR18: remove Dina (with a confirm step)
     await openTab(page, "Queue");
@@ -134,7 +135,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
     await openTab(second, "Courts");
     await expect(onCourt(second, "Court 1")).toHaveText(["Rita", "Sam", "Tess", "Uly"], { timeout: 2_000 });
-    await expect(liveLine(second)).toHaveText("Live · 4 playing · 0 in queue", { timeout: 2_000 });
+    await expect(liveLine(second)).toHaveText("Live · All off · 4 playing · 0 in queue", { timeout: 2_000 });
 
     // Losing the connection shows a notice; back online, it refetches what was missed.
     await openTab(second, "Queue");
