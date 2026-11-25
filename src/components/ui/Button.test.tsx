@@ -44,4 +44,21 @@ describe("Button", () => {
     );
     expect(screen.getByRole("button", { name: "Cash" })).toHaveClass("touch-target", "min-h-9");
   });
+
+  it("40px pills (+ Walk-in, Done, Call next, Need N more) keep a 44×44 touch area without growing (QA-11)", () => {
+    render(
+      <>
+        <Button variant="lime" size="pill">
+          Call next 4
+        </Button>
+        <Button href="/s/1/walk-in" size="pill">
+          + Walk-in
+        </Button>
+      </>,
+    );
+    for (const el of [screen.getByRole("button", { name: "Call next 4" }), screen.getByRole("link", { name: "+ Walk-in" })]) {
+      expect(el).toHaveClass("touch-target", "min-h-10");
+      expect(el.className).not.toMatch(/min-h-11|h-11/);
+    }
+  });
 });

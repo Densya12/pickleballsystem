@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
  * - ghost / danger: text buttons.
  */
 export type ButtonVariant = "primary" | "lime" | "secondary" | "outline" | "ghost" | "danger" | "danger-outline";
-/** lg = 52px main button · md = 44px · pill = 40px round · sm = 36px round (44px touch area). */
+/** lg = 52px main button · md = 44px · pill = 40px round · sm = 36px round; pill and sm get a 44×44 touch area (QA-11). */
 export type ButtonSize = "lg" | "md" | "pill" | "sm";
 
 type BaseProps = {
@@ -55,7 +55,7 @@ const variants: Record<ButtonVariant, string> = {
 const sizes: Record<ButtonSize, string> = {
   lg: "min-h-[52px] rounded-button px-6 text-lg font-semibold",
   md: "min-h-11 rounded-[14px] px-4 text-body font-medium",
-  pill: "min-h-10 rounded-full px-5 text-body font-semibold",
+  pill: "touch-target min-h-10 rounded-full px-5 text-body font-semibold",
   sm: "touch-target min-h-9 rounded-full px-4 text-sm font-semibold",
 };
 
