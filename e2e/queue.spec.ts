@@ -32,7 +32,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
 
     // BR7: each court calls the first 4 in queue order
     await openTab(page, "Courts");
-    await expect(page.getByText("Up next:")).toBeVisible();
+    await expect(page.getByText("Up next:").filter({ visible: true })).toBeVisible();
     await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
     await expect(banner(page)).toHaveText(/Called to Court 1: Ana, Ben, Carlo, Dina/);
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
@@ -155,7 +155,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await page.getByRole("link", { name: "Show QR" }).click();
 
     await expect(page.getByRole("heading", { level: 1, name: "QR Night" })).toBeVisible();
-    await expect(page.getByText("Scan to join")).toBeVisible();
+    await expect(page.getByText("Scan to join").filter({ visible: true })).toBeVisible();
     await expect(page.getByRole("img", { name: /QR code/ }).locator("svg")).toBeVisible();
     for (const step of ["Open the phone's camera.", "Point it at the QR code.", "Tap the link that appears. No app needed."]) {
       await expect(page.getByText(step)).toBeVisible();

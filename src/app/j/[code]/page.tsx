@@ -8,6 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getLastProfile, getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { CheckInForm } from "./CheckInForm";
+import { CheckInSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.player.checkInPageTitle} · ${en.common.appName}`,
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
  */
 export default function CheckInPage({ params }: PageProps<"/j/[code]">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<CheckInSkeleton />}>
       <CheckInContent params={params} />
     </Suspense>
   );

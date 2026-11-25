@@ -9,6 +9,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { StaffSection, type InviteItem, type StaffItem } from "../StaffSection";
+import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.settings.coOrganizers} · ${en.common.appName}`,
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function OrganizersPage() {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<SettingsFormSkeleton page="coOrganizers" fields={2} />}>
       <Content />
     </Suspense>
   );

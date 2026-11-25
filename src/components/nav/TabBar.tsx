@@ -8,6 +8,8 @@ export type TabItem = {
   icon: ReactNode;
   href?: string;
   onClick?: () => void;
+  /** While the screen loads (e.g. More before the session's data is there). */
+  disabled?: boolean;
   /** A number to act on (shown as a badge). */
   badge?: number;
   badgeLabel?: string;
@@ -45,7 +47,7 @@ export function TabBar({ label, items, current, width = "w-[84px]" }: { label: s
             {content}
           </Link>
         ) : (
-          <button key={tab.key} type="button" onClick={tab.onClick} aria-haspopup="dialog" aria-label={name} className={className}>
+          <button key={tab.key} type="button" onClick={tab.onClick} disabled={tab.disabled} aria-haspopup="dialog" aria-label={name} className={className}>
             {content}
           </button>
         );

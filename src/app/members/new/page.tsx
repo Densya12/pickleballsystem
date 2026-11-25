@@ -5,6 +5,7 @@ import { requireClub } from "@/lib/auth/dal";
 import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { MemberForm } from "../MemberForm";
+import { MemberFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.members.newTitle} · ${en.common.appName}`,
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function NewMemberPage() {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<MemberFormSkeleton edit={false} />}>
       <NewMemberContent />
     </Suspense>
   );

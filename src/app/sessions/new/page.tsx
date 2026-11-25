@@ -9,6 +9,7 @@ import { repeatDefaults } from "@/lib/session/repeat";
 import { defaultSessionTimes } from "@/lib/session/time";
 import { COURTS_DEFAULT } from "@/lib/session/validation";
 import { NewSessionForm } from "./NewSessionForm";
+import { NewSessionSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.session.newPageTitle} · ${en.common.appName}`,
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function NewSessionPage({ searchParams }: PageProps<"/sessions/new">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<NewSessionSkeleton />}>
       <NewSessionContent searchParams={searchParams} />
     </Suspense>
   );

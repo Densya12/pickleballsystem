@@ -8,6 +8,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { getMembers } from "@/lib/members/data";
 import { MembersList } from "./MembersList";
+import { MembersSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.members.pageTitle} · ${en.common.appName}`,
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function MembersPage({ searchParams }: PageProps<"/members">) {
   return (
-    <Suspense fallback={<PageShell tabBar={<MainTabBar current="members" />}>{null}</PageShell>}>
+    <Suspense fallback={<MembersSkeleton />}>
       <MembersContent searchParams={searchParams} />
     </Suspense>
   );

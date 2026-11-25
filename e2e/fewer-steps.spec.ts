@@ -132,7 +132,7 @@ test("Undo: finishing a game by mistake is undone and the queue is back as befor
   await openTab(organizer, "Courts");
   await court(organizer, "Court 1").getByRole("button", { name: "Call next 4" }).click();
   await expect(onCourt(organizer, "Court 1")).toHaveText(["Aldo", "Bea", "Cris", "Dani"]);
-  await expect(organizer.getByText("Up next:").locator("..")).toContainText("Ella, Fely");
+  await expect(organizer.getByText("Up next:").filter({ visible: true }).locator("..")).toContainText("Ella, Fely");
 
   await organizer.getByRole("button", { name: "Done on Court 1" }).click();
   await expect(banner(organizer)).toContainText("Game #1 on Court 1 is done.");

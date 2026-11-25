@@ -71,7 +71,7 @@ test("player: the EN | TL switch on check-in, kept after reload, separate from t
 
   // The organizer's phone was never switched.
   await organizer.reload();
-  await expect(organizer.getByText("Scan to join")).toBeVisible();
+  await expect(organizer.getByText("Scan to join").filter({ visible: true })).toBeVisible();
   await expect(htmlLang(organizer)).toHaveAttribute("lang", "en");
   await player.context().close();
 });

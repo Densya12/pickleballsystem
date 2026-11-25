@@ -11,6 +11,7 @@ import { getLocale, getT } from "@/lib/i18n/server";
 import { getLiveState } from "@/lib/queue/data";
 import { getHomeSessions, type Session } from "@/lib/session/data";
 import { dateBadge, dayPart, formatShortDate, formatTime, formatTimeRange } from "@/lib/session/time";
+import { HomeSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 /**
  * Home (D19): the live session as a dark card, New session / Repeat last,
@@ -18,7 +19,7 @@ import { dateBadge, dayPart, formatShortDate, formatTime, formatTimeRange } from
  */
 export default function Home() {
   return (
-    <Suspense fallback={<PageShell tabBar={<MainTabBar current="home" />}>{null}</PageShell>}>
+    <Suspense fallback={<HomeSkeleton />}>
       <HomeContent />
     </Suspense>
   );

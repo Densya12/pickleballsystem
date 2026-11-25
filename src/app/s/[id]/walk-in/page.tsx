@@ -8,6 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { getMembers } from "@/lib/members/data";
 import { getSession } from "@/lib/session/data";
 import { WalkInForm } from "./WalkInForm";
+import { WalkInSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.live.walkInPageTitle} · ${en.common.appName}`,
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function WalkInPage({ params }: PageProps<"/s/[id]/walk-in">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<WalkInSkeleton />}>
       <WalkInContent params={params} />
     </Suspense>
   );

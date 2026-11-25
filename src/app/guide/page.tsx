@@ -4,6 +4,7 @@ import { BackLink, PageShell } from "@/components/ui";
 import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { PrintButton } from "./PrintButton";
+import { GuideSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.guide.pageTitle} · ${en.common.appName}`,
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 /** One printable page for the organizer, in the device's language (opened from Settings). */
 export default function GuidePage() {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<GuideSkeleton />}>
       <Guide />
     </Suspense>
   );

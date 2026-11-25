@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { IconLink, PageShell } from "@/components/ui";
+import { IconLink } from "@/components/ui";
 import { DownloadIcon } from "@/components/ui/icons";
 import { requireUser } from "@/lib/auth/dal";
 import { en } from "@/lib/i18n/dictionary";
@@ -12,6 +12,7 @@ import { getSession } from "@/lib/session/data";
 import { PaymentsView } from "../_components/PaymentsView";
 import { SessionDetails } from "../_components/SessionDetails";
 import { SessionFrame } from "../_components/SessionFrame";
+import { PaymentsSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.payments.pageTitle} · ${en.common.appName}`,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 /** Payments tab (D16, D19). Also open after the session ends, to settle the rest. */
 export default function PaymentsPage({ params }: PageProps<"/s/[id]/payments">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<PaymentsSkeleton />}>
       <PaymentsContent params={params} />
     </Suspense>
   );

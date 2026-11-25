@@ -24,6 +24,8 @@ export default defineConfig({
     command: `npm run build && npm run start -- -p ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
+    // Lets e2e/skeleton.spec.ts slow the server's data per request (cookie e2e_delay_ms).
+    env: { E2E_ALLOW_DELAY: "1" },
     timeout: 240_000,
   },
 });

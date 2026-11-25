@@ -17,17 +17,19 @@ export function SessionTabBar({
 }: {
   sessionId: string;
   current: SessionTab;
-  queueCount: number;
+  /** null while loading: "Queue" without a count. */
+  queueCount: number | null;
   /** To check + unpaid. */
   paymentsBadge: number;
   /** Free sessions have no Payments tab. */
   showPayments: boolean;
-  onMore: () => void;
+  /** Without it (while loading) More is disabled. */
+  onMore?: () => void;
 }) {
   const t = useT();
   const items: TabItem[] = [
     { key: "courts", label: t.nav.courts, href: `/s/${sessionId}`, icon: <GridIcon /> },
-    { key: "queue", label: t.nav.queueCount(queueCount), href: `/s/${sessionId}/queue`, icon: <ListIcon /> },
+    { key: "queue", label: queueCount === null ? t.nav.queue : t.nav.queueCount(queueCount), href: `/s/${sessionId}/queue`, icon: <ListIcon /> },
   ];
   if (showPayments) {
     items.push({
@@ -39,6 +41,6 @@ export function SessionTabBar({
       badgeLabel: t.nav.needsAction(paymentsBadge),
     });
   }
-  items.push({ key: "more", label: t.nav.more, onClick: onMore, icon: <MoreIcon /> });
+  items.push({ key: "more", label: t.nav.more, onClick: onMore, disabled: !onMore, icon: <MoreIcon /> });
   return <TabBar label={t.nav.session} current={current} items={items} width="w-[78px]" />;
 }

@@ -13,6 +13,7 @@ import { getJoinCode } from "@/lib/queue/data";
 import { qrSvg } from "@/lib/queue/qr";
 import { getSession } from "@/lib/session/data";
 import { ShareActions } from "./ShareActions";
+import { SessionQrSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.live.qrPageTitle} · ${en.common.appName}`,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function QrPage({ params }: PageProps<"/s/[id]/qr">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<SessionQrSkeleton />}>
       <QrContent params={params} />
     </Suspense>
   );

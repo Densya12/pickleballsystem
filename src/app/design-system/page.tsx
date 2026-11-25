@@ -18,6 +18,15 @@ import {
   Stepper,
   Toggle,
 } from "@/components/ui";
+import {
+  Skeleton,
+  SkeletonCard,
+  SkeletonCircle,
+  SkeletonCourt,
+  SkeletonField,
+  SkeletonLine,
+  SkeletonRegion,
+} from "@/components/ui";
 import { BellIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
@@ -123,6 +132,29 @@ export default function DesignSystemPage() {
             ]} />
             <MiniCourt format="singles" players={[{ id: "5", name: "Hector Cruz", highlight: true }, { id: "6", name: "Ivy Bautista" }]} />
           </Card>
+        </Section>
+
+        <Section id="skeleton" label="Skeleton (loading)">
+          <SkeletonRegion className="flex flex-col gap-3">
+            <div className="flex items-center gap-3 px-1">
+              <SkeletonCircle size={26} />
+              <span className="flex-1">
+                <SkeletonLine width="55%" />
+                <SkeletonLine size="sm" width="35%" />
+              </span>
+              <Skeleton width={86} height={40} rounded="full" />
+            </div>
+            <SkeletonCard padding="p-3.5" className="flex flex-col gap-2.5">
+              <div className="flex items-baseline justify-between">
+                <SkeletonLine size="lg" width={68} />
+                <SkeletonLine size="xs" width={96} />
+              </div>
+              <SkeletonCourt />
+            </SkeletonCard>
+            <SkeletonCard>
+              <SkeletonField />
+            </SkeletonCard>
+          </SkeletonRegion>
         </Section>
       </div>
     </PageShell>
