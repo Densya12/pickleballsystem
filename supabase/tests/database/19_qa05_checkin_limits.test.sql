@@ -51,7 +51,7 @@ select is(pg_temp.err($$ select public.join_session(pg_temp.code(), 'Mark S.', '
   'Adding a last initial works');
 -- A walk-in by the organizer may reuse a name (the app warns and lets them override).
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'Mark Santos', 'unsure', null, null, null, null) $$), 'no error',
+select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'Mark Santos', 'unsure', 'later', null, null, null) $$), 'no error',
   'The organizer can still add a walk-in with the same name');
 -- Once a player has left, their name is free again.
 select pg_temp.as_user('77777777-0000-0000-0000-000000000001', true);
@@ -66,11 +66,11 @@ select is(pg_temp.err($$ select public.join_session(pg_temp.code(), 'Mark Santos
 reset role;
 select is((select count(*)::int from public.session_players where session_id = pg_temp.sid('s') and status <> 'left'), 2, 'Setup: 2 active');
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s'), 'Filler ' || i, 'unsure', null, null, null, null) from generate_series(1, 198) i;
+select public.add_walk_in(pg_temp.sid('s'), 'Filler ' || i, 'unsure', 'later', null, null, null) from generate_series(1, 198) i;
 reset role;
 select is((select count(*)::int from public.session_players where session_id = pg_temp.sid('s') and status <> 'left'), 200, '200 active players');
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'One Too Many', 'unsure', null, null, null, null) $$), 'session_full',
+select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'One Too Many', 'unsure', 'later', null, null, null) $$), 'session_full',
   'The 201st (walk-in) is refused');
 select pg_temp.as_user('77777777-0000-0000-0000-000000000004', true);
 select is(pg_temp.err($$ select public.join_session(pg_temp.code(), 'Phone Too Many', 'unsure', null, null) $$), 'session_full',

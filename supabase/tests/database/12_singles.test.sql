@@ -113,10 +113,10 @@ reset role;
 -- Singles call and all off
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s1'), 'X1', 'beginner');
+select public.add_walk_in(pg_temp.sid('s1'), 'X1', 'beginner', 'later');
 select is(pg_temp.err($$ select public.call_next(pg_temp.court(pg_temp.sid('s1'), 1)) $$), 'not_enough_players:1',
   'Singles with 1 eligible: 1 more needed');
-select public.add_walk_in(pg_temp.sid('s1'), 'X' || n, 'beginner') from generate_series(2, 5) n;
+select public.add_walk_in(pg_temp.sid('s1'), 'X' || n, 'beginner', 'later') from generate_series(2, 5) n;
 select set_config('test.x_g1', public.call_next(pg_temp.court(pg_temp.sid('s1'), 1))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s1'), 1), 'X1,X2', 'Singles calls the first 2');
 select is((select format from public.games where id = pg_temp.sid('x_g1')), 'singles', 'The game is recorded as singles');
@@ -138,7 +138,7 @@ reset role;
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.s2', public.create_session('c2000000-0000-0000-0000-000000000000', 'Singles Winners Night', now(), now() + interval '3h', 1,
   p_court_formats => array['singles'], p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('s2'), 'Y' || n, 'advanced') from generate_series(1, 5) n;
+select public.add_walk_in(pg_temp.sid('s2'), 'Y' || n, 'advanced', 'later') from generate_series(1, 5) n;
 select set_config('test.y1', public.call_next(pg_temp.court(pg_temp.sid('s2'), 1))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s2'), 1), 'Y1,Y2', 'Game 1: Y1 vs Y2');
 select is(pg_temp.err($$ select public.finish_game(pg_temp.court(pg_temp.sid('s2'), 1), pg_temp.sid('y1')) $$), 'invalid_winners',
@@ -179,7 +179,7 @@ reset role;
 -- Mixed session: 1 doubles + 1 singles court
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s3'), 'M' || n, 'intermediate') from generate_series(1, 7) n;
+select public.add_walk_in(pg_temp.sid('s3'), 'M' || n, 'intermediate', 'later') from generate_series(1, 7) n;
 select set_config('test.m1', public.call_next(pg_temp.court(pg_temp.sid('s3'), 1))::text, true);
 select set_config('test.m2', public.call_next(pg_temp.court(pg_temp.sid('s3'), 2))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'M1,M2,M3,M4', 'Doubles court: 4');
@@ -232,7 +232,7 @@ select pg_temp.as_user('77777777-0000-0000-0000-000000000001', '{"is_anonymous":
 select set_config('test.p', public.join_session(current_setting('test.code4'), 'Phone Pia')::text, true);
 reset role;
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s4'), 'Z' || n, 'beginner') from generate_series(1, 2) n;
+select public.add_walk_in(pg_temp.sid('s4'), 'Z' || n, 'beginner', 'later') from generate_series(1, 2) n;
 select set_config('test.zg', public.call_next(pg_temp.court(pg_temp.sid('s4'), 2))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s4'), 2), 'Phone Pia,Z1', 'The phone player is called to the singles court');
 reset role;

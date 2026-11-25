@@ -34,7 +34,7 @@ insert into public.club_staff (club_id, user_id, role) values ('c9000000-0000-00
 
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.s', public.create_session('c9000000-0000-0000-0000-000000000000', 'QA-09 Night', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('s'), name, 'unsure', null, null, null, null)
+select public.add_walk_in(pg_temp.sid('s'), name, 'unsure', 'later', null, null, null)
 from unnest(array['Ana', 'Ben', 'Carlo', 'Dina', 'Eli']) name;
 select public.call_next(pg_temp.court());
 

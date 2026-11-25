@@ -121,3 +121,21 @@ describe("QA-09: swap refused when the player didn't flag not ready", () => {
     expect(isAlreadyDone("swap_not_ready", "player_not_flagged")).toBe(false);
   });
 });
+
+describe("QA-10: payment choice and fee cap from the database", () => {
+  it("payment_required asks how they'll pay", () => {
+    expect(queueErrorMessage({ message: "payment_required" }, en)).toBe(en.live.choosePayment);
+    expect(queueErrorMessage({ message: "payment_required" }, fil)).toBe(fil.live.choosePayment);
+  });
+
+  it("a fee above the cap says the fee is too high, not a generic error", async () => {
+    const { sessionErrorMessage } = await import("@/lib/session/messages");
+    const { clubErrorMessage } = await import("@/lib/club/messages");
+    const sessionCap = { code: "23514", message: 'new row for relation "sessions" violates check constraint "sessions_fee_max"' };
+    const clubCap = { code: "23514", message: 'new row for relation "clubs" violates check constraint "clubs_default_fee_max"' };
+    expect(sessionErrorMessage(sessionCap, en)).toBe(en.club.feeTooHigh);
+    expect(clubErrorMessage(clubCap, fil)).toBe(fil.club.feeTooHigh);
+    // Other check violations are unchanged.
+    expect(sessionErrorMessage({ code: "23514", message: "sessions_fee_min" }, en)).toBe(en.club.invalidInput);
+  });
+});

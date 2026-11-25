@@ -533,3 +533,88 @@ begin
   return v_next[1];
 end;
 $$;
+
+-- ===========================================================================
+-- QA-10 (D18): with a fee, a walk-in needs a payment choice; fees are capped
+-- at ₱100,000 (FEE_MAX in src/lib/club/validation.ts), in the database too.
+-- The app on main already sends a payment for every walk-in when the fee is
+-- above 0 (parseWalkInPayment) and caps fees in its forms, so neither change
+-- refuses anything the deployed app sends.
+-- ===========================================================================
+
+create or replace function public.add_walk_in(
+  p_session_id   uuid,
+  p_display_name text,
+  p_level        text,
+  p_payment      text default null,
+  p_reference    text default null,
+  p_client_id    uuid default null,
+  p_member_id    uuid default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_session public.sessions%rowtype;
+  v_player_id uuid;
+begin
+  perform private.assert_organizer_account();
+  v_session := private.lock_live_session(p_session_id);
+
+  -- A resend of a walk-in already added (the session row is locked, so this can't race).
+  if p_client_id is not null then
+    select p.id into v_player_id
+    from public.session_players p
+    where p.session_id = p_session_id and p.client_id = p_client_id;
+    if found then
+      return v_player_id;
+    end if;
+  end if;
+
+  if p_payment is not null and p_payment not in ('cash_received', 'gcash', 'later') then
+    raise exception 'invalid_payment_method' using errcode = 'P0001';
+  end if;
+  -- D18: no default payment when there is a fee ("Pay later" is a choice, not a default).
+  if v_session.fee > 0 and p_payment is null then
+    raise exception 'payment_required' using errcode = 'P0001';
+  end if;
+  if p_member_id is not null and not exists (
+    select 1 from public.members m where m.id = p_member_id and m.club_id = v_session.club_id
+  ) then
+    raise exception 'member_not_found' using errcode = 'P0001';
+  end if;
+
+  insert into public.session_players (session_id, display_name, level, is_walk_in, client_id, member_id)
+  values (p_session_id, p_display_name, p_level, true, p_client_id, p_member_id)
+  returning id into v_player_id;
+
+  if v_session.fee > 0 and p_payment is not null then
+    perform private.apply_payment_choice(v_player_id, p_payment, p_reference);
+  end if;
+  return v_player_id;
+end;
+$$;
+
+-- Fee cap. Checked first: if any existing row is above the cap (none were in
+-- local or audit data), the constraint is added NOT VALID so the migration
+-- still applies; new and updated rows are checked either way.
+alter table public.sessions drop constraint if exists sessions_fee_max;
+alter table public.clubs drop constraint if exists clubs_default_fee_max;
+do $$
+begin
+  if exists (select 1 from public.sessions where fee > 100000) then
+    raise notice 'QA-10: sessions with fee > 100000 exist; adding sessions_fee_max NOT VALID';
+    alter table public.sessions add constraint sessions_fee_max check (fee <= 100000) not valid;
+  else
+    alter table public.sessions add constraint sessions_fee_max check (fee <= 100000);
+  end if;
+  if exists (select 1 from public.clubs where default_fee > 100000) then
+    raise notice 'QA-10: clubs with default_fee > 100000 exist; adding clubs_default_fee_max NOT VALID';
+    alter table public.clubs add constraint clubs_default_fee_max check (default_fee <= 100000) not valid;
+  else
+    alter table public.clubs add constraint clubs_default_fee_max check (default_fee <= 100000);
+  end if;
+end;
+$$;

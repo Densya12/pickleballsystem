@@ -28,12 +28,12 @@ insert into public.club_staff (club_id, user_id, role) values
 -- Club A: a live session with 5 walk-ins and one running game. Club B: a live session, 4 walk-ins.
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.sa', public.create_session('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Session A', now(), now() + interval '3h', 2, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('sa'), 'A' || n, 'beginner') from generate_series(1, 5) n;
+select public.add_walk_in(pg_temp.sid('sa'), 'A' || n, 'beginner', 'later') from generate_series(1, 5) n;
 select public.call_next((select id from public.courts where session_id = pg_temp.sid('sa') and number = 1));
 reset role;
 select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
 select set_config('test.sb', public.create_session('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Session B', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('sb'), 'B' || n, 'beginner') from generate_series(1, 4) n;
+select public.add_walk_in(pg_temp.sid('sb'), 'B' || n, 'beginner', 'later') from generate_series(1, 4) n;
 reset role;
 
 -- ---------------------------------------------------------------------------

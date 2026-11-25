@@ -113,16 +113,16 @@ reset role;
 -- BR20 + BR5: walk-ins join the end of the queue
 -- ===========================================================================
 select pg_temp.as_user('33333333-3333-3333-3333-333333333333');
-select public.add_walk_in(pg_temp.sid('s1'), 'P' || n, 'intermediate') from generate_series(1, 9) n;
+select public.add_walk_in(pg_temp.sid('s1'), 'P' || n, 'intermediate', 'later') from generate_series(1, 9) n;
 select is(pg_temp.queue(pg_temp.sid('s1')), 'P1,P2,P3,P4,P5,P6,P7,P8,P9', 'BR5/BR20: walk-ins queue in the order they were added');
 select ok((select bool_and(is_walk_in and status = 'queued' and games_played = 0) from public.session_players where session_id = pg_temp.sid('s1')),
   'Walk-ins are queued, marked as walk-ins, with 0 games');
-select lives_ok($$ select public.add_walk_in(pg_temp.sid('s1'), '   Tito    Boy  ', 'unsure') $$, 'A walk-in name is tidied');
+select lives_ok($$ select public.add_walk_in(pg_temp.sid('s1'), '   Tito    Boy  ', 'unsure', 'later') $$, 'A walk-in name is tidied');
 select is((select display_name from public.session_players where session_id = pg_temp.sid('s1') order by queue_pos desc limit 1),
   'Tito Boy', 'Spaces are trimmed and collapsed');
-select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'X', 'beginner') $$, '23514', null,
+select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'X', 'beginner', 'later') $$, '23514', null,
   'A 1-character name is refused');
-select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'Pro Player', 'pro') $$, '23514', null,
+select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'Pro Player', 'pro', 'later') $$, '23514', null,
   'An unknown level is refused');
 select lives_ok($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'Tito Boy')) $$, 'BR18: remove a queued player');
 select is((select status from public.session_players where id = pg_temp.pid(pg_temp.sid('s1'), 'Tito Boy')), 'left', 'BR18: removed means left');
@@ -202,7 +202,7 @@ reset role;
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.s2', public.create_session(
   'a3333333-0000-0000-0000-000000000000', 'Small Night', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('s2'), 'S' || n, 'beginner') from generate_series(1, 3) n;
+select public.add_walk_in(pg_temp.sid('s2'), 'S' || n, 'beginner', 'later') from generate_series(1, 3) n;
 select is(pg_temp.err($$ select public.call_next(pg_temp.court(pg_temp.sid('s2'), 1)) $$), 'not_enough_players:1',
   'BR8: 3 eligible -> not_enough_players, 1 still needed');
 select lives_ok($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s2'), 'S1')) $$, 'Pause one');
@@ -221,7 +221,7 @@ reset role;
 -- BR11: winners stay (3 courts; only Court 1 used)
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s3'), 'W' || n, 'advanced') from generate_series(1, 8) n;
+select public.add_walk_in(pg_temp.sid('s3'), 'W' || n, 'advanced', 'later') from generate_series(1, 8) n;
 select set_config('test.w1', public.call_next(pg_temp.court(pg_temp.sid('s3'), 1))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W1,W2,W3,W4', 'Game #1: W1-W4');
 

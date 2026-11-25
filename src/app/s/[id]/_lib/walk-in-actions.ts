@@ -55,6 +55,8 @@ export async function addWalkInAction(sessionId: string, input: WalkInRequest): 
     p_client_id: UUID.test(input.clientId) ? input.clientId : undefined,
     p_member_id: input.memberId && UUID.test(input.memberId) ? input.memberId : undefined,
   });
+  // D18 (QA-10): the fee changed after the form was checked; ask on the payment field.
+  if (error?.message === "payment_required") return { fieldErrors: { payment: t.live.choosePayment } };
   if (error) return { error: queueErrorMessage(error, t), code: error.message };
 
   // A redirect from the action renders the queue in the same response, so it shows the new walk-in.

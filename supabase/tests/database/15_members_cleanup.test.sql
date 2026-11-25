@@ -106,7 +106,7 @@ reset role;
 -- 2. save_player_as_member and the member_id link
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select set_config('test.walk', public.add_walk_in(pg_temp.sid('s1'), 'Dino Santos', 'beginner')::text, true);
+select set_config('test.walk', public.add_walk_in(pg_temp.sid('s1'), 'Dino Santos', 'beginner', 'later')::text, true);
 select set_config('test.dino', public.save_player_as_member(pg_temp.sid('walk'))::text, true);
 reset role;
 select is((select row(m.display_name, m.level, m.dues_status, m.club_id)::text from public.members m where m.id = pg_temp.sid('dino')),
@@ -169,14 +169,14 @@ select is((select row(display_name, payment_status)::text from public.session_pl
   '("Ella Go",confirmed)', 'The first walk-in is unchanged');
 
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select isnt(public.add_walk_in(pg_temp.sid('s1'), 'Ella Go', 'beginner', null, null, gen_random_uuid()), pg_temp.sid('w1'),
+select isnt(public.add_walk_in(pg_temp.sid('s1'), 'Ella Go', 'beginner', 'later', null, gen_random_uuid()), pg_temp.sid('w1'),
   'A different client id is a different walk-in');
-select isnt(public.add_walk_in(pg_temp.sid('s1'), 'Fely Lim', 'beginner'), null, 'No client id: works as before');
+select isnt(public.add_walk_in(pg_temp.sid('s1'), 'Fely Lim', 'beginner', 'later'), null, 'No client id: works as before');
 select set_config('test.m1', public.add_walk_in(pg_temp.sid('s1'), 'Ana Reyes', 'advanced', 'later', null, null, pg_temp.sid('ana'))::text, true);
 reset role;
 select is((select member_id from public.session_players where id = pg_temp.sid('m1')), pg_temp.sid('ana'), 'A walk-in picked from members is linked');
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select is(pg_temp.err(format('select public.add_walk_in(%L, %L, %L, null, null, null, %L)', pg_temp.sid('s1'), 'X Y', 'unsure', pg_temp.sid('other_member'))),
+select is(pg_temp.err(format('select public.add_walk_in(%L, %L, %L, ''later'', null, null, %L)', pg_temp.sid('s1'), 'X Y', 'unsure', pg_temp.sid('other_member'))),
   'member_not_found', 'Another club''s member cannot be used');
 select is(pg_temp.err('select client_id from public.session_players'), '42501', 'client_id is not readable by clients');
 reset role;

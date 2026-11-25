@@ -30,7 +30,7 @@ declare v_s uuid;
 begin
   perform public.end_session(s.id) from public.sessions s where s.club_id = 'c1000000-0000-0000-0000-000000000000' and s.status = 'live';
   v_s := public.create_session('c1000000-0000-0000-0000-000000000000', 'QA-03 ' || p_key, now(), now() + interval '3h', 1, 11, 'winners_stay', false, 0, true, array[p_format]);
-  perform public.add_walk_in(v_s, 'P' || i, 'unsure', null, null, null, null) from generate_series(1, p_players) i;
+  perform public.add_walk_in(v_s, 'P' || i, 'unsure', 'later', null, null, null) from generate_series(1, p_players) i;
   perform public.call_next(pg_temp.court(v_s));
   perform set_config('test.' || p_key, v_s::text, true);
 end;

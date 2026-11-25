@@ -18,10 +18,10 @@ insert into public.club_staff (club_id, user_id, role) values ('c1000000-0000-00
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
 set local role authenticated;
 select set_config('test.s', public.create_session('c1000000-0000-0000-0000-000000000000', 'QA-07 Night', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(current_setting('test.s')::uuid, E'Ana‮abc 2', 'unsure', null, null, null, null);
-select throws_ok($$ select public.add_walk_in(current_setting('test.s')::uuid, E'​​​', 'unsure', null, null, null, null) $$,
+select public.add_walk_in(current_setting('test.s')::uuid, E'Ana‮abc 2', 'unsure', 'later', null, null, null);
+select throws_ok($$ select public.add_walk_in(current_setting('test.s')::uuid, E'​​​', 'unsure', 'later', null, null, null) $$,
   '23514', null, 'A zero-width-only walk-in is refused');
-select throws_ok($$ select public.add_walk_in(current_setting('test.s')::uuid, E'\U0001F3D3\U0001F3D3', 'unsure', null, null, null, null) $$,
+select throws_ok($$ select public.add_walk_in(current_setting('test.s')::uuid, E'\U0001F3D3\U0001F3D3', 'unsure', 'later', null, null, null) $$,
   '23514', 'name_needs_letter', 'An emoji-only name is refused');
 -- The duplicate-name check (QA-05) compares cleaned names.
 reset role;

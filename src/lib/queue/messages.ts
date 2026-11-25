@@ -32,6 +32,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.notOnCourt;
     case "player_playing":
       return t.live.playerPlayingGeneric;
+    case "payment_required":
+      return t.live.choosePayment;
     case "player_not_flagged":
       return t.live.notFlagged;
     case "session_full":
