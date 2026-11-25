@@ -7,6 +7,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { getMember } from "@/lib/members/data";
 import { MemberForm } from "../MemberForm";
+import { MemberFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.members.editTitle} · ${en.common.appName}`,
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function EditMemberPage({ params }: PageProps<"/members/[id]">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<MemberFormSkeleton edit />}>
       <EditMemberContent params={params} />
     </Suspense>
   );

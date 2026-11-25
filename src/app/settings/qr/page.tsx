@@ -8,6 +8,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { qrSvg } from "@/lib/queue/qr";
 import { ClubQrCard } from "../ClubQrCard";
+import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.settings.clubQr} · ${en.common.appName}`,
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function ClubQrPage() {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<SettingsFormSkeleton page="clubQr" fields={1} />}>
       <Content />
     </Suspense>
   );

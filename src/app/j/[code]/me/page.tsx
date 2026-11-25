@@ -8,6 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { PlayerView } from "./PlayerView";
+import { PlaceInLineSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.player.placePageTitle} · ${en.common.appName}`,
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function PwestoPage({ params }: PageProps<"/j/[code]/me">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<PlaceInLineSkeleton />}>
       <PwestoContent params={params} />
     </Suspense>
   );

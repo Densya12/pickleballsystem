@@ -10,6 +10,7 @@ import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { signOutAction } from "./actions";
 import { ReadAloudSetting } from "./ReadAloudSetting";
+import { SettingsSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.settings.pageTitle} · ${en.common.appName}`,
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 /** Settings (D19): club pages, language, read calls aloud, the guide, sign out. */
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<PageShell tabBar={<MainTabBar current="settings" />}>{null}</PageShell>}>
+    <Suspense fallback={<SettingsSkeleton />}>
       <SettingsContent />
     </Suspense>
   );

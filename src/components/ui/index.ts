@@ -13,3 +13,4 @@ export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup
 export { StatusChip, type StatusKind } from "./StatusChip";
 export { Stepper, type StepperProps } from "./Stepper";
 export { Toggle, type ToggleProps } from "./Toggle";
+export { Skeleton, SkeletonCard, SkeletonCircle, SkeletonCourt, SkeletonField, SkeletonLine, SkeletonRegion } from "./Skeleton";

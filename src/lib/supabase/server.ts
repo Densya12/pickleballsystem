@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import type { Database } from "./database.types";
+import { e2eDelay } from "./e2e-delay";
 import { getSupabaseEnv } from "./env";
 
 /**
@@ -21,6 +22,8 @@ export async function createClient() {
   // real request; Supabase-backed content is never prerendered.
   await connection();
   const { url, key } = getSupabaseEnv();
+  // Only with E2E_ALLOW_DELAY=1 (the skeleton e2e); a no-op everywhere else.
+  await e2eDelay(cookieStore.get("e2e_delay_ms")?.value);
 
   return createServerClient<Database>(url, key, {
     cookies: {
