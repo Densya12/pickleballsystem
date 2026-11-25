@@ -150,12 +150,13 @@ select is(public.session_eligible_count(pg_temp.sid('s1')), 4, 'BR6: paused play
 select set_config('test.g2', public.call_next(pg_temp.court(pg_temp.sid('s1'), 2))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s1'), 2), 'P6,P7,P8,P9', 'BR6/BR17: Court 2 skips paused P5');
 select is((select number from public.games where id = pg_temp.sid('g2')), 2, 'Game numbers count up per session');
-select is(pg_temp.err($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'Only paused players can be resumed');
-select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'A playing player cannot be paused');
-select is(pg_temp.err($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'A playing player cannot be removed');
+-- QA-02: a player on court gets its own code (player_playing), not invalid_player_status.
+select is(pg_temp.err($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'Only paused players can be resumed (a playing player: player_playing)');
+select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'A playing player cannot be paused (player_playing)');
+select is(pg_temp.err($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'A playing player cannot be removed (player_playing)');
 select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P5')) $$), 'invalid_player_status',
   'A paused player cannot be paused again');
 select lives_ok($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P5')) $$, 'BR17: resume P5');

@@ -77,6 +77,9 @@ const en = {
   notLive: "This session isn't live.",
   notFound: "Can't find that. Refresh the page.",
   notOnCourt: "That player isn't on the court anymore.",
+  /** QA-02: Remove/Pause/Resume refused because the player was called meanwhile. */
+  playerPlaying: (name: string) => `${name} is on court now.`,
+  playerPlayingGeneric: "That player is on court now.",
   invalidFormat: "Pick doubles or singles.",
   invalidRotation: "Pick what happens after a game.",
   // Walk-in
@@ -218,6 +221,8 @@ const fil: typeof en = {
   notLive: "Hindi live ang session na ito.",
   notFound: "Hindi makita. I-refresh ang page.",
   notOnCourt: "Wala na sa court ang player na iyon.",
+  playerPlaying: (name: string) => `Nasa court na si ${name}.`,
+  playerPlayingGeneric: "Nasa court na ang player na iyon.",
   invalidFormat: "Pumili ng Doubles o Singles.",
   invalidRotation: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
   walkInPageTitle: "Magdagdag ng walk-in",

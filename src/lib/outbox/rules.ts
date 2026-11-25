@@ -32,6 +32,9 @@ const ALREADY_DONE: Record<OutboxKind, readonly string[]> = {
   finish_game: ["game_already_finished"],
   // A resend returns the same player (p_client_id), so it never errors for being a repeat.
   add_walk_in: [],
+  // "Already paused / resumed / removed". A player who was called onto a court
+  // meanwhile gets player_playing instead (QA-02): that is NOT done, so the
+  // organizer sees "Not sent: … is on court now" with Discard.
   pause_player: ["invalid_player_status"],
   resume_player: ["invalid_player_status"],
   remove_player: ["invalid_player_status"],

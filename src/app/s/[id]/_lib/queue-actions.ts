@@ -128,6 +128,8 @@ async function playerAction(sessionId: string, playerId: string, rpc: PlayerRpc)
   const [name] = await playerNames([playerId]);
   const supabase = await createClient();
   const { error } = await supabase.rpc(rpc, { p_player_id: playerId });
+  // QA-02: name the player when they were called onto a court meanwhile.
+  if (error?.message === "player_playing") return { error: t.live.playerPlaying(name), code: error.message };
   if (error) return { error: queueErrorMessage(error, t), code: error.message };
 
   refresh();
