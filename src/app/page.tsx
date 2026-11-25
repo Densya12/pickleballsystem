@@ -131,7 +131,7 @@ function LiveCard({
         </span>
         <span className="text-sm text-on-dark-muted">{t.home.startedAt(formatTime(started, locale))}</span>
       </div>
-      <p className="mt-3.5 font-display text-[22px] font-semibold [overflow-wrap:anywhere]">{session.name}</p>
+      <p className="mt-3.5 font-display text-xl font-semibold [overflow-wrap:anywhere]">{session.name}</p>
       <div className="mt-3.5 flex items-end gap-5">
         <Stat value={String(session.courts_count)} label={t.home.courtsLabel} />
         <Stat value={String(state.queue.length)} label={t.home.queueLabel} />
@@ -163,7 +163,7 @@ function UpcomingRow({ session, t, locale }: { session: Session; t: Dictionary; 
         className="flex min-h-14 items-center gap-3.5 px-4 py-3 hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
       >
         <span aria-hidden="true" className="flex w-11 shrink-0 flex-col items-center leading-tight">
-          <span className="text-2xs font-semibold text-muted">{badge.month}</span>
+          <span className="text-xs font-semibold text-muted">{badge.month}</span>
           <span className="text-xl font-semibold">{badge.day}</span>
         </span>
         <span className="flex min-w-0 flex-1 flex-col">

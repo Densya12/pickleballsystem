@@ -43,7 +43,7 @@ export function WinnerPicker({ players, needed, busy, onConfirm, onCancel }: Pro
               onClick={() => setPicked((current) => toggleWinner(current, player.id, needed))}
               className={cn(
                 "flex min-h-11 items-center gap-2 rounded-full border px-3 text-left text-sm font-medium",
-                on ? "border-ink bg-primary text-on-primary" : "border-input bg-surface text-ink",
+                on ? "border-ink bg-primary text-on-primary" : "border-quiet bg-surface text-ink",
               )}
             >
               {on && <CheckIcon className="size-4 shrink-0" />}

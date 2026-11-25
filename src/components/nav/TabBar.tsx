@@ -14,7 +14,7 @@ export type TabItem = {
 };
 
 const item =
-  "relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-full py-[7px] text-2xs font-medium " +
+  "relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-full py-[7px] text-xs font-medium " +
   "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 /** A floating pill tab bar at the bottom (D19), above the home indicator. */
@@ -34,7 +34,7 @@ export function TabBar({ label, items, current, width = "w-[84px]" }: { label: s
             {tab.icon}
             <span>{tab.label}</span>
             {tab.badge ? (
-              <span className="absolute top-[3px] right-[18px] flex h-4 min-w-4 items-center justify-center rounded-full bg-badge px-1 text-[10px] font-semibold text-on-primary">
+              <span className="absolute top-[3px] right-[18px] flex h-4 min-w-4 items-center justify-center rounded-full bg-badge px-1 text-xs leading-none font-semibold text-on-primary">
                 <span aria-hidden="true">{tab.badge}</span>
               </span>
             ) : null}

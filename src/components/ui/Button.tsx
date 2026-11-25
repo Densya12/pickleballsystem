@@ -46,16 +46,16 @@ const variants: Record<ButtonVariant, string> = {
   primary: "bg-primary text-on-primary hover:bg-primary/90",
   lime: "bg-accent text-on-accent hover:bg-accent/85",
   secondary: "bg-surface text-ink hover:bg-subtle",
-  outline: "border border-input bg-surface text-ink hover:bg-subtle",
+  outline: "border border-quiet bg-surface text-ink hover:bg-subtle",
   ghost: "bg-transparent text-ink hover:bg-subtle",
   danger: "bg-transparent text-danger hover:bg-danger-soft",
   "danger-outline": "border border-danger bg-surface text-danger hover:bg-danger-soft",
 };
 
 const sizes: Record<ButtonSize, string> = {
-  lg: "min-h-[52px] rounded-button px-6 text-base font-semibold",
-  md: "min-h-11 rounded-[14px] px-4 text-sm font-medium [font-size:14px]",
-  pill: "min-h-10 rounded-full px-5 [font-size:14px] font-semibold",
+  lg: "min-h-[52px] rounded-button px-6 text-lg font-semibold",
+  md: "min-h-11 rounded-[14px] px-4 text-body font-medium",
+  pill: "min-h-10 rounded-full px-5 text-body font-semibold",
   sm: "touch-target min-h-9 rounded-full px-4 text-sm font-semibold",
 };
 

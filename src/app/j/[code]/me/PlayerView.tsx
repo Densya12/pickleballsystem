@@ -121,11 +121,11 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
               <BellIcon className="size-3.5" />
               {t.player.youreUp}
             </p>
-            <h1 className="mt-4 font-display text-[36px] leading-[1.1] font-semibold tracking-[-0.8px] [overflow-wrap:anywhere]">
+            <h1 className="mt-4 font-display text-3xl leading-[1.1] font-semibold tracking-[-0.8px] [overflow-wrap:anywhere]">
               {t.player.yourTurn(firstName)}
             </h1>
             <p className="mt-4 text-body text-on-dark-muted">{t.player.headTo}</p>
-            <p className="font-display text-[64px] leading-none font-semibold tracking-[-2px] text-accent">{state.courtLabel}</p>
+            <p className="font-display text-display-court leading-none font-semibold tracking-[-2px] text-accent">{state.courtLabel}</p>
           </div>
           <p className="mt-4 text-sm text-on-dark-muted">{t.player.highlighted(courtFormatLabel(state.format, t))}</p>
           {game && (
@@ -180,8 +180,8 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     body = (
       <>
         <div className="flex flex-col items-center rounded-[24px] bg-surface px-5 pt-6 pb-5 text-center">
-          <p className="[font-size:14px] text-muted">{t.player.yourPlace}</p>
-          <p className="mt-0.5 font-display text-[88px] leading-none font-semibold tracking-[-2px]" data-testid="position">
+          <p className="text-sm text-muted">{t.player.yourPlace}</p>
+          <p className="mt-0.5 font-display text-display-number leading-none font-semibold tracking-[-2px]" data-testid="position">
             {state.position}
           </p>
           {state.nextUp && (

@@ -89,7 +89,7 @@ export function RadioGroup<V extends string>({
             <label
               key={option.value}
               className={cn(
-                "relative flex min-h-9 flex-1 cursor-pointer items-center justify-center rounded-[10px] px-2 text-center [font-size:14px] font-medium text-secondary",
+                "relative flex min-h-9 flex-1 cursor-pointer items-center justify-center rounded-[10px] px-2 text-center text-sm font-medium text-secondary",
                 "has-[:checked]:bg-surface has-[:checked]:text-ink has-[:checked]:shadow-[0_1px_2px_rgba(17,20,18,0.08)]",
                 "has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-focus",
                 "has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60",
@@ -109,7 +109,7 @@ export function RadioGroup<V extends string>({
               key={option.value}
               className={cn(
                 "touch-target relative flex h-[34px] cursor-pointer items-center rounded-full border bg-surface px-3 text-sm text-ink",
-                error ? "border-danger" : "border-input",
+                error ? "border-danger" : "border-field",
                 "has-[:checked]:border-ink has-[:checked]:bg-primary has-[:checked]:text-on-primary",
                 "has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus",
               )}
@@ -135,7 +135,7 @@ export function RadioGroup<V extends string>({
               <input {...inputProps(option)} className="peer absolute inset-0 m-0 size-full cursor-pointer appearance-none opacity-0" />
               <span
                 aria-hidden="true"
-                className="flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-input peer-checked:border-ink peer-checked:bg-primary peer-checked:[&>span]:block"
+                className="flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-field peer-checked:border-ink peer-checked:bg-primary peer-checked:[&>span]:block"
               >
                 <span className="hidden size-2 rounded-full bg-surface" />
               </span>

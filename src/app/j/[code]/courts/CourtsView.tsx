@@ -55,7 +55,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
               <BellIcon className="size-3.5" />
               {t.player.youreUp}
             </p>
-            <p className="font-display text-2xl font-semibold">
+            <p className="font-display text-xl font-semibold">
               {t.player.yourTurn(view.me?.name.split(/\s+/)[0] ?? "")} {t.player.headTo} <span className="text-accent">{state.courtLabel}</span>
             </p>
             <Button variant="lime" size="lg" fullWidth onClick={acknowledge}>
@@ -68,7 +68,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
           {cards.map((card) => (
             <section key={card.id} aria-labelledby={`court-${card.id}`} className="flex flex-col gap-2.5 rounded-card bg-surface p-3.5">
               <div className="flex items-baseline justify-between gap-3">
-                <h2 id={`court-${card.id}`} className="text-base font-semibold">
+                <h2 id={`court-${card.id}`} className="text-lg font-semibold">
                   {card.label}
                 </h2>
                 <span className="text-xs text-muted">

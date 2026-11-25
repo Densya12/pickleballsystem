@@ -20,8 +20,8 @@
     "chips": 0,
     "fontSizes": [
       "13px",
-      "14px",
-      "16px",
+      "15px",
+      "17px",
       "30px"
     ],
     "textColors": [
@@ -47,8 +47,8 @@
       "1px"
     ],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "white (on-primary) | 1px input-border | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "white (on-primary) | 1px input-border | 44px | 15px"
     ],
     "icons": 1,
     "backLinks": [],
@@ -78,7 +78,7 @@
     "chips": 0,
     "fontSizes": [
       "13px",
-      "16px",
+      "17px",
       "30px"
     ],
     "textColors": [
@@ -101,7 +101,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 0,
     "backLinks": [],
@@ -131,9 +131,8 @@
     "cards": 2,
     "chips": 1,
     "fontSizes": [
-      "11px",
+      "12px",
       "13px",
-      "14px",
       "15px",
       "30px"
     ],
@@ -167,8 +166,8 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "white (on-primary) | 0px ink | 44px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px"
+      "white (on-primary) | 0px ink | 44px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px"
     ],
     "icons": 4,
     "backLinks": [],
@@ -199,13 +198,10 @@
     "cards": 3,
     "chips": 1,
     "fontSizes": [
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
       "20px",
-      "22px",
       "30px"
     ],
     "textColors": [
@@ -241,8 +237,8 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "white (on-primary) | 0px ink | 44px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px"
+      "white (on-primary) | 0px ink | 44px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px"
     ],
     "icons": 7,
     "backLinks": [],
@@ -276,9 +272,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "20px",
       "28px"
     ],
@@ -308,8 +303,8 @@
     ],
     "buttonStyles": [
       "white (on-primary) | 1px input-border | 40px | 15px",
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "transparent | 0px ink | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "transparent | 0px ink | 44px | 15px"
     ],
     "icons": 3,
     "backLinks": [],
@@ -346,9 +341,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "20px",
       "28px"
     ],
@@ -378,8 +372,8 @@
     ],
     "buttonStyles": [
       "white (on-primary) | 1px input-border | 40px | 15px",
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "transparent | 0px ink | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "transparent | 0px ink | 44px | 15px"
     ],
     "icons": 3,
     "backLinks": [],
@@ -396,7 +390,7 @@
     "screen": "Courts (busy) (360×800)",
     "file": "07-live-busy-360.png",
     "viewport": "360×800",
-    "pageHeight": 1048,
+    "pageHeight": 1045,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -419,13 +413,10 @@
     "cards": 3,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -444,17 +435,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       }
     ],
@@ -466,9 +457,9 @@
     "borderWidths": [],
     "buttonStyles": [
       "transparent | 0px warn | 40px | 13px",
-      "accent | 0px on-accent | 40px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "accent | 0px on-accent | 40px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 7,
     "backLinks": [],
@@ -485,7 +476,7 @@
     "screen": "Courts (busy)",
     "file": "07-live-busy.png",
     "viewport": "390×844",
-    "pageHeight": 1089,
+    "pageHeight": 1086,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -508,13 +499,10 @@
     "cards": 3,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -533,17 +521,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       }
     ],
@@ -555,9 +543,9 @@
     "borderWidths": [],
     "buttonStyles": [
       "transparent | 0px warn | 40px | 13px",
-      "accent | 0px on-accent | 40px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "accent | 0px on-accent | 40px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 7,
     "backLinks": [],
@@ -574,7 +562,7 @@
     "screen": "Courts (winner picker open)",
     "file": "08-live-winner-picker.png",
     "viewport": "390×844",
-    "pageHeight": 1250,
+    "pageHeight": 1247,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -601,13 +589,10 @@
     "cards": 4,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -626,17 +611,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       }
     ],
@@ -650,11 +635,11 @@
     ],
     "buttonStyles": [
       "white (on-primary) | 1px input-border | 44px | 13px",
-      "transparent | 0px ink | 40px | 14px",
-      "ink | 0px white (on-primary) | 40px | 14px",
-      "accent | 0px on-accent | 40px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "transparent | 0px ink | 40px | 15px",
+      "ink | 0px white (on-primary) | 40px | 15px",
+      "accent | 0px on-accent | 40px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 7,
     "backLinks": [],
@@ -700,13 +685,10 @@
     "cards": 5,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "20px",
       "28px"
     ],
@@ -760,12 +742,12 @@
     ],
     "buttonStyles": [
       "transparent | 0px ink | 48px | 15px",
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "white (on-primary) | 1px input-border | 44px | 14px",
-      "transparent | 0px danger | 44px | 14px",
-      "transparent | 0px ink | 44px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "white (on-primary) | 1px input-border | 44px | 15px",
+      "transparent | 0px danger | 44px | 15px",
+      "transparent | 0px ink | 44px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 8,
     "backLinks": [],
@@ -783,7 +765,7 @@
     "screen": "Courts (undo banner)",
     "file": "10-live-undo-banner.png",
     "viewport": "390×844",
-    "pageHeight": 1206,
+    "pageHeight": 1203,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -809,13 +791,10 @@
     "cards": 4,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -835,17 +814,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       }
     ],
@@ -860,9 +839,9 @@
       "ink | 0px white (on-primary) | 36px | 13px",
       "transparent | 0px ink | 36px | 13px",
       "transparent | 0px warn | 40px | 13px",
-      "accent | 0px on-accent | 40px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "accent | 0px on-accent | 40px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 10,
     "backLinks": [],
@@ -903,11 +882,8 @@
     "cards": 4,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
       "28px"
     ],
@@ -951,8 +927,8 @@
     "borderWidths": [],
     "buttonStyles": [
       "transparent | 0px ink | 48px | 15px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 8,
     "backLinks": [],
@@ -986,7 +962,7 @@
     "fontSizes": [
       "13px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1009,7 +985,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 3,
     "backLinks": [],
@@ -1023,7 +999,7 @@
     "screen": "Session QR",
     "file": "13-session-qr.png",
     "viewport": "390×844",
-    "pageHeight": 880,
+    "pageHeight": 873,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -1040,11 +1016,10 @@
     "chips": 0,
     "fontSizes": [
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px",
-      "36px"
+      "30px"
     ],
     "textColors": [
       "ink",
@@ -1067,14 +1042,14 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "transparent | 0px ink | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "transparent | 0px ink | 44px | 15px"
     ],
     "icons": 4,
     "backLinks": [],
     "largestInFirstViewport": {
-      "text": "6A969C",
-      "size": "36px"
+      "text": "7J8VN9",
+      "size": "30px"
     },
     "repeatedTexts": []
   },
@@ -1108,11 +1083,8 @@
     "cards": 4,
     "chips": 2,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
       "28px",
       "30px"
@@ -1156,8 +1128,8 @@
       "accent | 0px on-accent | 36px | 13px",
       "white (on-primary) | 1px input-border | 36px | 15px",
       "white (on-primary) | 1px input-border | 36px | 13px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 9,
     "backLinks": [],
@@ -1201,11 +1173,8 @@
     "cards": 4,
     "chips": 2,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
       "28px",
       "30px"
@@ -1249,8 +1218,8 @@
       "accent | 0px on-accent | 36px | 13px",
       "white (on-primary) | 1px input-border | 36px | 15px",
       "white (on-primary) | 1px input-border | 36px | 13px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 9,
     "backLinks": [],
@@ -1268,7 +1237,7 @@
     "screen": "Summary (ended)",
     "file": "15-buod.png",
     "viewport": "390×844",
-    "pageHeight": 1428,
+    "pageHeight": 1430,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -1286,11 +1255,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
-      "24px",
-      "26px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1339,7 +1305,7 @@
     ],
     "buttonStyles": [
       "white (on-primary) | 1px input-border | 36px | 15px",
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 8,
     "backLinks": [],
@@ -1359,7 +1325,7 @@
     "screen": "Members",
     "file": "16-members.png",
     "viewport": "390×844",
-    "pageHeight": 1085,
+    "pageHeight": 1083,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 1,
@@ -1374,9 +1340,8 @@
     "cards": 1,
     "chips": 2,
     "fontSizes": [
-      "11px",
+      "12px",
       "13px",
-      "14px",
       "15px",
       "30px"
     ],
@@ -1400,7 +1365,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px"
     ],
     "icons": 17,
     "backLinks": [],
@@ -1435,9 +1400,8 @@
     "chips": 0,
     "fontSizes": [
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1461,7 +1425,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 1,
     "backLinks": [],
@@ -1493,9 +1457,8 @@
     "cards": 4,
     "chips": 1,
     "fontSizes": [
-      "11px",
+      "12px",
       "13px",
-      "14px",
       "15px",
       "30px"
     ],
@@ -1533,10 +1496,10 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "white (on-primary) | 0px ink | 34px | 14px",
-      "transparent | 0px secondary | 34px | 14px",
+      "white (on-primary) | 0px ink | 34px | 13px",
+      "transparent | 0px secondary | 34px | 13px",
       "transparent | 0px danger | 48px | 15px",
-      "ink | 0px white (on-primary) | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px"
     ],
     "icons": 8,
     "backLinks": [],
@@ -1552,7 +1515,7 @@
     "screen": "Organizer guide",
     "file": "19-guide.png",
     "viewport": "390×844",
-    "pageHeight": 1883,
+    "pageHeight": 1852,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -1569,8 +1532,7 @@
     "fontSizes": [
       "13px",
       "15px",
-      "16px",
-      "18px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1587,32 +1549,32 @@
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "1. Before the session"
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "2. Starting"
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "3. During play"
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "4. Payments"
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "5. If something goes wrong"
       },
       {
         "tag": "h2",
-        "size": "18px",
+        "size": "17px",
         "text": "6. After"
       }
     ],
@@ -1622,7 +1584,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 2,
     "backLinks": [],
@@ -1652,7 +1614,7 @@
     "chips": 0,
     "fontSizes": [
       "15px",
-      "16px",
+      "17px",
       "30px"
     ],
     "textColors": [
@@ -1673,7 +1635,7 @@
     ],
     "borderWidths": [],
     "buttonStyles": [
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 0,
     "backLinks": [],
@@ -1707,9 +1669,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1743,7 +1704,7 @@
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
       "transparent | 0px ink | 32px | 13px",
-      "ink | 0px white (on-primary) | 52px | 16px"
+      "ink | 0px white (on-primary) | 52px | 17px"
     ],
     "icons": 0,
     "backLinks": [],
@@ -1778,10 +1739,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
-      "18px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -1816,8 +1775,8 @@
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
       "transparent | 0px ink | 32px | 13px",
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "transparent | 0px ink | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "transparent | 0px ink | 44px | 15px"
     ],
     "icons": 0,
     "backLinks": [],
@@ -1849,9 +1808,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px",
       "88px"
     ],
@@ -1881,8 +1839,8 @@
     "buttonStyles": [
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
-      "white (on-primary) | 0px ink | 52px | 16px",
-      "transparent | 0px danger | 44px | 14px"
+      "white (on-primary) | 0px ink | 52px | 17px",
+      "transparent | 0px danger | 44px | 15px"
     ],
     "icons": 5,
     "backLinks": [],
@@ -1914,9 +1872,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px",
       "88px"
     ],
@@ -1946,8 +1903,8 @@
     "buttonStyles": [
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
-      "white (on-primary) | 0px ink | 52px | 16px",
-      "transparent | 0px danger | 44px | 14px"
+      "white (on-primary) | 0px ink | 52px | 17px",
+      "transparent | 0px danger | 44px | 15px"
     ],
     "icons": 5,
     "backLinks": [],
@@ -1980,9 +1937,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px",
       "88px"
     ],
@@ -2014,8 +1970,8 @@
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
       "transparent | 0px ink | 36px | 13px",
-      "white (on-primary) | 0px ink | 52px | 16px",
-      "transparent | 0px danger | 44px | 14px"
+      "white (on-primary) | 0px ink | 52px | 17px",
+      "transparent | 0px danger | 44px | 15px"
     ],
     "icons": 4,
     "backLinks": [],
@@ -2050,8 +2006,8 @@
       "12px",
       "13px",
       "15px",
-      "16px",
-      "36px",
+      "17px",
+      "30px",
       "64px"
     ],
     "textColors": [
@@ -2067,7 +2023,7 @@
     "headings": [
       {
         "tag": "h1",
-        "size": "36px",
+        "size": "30px",
         "text": "Your turn, Dino!"
       }
     ],
@@ -2080,7 +2036,7 @@
     "buttonStyles": [
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
-      "accent | 0px on-accent | 54px | 16px",
+      "accent | 0px on-accent | 54px | 17px",
       "transparent | 0px rgb(232, 232, 227) | 40px | 13px"
     ],
     "icons": 1,
@@ -2116,8 +2072,8 @@
       "12px",
       "13px",
       "15px",
-      "16px",
-      "36px",
+      "17px",
+      "30px",
       "64px"
     ],
     "textColors": [
@@ -2133,7 +2089,7 @@
     "headings": [
       {
         "tag": "h1",
-        "size": "36px",
+        "size": "30px",
         "text": "Your turn, Dino!"
       }
     ],
@@ -2146,7 +2102,7 @@
     "buttonStyles": [
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
-      "accent | 0px on-accent | 54px | 16px",
+      "accent | 0px on-accent | 54px | 17px",
       "transparent | 0px rgb(232, 232, 227) | 40px | 13px"
     ],
     "icons": 1,
@@ -2181,9 +2137,8 @@
     "fontSizes": [
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -2212,8 +2167,8 @@
     "buttonStyles": [
       "white (on-primary) | 0px ink | 32px | 12px",
       "transparent | 0px secondary | 32px | 12px",
-      "ink | 0px white (on-primary) | 52px | 16px",
-      "transparent | 0px danger | 44px | 14px"
+      "ink | 0px white (on-primary) | 52px | 17px",
+      "transparent | 0px danger | 44px | 15px"
     ],
     "icons": 4,
     "backLinks": [],
@@ -2227,7 +2182,7 @@
     "screen": "Courts (player)",
     "file": "27-mga-court.png",
     "viewport": "390×844",
-    "pageHeight": 1370,
+    "pageHeight": 1367,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -2244,7 +2199,7 @@
       "12px",
       "13px",
       "15px",
-      "16px",
+      "17px",
       "28px"
     ],
     "textColors": [
@@ -2263,17 +2218,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       },
       {
@@ -2392,11 +2347,8 @@
     "cards": 3,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
       "28px"
     ],
@@ -2439,8 +2391,8 @@
     "borderWidths": [],
     "buttonStyles": [
       "transparent | 0px ink | 48px | 15px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px"
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px"
     ],
     "icons": 7,
     "backLinks": [],
@@ -2457,7 +2409,7 @@
     "screen": "Courts (More sheet open)",
     "file": "30-more-sheet.png",
     "viewport": "390×844",
-    "pageHeight": 1162,
+    "pageHeight": 1159,
     "horizontalOverflow": false,
     "optionCards": 0,
     "inputs": 0,
@@ -2483,13 +2435,10 @@
     "cards": 5,
     "chips": 3,
     "fontSizes": [
-      "10px",
-      "11px",
       "12px",
       "13px",
-      "14px",
       "15px",
-      "16px",
+      "17px",
       "20px",
       "28px"
     ],
@@ -2511,17 +2460,17 @@
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 1"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 2"
       },
       {
         "tag": "h2",
-        "size": "16px",
+        "size": "17px",
         "text": "Court 3"
       },
       {
@@ -2542,11 +2491,11 @@
     "buttonStyles": [
       "transparent | 0px ink | 36px | 13px",
       "transparent | 0px warn | 40px | 13px",
-      "accent | 0px on-accent | 40px | 14px",
-      "ink | 0px white (on-primary) | 50px | 11px",
-      "transparent | 0px muted | 50px | 11px",
+      "accent | 0px on-accent | 40px | 15px",
+      "ink | 0px white (on-primary) | 52px | 12px",
+      "transparent | 0px muted | 52px | 12px",
       "transparent | 0px ink | 48px | 15px",
-      "transparent | 0px danger | 44px | 14px"
+      "transparent | 0px danger | 44px | 15px"
     ],
     "icons": 11,
     "backLinks": [],

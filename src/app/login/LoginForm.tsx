@@ -128,9 +128,9 @@ export function LoginForm({ next, initialError }: Props) {
       </Button>
 
       <div className="flex items-center gap-3 text-sm text-muted" role="separator" aria-label={t.auth.or}>
-        <span aria-hidden="true" className="flex-1 border-t border-input" />
+        <span aria-hidden="true" className="flex-1 border-t border-quiet" />
         <span aria-hidden="true">{t.auth.or}</span>
-        <span aria-hidden="true" className="flex-1 border-t border-input" />
+        <span aria-hidden="true" className="flex-1 border-t border-quiet" />
       </div>
 
       <Card>

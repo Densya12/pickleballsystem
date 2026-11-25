@@ -6,6 +6,9 @@ const baseURL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
+  // More parallel phones trip the local Realtime rate limit
+  // (MessagePerSecondRateLimitReached), which delays the live updates the tests time.
+  workers: 3,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",

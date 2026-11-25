@@ -132,8 +132,8 @@ async function Summary({ session }: { session: Session }) {
           <Section id="summary-payments" label={t.payments.title}>
             <div className="rounded-card bg-surface p-4">
               <p className="flex items-baseline gap-1.5">
-                <span className="font-display text-[26px] leading-none font-semibold">{formatPeso(payments.confirmedTotal)}</span>
-                <span className="[font-size:14px] text-muted">{t.payments.ofTotal(formatPeso(payments.expectedTotal))}</span>
+                <span className="font-display text-2xl leading-none font-semibold">{formatPeso(payments.confirmedTotal)}</span>
+                <span className="text-sm text-muted">{t.payments.ofTotal(formatPeso(payments.expectedTotal))}</span>
               </p>
               <div className="mt-3 flex h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: "#eeeeea" }} aria-hidden="true">
                 <div className="bg-live" style={{ width: `${(payments.confirmed.length / counted) * 100}%` }} />

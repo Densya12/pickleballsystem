@@ -50,7 +50,7 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-2.5 rounded-card bg-surface p-3.5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id={headingId} className="text-base font-semibold">
+        <h2 id={headingId} className="text-lg font-semibold">
           {court.label}
         </h2>
         <span className="text-xs text-muted">

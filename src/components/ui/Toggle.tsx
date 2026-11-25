@@ -58,6 +58,8 @@ export function Toggle({ label, description, name, defaultChecked, checked, onCh
         {...control}
         className={cn(
           "relative h-[30px] w-[50px] shrink-0 cursor-pointer appearance-none rounded-full bg-[#d7d7d1] transition-colors",
+          // Off: a field-colored outline (#878C88, 1.4.11); on: the green track says it.
+          "shadow-[inset_0_0_0_1px_#878c88] checked:shadow-none",
           "checked:bg-live focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed",
           "before:absolute before:top-[3px] before:left-[3px] before:size-6 before:rounded-full before:bg-surface before:shadow-sm before:transition-transform before:content-['']",
           "checked:before:translate-x-5",

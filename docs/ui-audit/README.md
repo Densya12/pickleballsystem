@@ -505,7 +505,7 @@ the cleanup (D19). Screens: [`after/`](after/); raw numbers: [`after/metrics.jso
 Same file names as [`screens/`](screens/), so each pair can be compared side by side. Two screens are
 new: [`29-queue-tab`](after/29-queue-tab.png) (Queue tab) and [`30-more-sheet`](after/30-more-sheet.png)
 (the session's More sheet). Measured with the same definitions as above; the colour names now include
-the v5 tokens.
+the v5 tokens. Form-field borders are #878C88 (≥3:1 on every background a field sits on, WCAG 1.4.11).
 
 What changed in the structure (so the numbers can be read correctly):
 - "Live" is split into session tabs: **Courts** (`/s/[id]`, screens 07, 08, 10, 30), **Queue**
@@ -523,84 +523,85 @@ What changed in the structure (so the numbers can be read correctly):
 | --- | --- | --- | --- | --- | --- | --- |
 | 01-login | 844 → 844 | 2 → 2 | 1 → 1 | 0 → 1 | 3 → 4 | no |
 | 02-club-new | 844 → 844 | 1 → 1 | 1 → 1 | 0 → 1 | 3 → 3 | no |
-| 03-home-empty | 844 → 844 | 4 → 2 | 1 → 1 | 2 → 2 | 4 → 5 | no |
-| 04-home-full | 1219 → 844 | 6 → 3 | 2 → 1 | 4 → 3 | 6 → 8 | no |
-| 05-sessions-new | 1769 → 1371 | 4 → 4 | 1 → 1 | 4 → 7 | 6 → 7 | no |
-| 06-sessions-new-ulitin | 1824 → 1412 | 4 → 4 | 1 → 1 | 4 → 7 | 6 → 7 | no |
-| 07-live-busy-360 | 2716 → 1048 | 15 → 6 | 4 → 4 | 18 → 3 | 7 → 8 | no |
-| 07-live-busy | 2445 → 1089 | 15 → 6 | 4 → 4 | 18 → 3 | 7 → 8 | no |
-| 08-live-winner-picker | 2753 → 1250 | 20 → 10 | 3 → 4 | 19 → 4 | 7 → 8 | no |
-| 09-live-player-sheet | 2445 → 844 | 19 → 14 | 5 → 2 | 19 → 5 | 7 → 9 | no |
-| 10-live-undo-banner | 2595 → 1206 | 17 → 8 | 4 → 5 | 19 → 4 | 7 → 8 | no |
-| 11-live-offline-outbox | 2583 → 874 | 15 → 10 | 4 → 1 | 20 → 4 | 7 → 7 | no |
+| 03-home-empty | 844 → 844 | 4 → 2 | 1 → 1 | 2 → 2 | 4 → 4 | no |
+| 04-home-full | 1219 → 844 | 6 → 3 | 2 → 1 | 4 → 3 | 6 → 5 | no |
+| 05-sessions-new | 1769 → 1371 | 4 → 4 | 1 → 1 | 4 → 7 | 6 → 6 | no |
+| 06-sessions-new-ulitin | 1824 → 1412 | 4 → 4 | 1 → 1 | 4 → 7 | 6 → 6 | no |
+| 07-live-busy-360 | 2716 → 1045 | 15 → 6 | 4 → 4 | 18 → 3 | 7 → 5 | no |
+| 07-live-busy | 2445 → 1086 | 15 → 6 | 4 → 4 | 18 → 3 | 7 → 5 | no |
+| 08-live-winner-picker | 2753 → 1247 | 20 → 10 | 3 → 4 | 19 → 4 | 7 → 5 | no |
+| 09-live-player-sheet | 2445 → 844 | 19 → 14 | 5 → 2 | 19 → 5 | 7 → 6 | no |
+| 10-live-undo-banner | 2595 → 1203 | 17 → 8 | 4 → 5 | 19 → 4 | 7 → 5 | no |
+| 11-live-offline-outbox | 2583 → 874 | 15 → 10 | 4 → 1 | 20 → 4 | 7 → 4 | no |
 | 12-walk-in | 1238 → 844 | 1 → 1 | 1 → 1 | 1 → 2 | 5 → 4 | no |
-| 13-session-qr | 1041 → 880 | 2 → 2 | 1 → 1 | 2 → 2 | 5 → 6 | no |
-| 14-bayad-360 | 1514 → 807 | 8 → 10 | 4 → 3 | 5 → 4 | 6 → 8 | no |
-| 14-bayad | 1514 → 844 | 8 → 10 | 4 → 3 | 5 → 4 | 6 → 8 | no |
-| 15-buod | 1805 → 1428 | 2 → 2 | 1 → 1 | 8 → 5 | 6 → 8 | no |
-| 16-members | 1313 → 1085 | 1 → 1 | 1 → 1 | 1 → 1 | 3 → 5 | no |
-| 17-member-edit | 996 → 844 | 1 → 1 | 1 → 1 | 1 → 2 | 3 → 5 | no |
-| 18-settings-owner | 2703 → 844 | 7 → 4 | 2 → 1 | 6 → 4 | 6 → 5 | no |
-| 19-guide | 2645 → 1883 | 1 → 1 | 0 → 1 | 0 → 6 | 4 → 5 | no |
+| 13-session-qr | 1041 → 873 | 2 → 2 | 1 → 1 | 2 → 2 | 5 → 5 | no |
+| 14-bayad-360 | 1514 → 807 | 8 → 10 | 4 → 3 | 5 → 4 | 6 → 5 | no |
+| 14-bayad | 1514 → 844 | 8 → 10 | 4 → 3 | 5 → 4 | 6 → 5 | no |
+| 15-buod | 1805 → 1430 | 2 → 2 | 1 → 1 | 8 → 5 | 6 → 5 | no |
+| 16-members | 1313 → 1083 | 1 → 1 | 1 → 1 | 1 → 1 | 3 → 4 | no |
+| 17-member-edit | 996 → 844 | 1 → 1 | 1 → 1 | 1 → 2 | 3 → 4 | no |
+| 18-settings-owner | 2703 → 844 | 7 → 4 | 2 → 1 | 6 → 4 | 6 → 4 | no |
+| 19-guide | 2645 → 1852 | 1 → 1 | 0 → 1 | 0 → 6 | 4 → 4 | no |
 | 20-invite | 844 → 844 | 1 → 1 | 1 → 1 | 1 → 1 | 3 → 3 | no |
-| 21-checkin-first-time | 1403 → 844 | 2 → 4 | 1 → 1 | 2 → 4 | 7 → 6 | no |
-| 22-checkin-pumila-bilang | 1195 → 844 | 3 → 5 | 1 → 1 | 3 → 4 | 7 → 7 | no |
-| 23-pwesto-queued-360 | 800 → 800 | 3 → 4 | 0 → 0 | 3 → 2 | 5 → 7 | no |
-| 23-pwesto-queued | 844 → 844 | 3 → 4 | 0 → 0 | 3 → 2 | 5 → 7 | no |
-| 24-pwesto-held | 1020 → 844 | 4 → 5 | 0 → 0 | 3 → 2 | 5 → 7 | no |
+| 21-checkin-first-time | 1403 → 844 | 2 → 4 | 1 → 1 | 2 → 4 | 7 → 5 | no |
+| 22-checkin-pumila-bilang | 1195 → 844 | 3 → 5 | 1 → 1 | 3 → 4 | 7 → 5 | no |
+| 23-pwesto-queued-360 | 800 → 800 | 3 → 4 | 0 → 0 | 3 → 2 | 5 → 6 | no |
+| 23-pwesto-queued | 844 → 844 | 3 → 4 | 0 → 0 | 3 → 2 | 5 → 6 | no |
+| 24-pwesto-held | 1020 → 844 | 4 → 5 | 0 → 0 | 3 → 2 | 5 → 6 | no |
 | 25-pwesto-called-360 | 800 → 800 | 3 → 4 | 1 → 1 | 5 → 0 | 4 → 6 | no |
 | 25-pwesto-called | 844 → 844 | 3 → 4 | 1 → 1 | 5 → 0 | 4 → 6 | no |
-| 26-pwesto-paused | 844 → 844 | 3 → 4 | 1 → 1 | 2 → 2 | 4 → 6 | no |
-| 27-mga-court | 1389 → 1370 | 0 → 2 | 0 → 0 | 16 → 6 | 4 → 5 | no |
+| 26-pwesto-paused | 844 → 844 | 3 → 4 | 1 → 1 | 2 → 2 | 4 → 5 | no |
+| 27-mga-court | 1389 → 1367 | 0 → 2 | 0 → 0 | 16 → 6 | 4 → 5 | no |
 | 28-club-qr-none | 844 → 844 | 0 → 2 | 0 → 0 | 1 → 1 | 3 → 3 | no |
-| **Total (32 screens)** | 48477 → 31651 | 178 → 141 | 52 → 45 | 200 → 98 | — | |
+| **Total (32 screens)** | 48477 → 31598 | 178 → 141 | 52 → 45 | 200 → 98 | 10 → 9 sizes in all | |
 
-- Page height on the busiest screens: Live (busy) 2445px → Courts 1089px; Settings 2703px → 844px.
+- Page height on the busiest screens: Live (busy) 2445px → Courts 1086px; Settings 2703px → 844px.
 - Cards/boxes: 200 → 98, mostly from the courts (18 → 3 on Live/Courts) and the player Courts view (16 → 6).
 - No screen scrolls sideways at 360 or 390 wide.
-- Distinct font sizes went **up** on most screens (e.g. Live 7 → 8). The v5 scale itself is small
-  (Inter 15/13/12, Space Grotesk titles), but titles, the big "Court 1" and place numbers, chip text
-  and the segmented controls each add a size. All sizes seen: 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 36, 64, 88 px.
-- Text colours seen: accent, danger, ink, muted, on-accent, on-accent-soft, on-dark-muted, rgb(232, 232, 227), secondary, success, warn, white (on-primary).
+- One type scale (tokens in `src/app/globals.css`; Tailwind's default sizes are switched off):
+  12, 13, 15, 17, 20, 28, 30, 64, 88 px, where 64 and 88 are only the court on You're up and the place in line. Before:
+  10 sizes (14, 16, 17, 18, 20, 24, 30, 36, 48, 60 px); the first v5 pass had grown that to 17 before
+  the scale was enforced. Per screen it is 3–6 sizes now, against 3–7 before.
+- Text colours seen: accent, danger, ink, muted, on-accent, on-accent-soft, on-dark-muted, #E8E8E3 ("Not ready yet" on You're up), secondary, success, warn, white (on-primary).
 
 ### Per screen (after)
 
 | Screen | Viewport | Page height | Buttons | Primary | Cards/boxes | Option cards | Font sizes | Text colors | Hint lines | Icons |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [Login](01-login.png) | 390×844 | 844px | 2 | 1 | 1 | 0 | 4 (13, 14, 16, 30) | 4 (ink, muted, white (on-primary), secondary) | 2 | 1 |
-| [Club/new (first club)](02-club-new.png) | 390×844 | 844px | 1 | 1 | 1 | 0 | 3 (13, 16, 30) | 4 (ink, muted, secondary, white (on-primary)) | 2 | 0 |
-| [Home (empty club)](03-home-empty.png) | 390×844 | 844px | 2 | 1 | 2 | 0 | 5 (11, 13, 14, 15, 30) | 3 (muted, ink, white (on-primary)) | 5 | 4 |
-| [Home (live + drafts + past)](04-home-full.png) | 390×844 | 844px | 3 | 1 | 3 | 0 | 8 (11, 12, 13, 14, 15, 20, 22, 30) | 5 (muted, ink, on-accent, on-dark-muted, white (on-primary)) | 3 | 7 |
-| [New session (empty)](05-sessions-new.png) | 390×844 | 1371px | 4 | 1 | 7 | 0 | 7 (12, 13, 14, 15, 16, 20, 28) | 4 (ink, secondary, muted, white (on-primary)) | 5 | 3 |
-| [New session (Repeat last pre-filled)](06-sessions-new-ulitin.png) | 390×844 | 1412px | 4 | 1 | 7 | 0 | 7 (12, 13, 14, 15, 16, 20, 28) | 4 (ink, muted, secondary, white (on-primary)) | 6 | 3 |
-| [Courts (busy) (360×800)](07-live-busy-360.png) | 360×800 | 1048px | 6 | 4 | 3 | 0 | 8 (10, 11, 12, 13, 14, 15, 16, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 5 | 7 |
-| [Courts (busy)](07-live-busy.png) | 390×844 | 1089px | 6 | 4 | 3 | 0 | 8 (10, 11, 12, 13, 14, 15, 16, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 5 | 7 |
-| [Courts (winner picker open)](08-live-winner-picker.png) | 390×844 | 1250px | 10 | 4 | 4 | 0 | 8 (10, 11, 12, 13, 14, 15, 16, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 6 | 7 |
-| [Queue (player sheet open)](09-live-player-sheet.png) | 390×844 | 844px | 14 | 2 | 5 | 0 | 9 (10, 11, 12, 13, 14, 15, 16, 20, 28) | 7 (ink, white (on-primary), muted, on-accent, warn, secondary, danger) | 5 | 8 |
-| [Courts (undo banner)](10-live-undo-banner.png) | 390×844 | 1206px | 8 | 5 | 4 | 0 | 8 (10, 11, 12, 13, 14, 15, 16, 28) | 6 (ink, white (on-primary), muted, on-accent-soft, warn, on-accent) | 5 | 10 |
-| [Queue (offline, 1 action waiting)](11-live-offline-outbox.png) | 390×844 | 874px | 10 | 1 | 4 | 0 | 7 (10, 11, 12, 13, 14, 15, 28) | 6 (ink, white (on-primary), muted, warn, on-accent, secondary) | 5 | 8 |
-| [Walk-in](12-walk-in.png) | 390×844 | 844px | 1 | 1 | 2 | 4 | 4 (13, 15, 16, 28) | 4 (ink, muted, secondary, white (on-primary)) | 1 | 3 |
-| [Session QR](13-session-qr.png) | 390×844 | 880px | 2 | 1 | 2 | 0 | 6 (13, 14, 15, 16, 28, 36) | 3 (ink, muted, white (on-primary)) | 6 | 4 |
-| [Payments (360×800)](14-bayad-360.png) | 360×800 | 807px | 10 | 3 | 4 | 0 | 8 (10, 11, 12, 13, 14, 15, 28, 30) | 5 (ink, muted, on-accent, warn, white (on-primary)) | 6 | 9 |
-| [Payments](14-bayad.png) | 390×844 | 844px | 10 | 3 | 4 | 0 | 8 (10, 11, 12, 13, 14, 15, 28, 30) | 5 (ink, muted, on-accent, warn, white (on-primary)) | 6 | 9 |
-| [Summary (ended)](15-buod.png) | 390×844 | 1428px | 2 | 1 | 5 | 0 | 8 (12, 13, 14, 15, 16, 24, 26, 28) | 5 (ink, muted, secondary, success, white (on-primary)) | 24 | 8 |
-| [Members](16-members.png) | 390×844 | 1085px | 1 | 1 | 1 | 0 | 5 (11, 13, 14, 15, 30) | 4 (white (on-primary), ink, secondary, muted) | 0 | 17 |
-| [Member (edit)](17-member-edit.png) | 390×844 | 844px | 1 | 1 | 2 | 4 | 5 (13, 14, 15, 16, 28) | 4 (ink, secondary, white (on-primary), muted) | 1 | 1 |
-| [Settings (owner)](18-settings-owner.png) | 390×844 | 844px | 4 | 1 | 4 | 0 | 5 (11, 13, 14, 15, 30) | 5 (ink, muted, secondary, danger, white (on-primary)) | 3 | 8 |
-| [Organizer guide](19-guide.png) | 390×844 | 1883px | 1 | 1 | 6 | 0 | 5 (13, 15, 16, 18, 28) | 3 (ink, muted, white (on-primary)) | 1 | 2 |
-| [Invite (signed in, before joining)](20-invite.png) | 390×844 | 844px | 1 | 1 | 1 | 0 | 3 (15, 16, 30) | 2 (ink, white (on-primary)) | 0 | 0 |
-| [Check-in (fee, first time)](21-checkin-first-time.png) | 390×844 | 844px | 4 | 1 | 4 | 3 | 6 (12, 13, 14, 15, 16, 28) | 5 (ink, secondary, muted, warn, white (on-primary)) | 4 | 0 |
-| [Check-in (returning: Join as)](22-checkin-pumila-bilang.png) | 390×844 | 844px | 5 | 1 | 4 | 0 | 7 (12, 13, 14, 15, 16, 18, 28) | 5 (ink, secondary, muted, warn, white (on-primary)) | 6 | 0 |
-| [My place (queued) (360×800)](23-pwesto-queued-360.png) | 360×800 | 800px | 4 | 0 | 2 | 0 | 7 (12, 13, 14, 15, 16, 28, 88) | 5 (ink, secondary, muted, on-accent-soft, danger) | 5 | 5 |
-| [My place (queued)](23-pwesto-queued.png) | 390×844 | 844px | 4 | 0 | 2 | 0 | 7 (12, 13, 14, 15, 16, 28, 88) | 5 (ink, secondary, muted, on-accent-soft, danger) | 5 | 5 |
-| [My place (held for payment)](24-pwesto-held.png) | 390×844 | 844px | 5 | 0 | 2 | 0 | 7 (12, 13, 14, 15, 16, 28, 88) | 5 (ink, secondary, muted, warn, danger) | 4 | 4 |
-| [You're up (called) (360×800)](25-pwesto-called-360.png) | 360×800 | 800px | 4 | 1 | 0 | 0 | 6 (12, 13, 15, 16, 36, 64) | 7 (on-dark-muted, ink, secondary, on-accent, white (on-primary), accent, rgb(232, 232, 227)) | 0 | 1 |
-| [You're up (called)](25-pwesto-called.png) | 390×844 | 844px | 4 | 1 | 0 | 0 | 6 (12, 13, 15, 16, 36, 64) | 7 (on-dark-muted, ink, secondary, on-accent, white (on-primary), accent, rgb(232, 232, 227)) | 0 | 1 |
-| [My place (resting)](26-pwesto-paused.png) | 390×844 | 844px | 4 | 1 | 2 | 0 | 6 (12, 13, 14, 15, 16, 28) | 5 (ink, secondary, muted, white (on-primary), danger) | 2 | 4 |
-| [Courts (player)](27-mga-court.png) | 390×844 | 1370px | 2 | 0 | 6 | 0 | 5 (12, 13, 15, 16, 28) | 5 (ink, secondary, muted, on-accent, warn) | 8 | 1 |
+| [Login](01-login.png) | 390×844 | 844px | 2 | 1 | 1 | 0 | 4 (13, 15, 17, 30) | 4 (ink, muted, white (on-primary), secondary) | 2 | 1 |
+| [Club/new (first club)](02-club-new.png) | 390×844 | 844px | 1 | 1 | 1 | 0 | 3 (13, 17, 30) | 4 (ink, muted, secondary, white (on-primary)) | 2 | 0 |
+| [Home (empty club)](03-home-empty.png) | 390×844 | 844px | 2 | 1 | 2 | 0 | 4 (12, 13, 15, 30) | 3 (muted, ink, white (on-primary)) | 5 | 4 |
+| [Home (live + drafts + past)](04-home-full.png) | 390×844 | 844px | 3 | 1 | 3 | 0 | 5 (12, 13, 15, 20, 30) | 5 (muted, ink, on-accent, on-dark-muted, white (on-primary)) | 3 | 7 |
+| [New session (empty)](05-sessions-new.png) | 390×844 | 1371px | 4 | 1 | 7 | 0 | 6 (12, 13, 15, 17, 20, 28) | 4 (ink, secondary, muted, white (on-primary)) | 5 | 3 |
+| [New session (Repeat last pre-filled)](06-sessions-new-ulitin.png) | 390×844 | 1412px | 4 | 1 | 7 | 0 | 6 (12, 13, 15, 17, 20, 28) | 4 (ink, muted, secondary, white (on-primary)) | 6 | 3 |
+| [Courts (busy) (360×800)](07-live-busy-360.png) | 360×800 | 1045px | 6 | 4 | 3 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 5 | 7 |
+| [Courts (busy)](07-live-busy.png) | 390×844 | 1086px | 6 | 4 | 3 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 5 | 7 |
+| [Courts (winner picker open)](08-live-winner-picker.png) | 390×844 | 1247px | 10 | 4 | 4 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, white (on-primary), muted, warn, on-accent) | 6 | 7 |
+| [Queue (player sheet open)](09-live-player-sheet.png) | 390×844 | 844px | 14 | 2 | 5 | 0 | 6 (12, 13, 15, 17, 20, 28) | 7 (ink, white (on-primary), muted, on-accent, warn, secondary, danger) | 5 | 8 |
+| [Courts (undo banner)](10-live-undo-banner.png) | 390×844 | 1203px | 8 | 5 | 4 | 0 | 5 (12, 13, 15, 17, 28) | 6 (ink, white (on-primary), muted, on-accent-soft, warn, on-accent) | 5 | 10 |
+| [Queue (offline, 1 action waiting)](11-live-offline-outbox.png) | 390×844 | 874px | 10 | 1 | 4 | 0 | 4 (12, 13, 15, 28) | 6 (ink, white (on-primary), muted, warn, on-accent, secondary) | 5 | 8 |
+| [Walk-in](12-walk-in.png) | 390×844 | 844px | 1 | 1 | 2 | 4 | 4 (13, 15, 17, 28) | 4 (ink, muted, secondary, white (on-primary)) | 1 | 3 |
+| [Session QR](13-session-qr.png) | 390×844 | 873px | 2 | 1 | 2 | 0 | 5 (13, 15, 17, 28, 30) | 3 (ink, muted, white (on-primary)) | 6 | 4 |
+| [Payments (360×800)](14-bayad-360.png) | 360×800 | 807px | 10 | 3 | 4 | 0 | 5 (12, 13, 15, 28, 30) | 5 (ink, muted, on-accent, warn, white (on-primary)) | 6 | 9 |
+| [Payments](14-bayad.png) | 390×844 | 844px | 10 | 3 | 4 | 0 | 5 (12, 13, 15, 28, 30) | 5 (ink, muted, on-accent, warn, white (on-primary)) | 6 | 9 |
+| [Summary (ended)](15-buod.png) | 390×844 | 1430px | 2 | 1 | 5 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, muted, secondary, success, white (on-primary)) | 24 | 8 |
+| [Members](16-members.png) | 390×844 | 1083px | 1 | 1 | 1 | 0 | 4 (12, 13, 15, 30) | 4 (white (on-primary), ink, secondary, muted) | 0 | 17 |
+| [Member (edit)](17-member-edit.png) | 390×844 | 844px | 1 | 1 | 2 | 4 | 4 (13, 15, 17, 28) | 4 (ink, secondary, white (on-primary), muted) | 1 | 1 |
+| [Settings (owner)](18-settings-owner.png) | 390×844 | 844px | 4 | 1 | 4 | 0 | 4 (12, 13, 15, 30) | 5 (ink, muted, secondary, danger, white (on-primary)) | 3 | 8 |
+| [Organizer guide](19-guide.png) | 390×844 | 1852px | 1 | 1 | 6 | 0 | 4 (13, 15, 17, 28) | 3 (ink, muted, white (on-primary)) | 1 | 2 |
+| [Invite (signed in, before joining)](20-invite.png) | 390×844 | 844px | 1 | 1 | 1 | 0 | 3 (15, 17, 30) | 2 (ink, white (on-primary)) | 0 | 0 |
+| [Check-in (fee, first time)](21-checkin-first-time.png) | 390×844 | 844px | 4 | 1 | 4 | 3 | 5 (12, 13, 15, 17, 28) | 5 (ink, secondary, muted, warn, white (on-primary)) | 4 | 0 |
+| [Check-in (returning: Join as)](22-checkin-pumila-bilang.png) | 390×844 | 844px | 5 | 1 | 4 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, secondary, muted, warn, white (on-primary)) | 6 | 0 |
+| [My place (queued) (360×800)](23-pwesto-queued-360.png) | 360×800 | 800px | 4 | 0 | 2 | 0 | 6 (12, 13, 15, 17, 28, 88) | 5 (ink, secondary, muted, on-accent-soft, danger) | 5 | 5 |
+| [My place (queued)](23-pwesto-queued.png) | 390×844 | 844px | 4 | 0 | 2 | 0 | 6 (12, 13, 15, 17, 28, 88) | 5 (ink, secondary, muted, on-accent-soft, danger) | 5 | 5 |
+| [My place (held for payment)](24-pwesto-held.png) | 390×844 | 844px | 5 | 0 | 2 | 0 | 6 (12, 13, 15, 17, 28, 88) | 5 (ink, secondary, muted, warn, danger) | 4 | 4 |
+| [You're up (called) (360×800)](25-pwesto-called-360.png) | 360×800 | 800px | 4 | 1 | 0 | 0 | 6 (12, 13, 15, 17, 30, 64) | 7 (on-dark-muted, ink, secondary, on-accent, white (on-primary), accent, #E8E8E3 ("Not ready yet" on You're up)) | 0 | 1 |
+| [You're up (called)](25-pwesto-called.png) | 390×844 | 844px | 4 | 1 | 0 | 0 | 6 (12, 13, 15, 17, 30, 64) | 7 (on-dark-muted, ink, secondary, on-accent, white (on-primary), accent, #E8E8E3 ("Not ready yet" on You're up)) | 0 | 1 |
+| [My place (resting)](26-pwesto-paused.png) | 390×844 | 844px | 4 | 1 | 2 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, secondary, muted, white (on-primary), danger) | 2 | 4 |
+| [Courts (player)](27-mga-court.png) | 390×844 | 1367px | 2 | 0 | 6 | 0 | 5 (12, 13, 15, 17, 28) | 5 (ink, secondary, muted, on-accent, warn) | 8 | 1 |
 | [/c/[code] (nothing live)](28-club-qr-none.png) | 390×844 | 844px | 2 | 0 | 1 | 0 | 3 (12, 13, 28) | 3 (ink, secondary, muted) | 1 | 1 |
-| [Queue (busy)](29-queue-tab.png) | 390×844 | 844px | 10 | 1 | 3 | 0 | 7 (10, 11, 12, 13, 14, 15, 28) | 6 (ink, white (on-primary), muted, on-accent, warn, secondary) | 4 | 7 |
-| [Courts (More sheet open)](30-more-sheet.png) | 390×844 | 1162px | 9 | 4 | 5 | 0 | 9 (10, 11, 12, 13, 14, 15, 16, 20, 28) | 7 (ink, white (on-primary), muted, on-accent-soft, warn, on-accent, danger) | 6 | 11 |
+| [Queue (busy)](29-queue-tab.png) | 390×844 | 844px | 10 | 1 | 3 | 0 | 4 (12, 13, 15, 28) | 6 (ink, white (on-primary), muted, on-accent, warn, secondary) | 4 | 7 |
+| [Courts (More sheet open)](30-more-sheet.png) | 390×844 | 1159px | 9 | 4 | 5 | 0 | 6 (12, 13, 15, 17, 20, 28) | 7 (ink, white (on-primary), muted, on-accent-soft, warn, on-accent, danger) | 6 | 11 |
 
 ### Status wording (after)
 

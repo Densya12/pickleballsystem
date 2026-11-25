@@ -16,7 +16,7 @@ type Common = {
 
 const looks: Record<Look, string> = {
   surface: "bg-surface text-ink hover:bg-subtle",
-  outline: "border border-input bg-surface text-ink hover:bg-subtle",
+  outline: "border border-quiet bg-surface text-ink hover:bg-subtle",
 };
 
 function classes({ look = "surface", size = "md", className }: Pick<Common, "look" | "size" | "className">) {

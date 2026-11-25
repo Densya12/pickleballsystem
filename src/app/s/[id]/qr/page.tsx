@@ -49,7 +49,7 @@ async function QrContent({ params }: Pick<PageProps<"/s/[id]/qr">, "params">) {
     <PageShell
       className="print:bg-surface"
       top={<BackLink href={`/s/${session.id}`} label={t.nav.courts} />}
-      title={<span className="print:block print:pt-8 print:text-center print:text-5xl">{session.name}</span>}
+      title={<span className="print:block print:pt-8 print:text-center print:text-display-court">{session.name}</span>}
       subtitle={<span className="print:hidden">{t.live.scanToJoin}</span>}
       footer={<ShareActions url={url} sessionName={session.name} />}
     >
@@ -63,7 +63,7 @@ async function QrContent({ params }: Pick<PageProps<"/s/[id]/qr">, "params">) {
           />
           <p className="text-center">
             <span className="block text-sm text-muted">{t.live.joinCode}</span>
-            <span className="font-display text-4xl font-semibold tracking-[0.2em]" aria-label={code.split("").join(" ")}>
+            <span className="font-display text-3xl font-semibold tracking-[0.2em]" aria-label={code.split("").join(" ")}>
               {code}
             </span>
           </p>

@@ -28,7 +28,7 @@ async function SettingsContent() {
   const [{ club, role }, t] = await Promise.all([requireClub("/settings"), getT()]);
   const supabase = await createClient();
   const { data: staff } = await supabase.rpc("list_club_staff", { p_club_id: club.id });
-  const value = (text: string) => <span className="max-w-[45%] truncate [font-size:14px] text-muted">{text}</span>;
+  const value = (text: string) => <span className="max-w-[45%] truncate text-sm text-muted">{text}</span>;
 
   return (
     <PageShell title={t.settings.title} titleSize="xl" tabBar={<MainTabBar current="settings" />}>

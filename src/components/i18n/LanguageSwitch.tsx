@@ -42,7 +42,7 @@ export function LanguageSwitch({ look = "compact", label }: { look?: "compact" |
             onClick={() => choose(option.value)}
             className={cn(
               "touch-target flex flex-1 items-center justify-center rounded-[10px] font-medium",
-              look === "compact" ? "h-8 min-w-10 px-2.5 text-xs" : "h-[34px] [font-size:14px]",
+              look === "compact" ? "h-8 min-w-10 px-2.5 text-xs" : "h-[34px] text-sm",
               checked ? "bg-surface text-ink shadow-[0_1px_2px_rgba(17,20,18,0.08)]" : "text-secondary",
             )}
           >

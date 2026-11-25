@@ -36,7 +36,7 @@ export function ClubQrCard({ qr }: { qr: ClubQr }) {
   return (
     <section aria-label={t.settings.clubQr} className="flex flex-col gap-3 print:pt-8">
       <div className="flex flex-col items-center gap-3 rounded-card bg-surface p-5 print:shadow-none">
-        <p className="hidden text-center font-display text-5xl font-semibold break-words print:block">{qr.clubName}</p>
+        <p className="hidden text-center font-display text-display-court font-semibold break-words print:block">{qr.clubName}</p>
         <p className="text-sm text-muted print:hidden">{t.settings.clubQrIntro}</p>
         <div
           role="img"
@@ -44,7 +44,7 @@ export function ClubQrCard({ qr }: { qr: ClubQr }) {
           className="w-full max-w-56 print:max-w-[12cm] [&_svg]:h-auto [&_svg]:w-full"
           dangerouslySetInnerHTML={{ __html: qr.svg }}
         />
-        <p className="hidden text-center text-4xl font-semibold print:block">{t.settings.printTitle}</p>
+        <p className="hidden text-center text-3xl font-semibold print:block">{t.settings.printTitle}</p>
       </div>
       <div className="rounded-group bg-surface px-4 py-3 print:hidden">
         <p className="text-sm text-muted">{t.settings.qrLink}</p>

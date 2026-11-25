@@ -51,8 +51,8 @@ export function PaymentsView({ session, players }: Props) {
     <div className="flex flex-col gap-5">
       <div className="rounded-card bg-surface p-4">
         <p className="flex items-baseline gap-1.5">
-          <span className="font-display text-[30px] leading-none font-semibold">{formatPeso(summary.confirmedTotal)}</span>
-          <span className="[font-size:14px] text-muted">{t.payments.ofTotal(formatPeso(summary.expectedTotal))}</span>
+          <span className="font-display text-3xl leading-none font-semibold">{formatPeso(summary.confirmedTotal)}</span>
+          <span className="text-sm text-muted">{t.payments.ofTotal(formatPeso(summary.expectedTotal))}</span>
         </p>
         <div
           role="img"
@@ -170,7 +170,7 @@ function PaidList({ players, busy, onUndo }: { players: PayingPlayer[]; busy: bo
     <details className="group overflow-hidden rounded-group bg-surface">
       <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 py-3.5 focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus">
         <span className="font-medium">{t.payments.paidList(players.length).replace(/\s*\(\d+\)$/, "")}</span>
-        <span className="flex items-center gap-1 [font-size:14px] text-muted">
+        <span className="flex items-center gap-1 text-sm text-muted">
           {players.length}
           <ChevronRightIcon className="size-4 text-[#9aa09c] transition-transform group-open:rotate-90" />
         </span>

@@ -34,7 +34,7 @@ export function PageShell({ top, eyebrow, title, titleSize = "lg", subtitle, chi
               <h1
                 className={cn(
                   "title-large [overflow-wrap:anywhere]",
-                  titleSize === "xl" && "[font-size:30px] tracking-[-0.5px]",
+                  titleSize === "xl" && "text-3xl tracking-[-0.5px]",
                   Boolean(eyebrow) && "mt-0.5",
                 )}
               >

@@ -47,7 +47,7 @@ export function Input({
             "focus:border-ink focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-focus",
             "disabled:cursor-not-allowed disabled:bg-info disabled:text-muted",
             Boolean(leading) && "pl-10",
-            error ? "border-danger" : "border-input",
+            error ? "border-danger" : "border-field",
           )}
           {...props}
         />
