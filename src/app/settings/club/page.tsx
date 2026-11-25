@@ -5,6 +5,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { ClubSettingsForm } from "../ClubSettingsForm";
 import { getClubFormValues } from "../data";
+import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.settings.clubDetails} · ${en.common.appName}`,
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<SettingsFormSkeleton page="clubDetails" />}>
       <Content />
     </Suspense>
   );

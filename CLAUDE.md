@@ -57,6 +57,9 @@ Source of truth for the look: `docs/design/v5/`.
   Bayad na, Natanggap).
 - Every icon is paired with words (icons are `aria-hidden`); never color alone for status.
 - Contrast: text ≥4.5:1; form-field borders and other UI boundaries ≥3:1 (`border-field`).
+- First loads show a skeleton, never a spinner: the page's `<Suspense>` fallback is the real shell
+  with `Skeleton*` blocks from `src/components/ui/Skeleton.tsx` mirroring the screen's layout (see
+  `src/components/skeletons/`). Refetches keep the current content.
 - Tap only: no swipe-only actions. Every action needs a visible button.
 - Use the tokens in `src/app/globals.css` and the components in `src/components/ui/` before adding
   new ones. No extra UI libraries.

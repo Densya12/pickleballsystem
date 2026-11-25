@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { PageShell } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
@@ -11,6 +10,7 @@ import { LiveHeaderActions } from "../_components/LiveHeader";
 import { QueueView } from "../_components/QueueView";
 import { SessionDetails } from "../_components/SessionDetails";
 import { SessionFrame } from "../_components/SessionFrame";
+import { QueueSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.live.queueTitle} · ${en.common.appName}`,
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 /** Queue tab (D19). */
 export default function QueuePage({ params, searchParams }: PageProps<"/s/[id]/queue">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<QueueSkeleton />}>
       <QueueContent params={params} searchParams={searchParams} />
     </Suspense>
   );

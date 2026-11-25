@@ -12,12 +12,17 @@ import {
   Notice,
   PageShell,
   Section,
+  Skeleton,
+  SkeletonCard,
+  SkeletonLine,
+  SkeletonRegion,
   StatusChip,
 } from "@/components/ui";
 import { DownloadIcon } from "@/components/ui/icons";
 import { requireUser } from "@/lib/auth/dal";
 import { formatPeso } from "@/lib/format";
-import { en } from "@/lib/i18n/dictionary";
+import { en, type Dictionary } from "@/lib/i18n/dictionary";
+import type { Locale } from "@/lib/i18n/locale";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { getLiveState } from "@/lib/queue/data";
 import { getSession, type Session } from "@/lib/session/data";
@@ -30,6 +35,7 @@ import { LiveHeaderActions, LiveLine } from "./_components/LiveHeader";
 import { SessionDetails } from "./_components/SessionDetails";
 import { SessionFrame } from "./_components/SessionFrame";
 import { UnpaidList } from "./_components/UnpaidList";
+import { CourtsSkeleton } from "./_components/SessionSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.nav.session} · ${en.common.appName}`,
@@ -38,7 +44,7 @@ export const metadata: Metadata = {
 /** A session: Courts while live (D19), the draft page, or the summary once ended. */
 export default function SessionPage({ params }: PageProps<"/s/[id]">) {
   return (
-    <Suspense fallback={<PageShell>{null}</PageShell>}>
+    <Suspense fallback={<CourtsSkeleton />}>
       <SessionContent params={params} />
     </Suspense>
   );
@@ -51,8 +57,74 @@ async function SessionContent({ params }: Pick<PageProps<"/s/[id]">, "params">) 
   const session = await getSession(id);
   if (!session) notFound();
   if (session.status === "draft") return <Draft session={session} />;
-  if (session.status === "ended") return <Summary session={session} />;
-  return <Courts session={session} />;
+  if (session.status === "ended") {
+    const [t, locale] = await Promise.all([getT(), getLocale()]);
+    // The session is known: the summary's header and details are real while its numbers load.
+    return (
+      <Suspense fallback={<SummarySkeleton session={session} t={t} locale={locale} />}>
+        <Summary session={session} />
+      </Suspense>
+    );
+  }
+  return (
+    <Suspense fallback={<CourtsSkeleton sessionName={session.name} />}>
+      <Courts session={session} />
+    </Suspense>
+  );
+}
+
+/** Summary while its numbers load: real header, labels and session details; data as skeleton blocks. */
+function SummarySkeleton({ session, t, locale }: { session: Session; t: Dictionary; locale: Locale }) {
+  return (
+    <PageShell
+      top={<BackLink href="/" label={t.nav.home} />}
+      eyebrow={<span className="flex items-center gap-2"><StatusChip kind="ended" /> {session.name}</span>}
+      title={t.session.summaryTitle}
+      subtitle={formatSchedule(new Date(session.starts_at), new Date(session.ends_at), locale)}
+      footer={
+        <a href={`/s/${session.id}/export`} download className={buttonClassName({ size: "lg", fullWidth: true })}>
+          <DownloadIcon className="size-[18px]" />
+          {t.session.download}
+        </a>
+      }
+    >
+      <SkeletonRegion className="flex flex-col gap-5">
+        <dl className="skeleton-card grid grid-cols-2 overflow-hidden rounded-card bg-surface">
+          {[t.session.duration, t.session.detailCourts, t.session.playersStat, t.session.gamesStat].map((label, index) => (
+            <div key={label} className={`flex flex-col px-4 py-3 ${index % 2 === 0 ? "border-r border-hairline" : ""} ${index < 2 ? "border-b border-hairline" : ""}`}>
+              <dt className="text-sm text-muted">{label}</dt>
+              <dd>{index === 1 ? <span className="font-display text-2xl font-semibold">{session.courts_count}</span> : <SkeletonLine size="2xl" width={56} />}</dd>
+            </div>
+          ))}
+        </dl>
+        {session.fee > 0 && (
+          <Section id="summary-payments-loading" label={t.payments.title}>
+            <SkeletonCard>
+              <SkeletonLine size="2xl" width={130} />
+              <Skeleton height={6} rounded="full" className="mt-3 w-full" />
+              <SkeletonLine size="sm" width="78%" className="mt-2.5" />
+            </SkeletonCard>
+          </Section>
+        )}
+        <Section id="games-per-player-loading" label={t.session.gamesPerPlayer}>
+          <ListGroup className="skeleton-card">
+            {[58, 46, 64, 50].map((w) => (
+              <li key={w} className="flex flex-col gap-1.5 px-4 py-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <SkeletonLine width={`${w}%`} />
+                  <SkeletonLine size="sm" width={56} />
+                </div>
+                <Skeleton width={128} height={36} rounded="full" />
+              </li>
+            ))}
+          </ListGroup>
+        </Section>
+        <Section id="summary-details-loading" label={t.session.details}>
+          <SessionDetails session={session} t={t} framed />
+        </Section>
+      </SkeletonRegion>
+    </PageShell>
+  );
 }
 
 async function Courts({ session }: { session: Session }) {

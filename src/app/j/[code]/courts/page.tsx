@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { PageShell } from "@/components/ui";
 import { en } from "@/lib/i18n/dictionary";
 import { getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 import { CourtsView } from "./CourtsView";
+import { PlayerCourtsSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
   title: `${en.player.courtsPageTitle} · ${en.common.appName}`,
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function CourtsPage({ params }: PageProps<"/j/[code]/courts">) {
   return (
     <Suspense
-      fallback={<PageShell>{null}</PageShell>}
+      fallback={<PlayerCourtsSkeleton />}
     >
       <CourtsContent params={params} />
     </Suspense>

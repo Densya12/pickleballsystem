@@ -58,7 +58,7 @@ export type WalkInPayment = { choice: "Paid cash" | "GCash" | "Pay later"; refer
 export async function addWalkIn(page: Page, name: string, level = "Not sure", payment?: WalkInPayment) {
   await page.getByRole("link", { name: "Walk-in" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Add walk-in" })).toBeVisible();
-  await expect(page.getByText("For players without a phone or who can't scan.")).toBeVisible();
+  await expect(page.getByText("For players without a phone or who can't scan.").filter({ visible: true })).toBeVisible();
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByRole("radio", { name: level, exact: true }).check();
   const choice = payment?.choice ?? "Pay later";

@@ -132,7 +132,7 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await expect(organizer.getByTestId("payment-counts")).toHaveText("4 paid · 1 to check · 1 unpaid · ₱150 each");
 
   // Mark as unpaid (behind a confirm), from the collapsed Paid list.
-  await organizer.getByText("Paid", { exact: true }).click();
+  await organizer.getByText("Paid", { exact: true }).filter({ visible: true }).click();
   const paidRow = organizer.getByRole("group", { name: "Cash Two" });
   await paidRow.getByRole("button", { name: "Mark as unpaid" }).click();
   await paidRow.getByRole("button", { name: "Yes, mark unpaid" }).click();
