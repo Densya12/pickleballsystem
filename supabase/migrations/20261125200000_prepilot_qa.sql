@@ -388,3 +388,90 @@ begin
   return v_code;
 end;
 $$;
+
+-- ===========================================================================
+-- QA-07: display names (players and members) without invisible characters
+-- (zero-width U+200B-U+200F, direction controls U+202A-U+202E and
+-- U+2066-U+2069, byte-order mark U+FEFF), spaces joined and trimmed, and with
+-- at least one visible letter or number. The same rule as src/lib/names.ts;
+-- both are checked against supabase/tests/database/name_cases.inc. The
+-- 2-40 length checks stay and apply to the cleaned name.
+-- ===========================================================================
+
+create or replace function private.clean_display_name(p_name text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select btrim(regexp_replace(
+    regexp_replace(coalesce(p_name, ''), '[​-‏‪-‮⁦-⁩﻿]', '', 'g'),
+    '\s+', ' ', 'g'));
+$$;
+
+-- A letter or number in any script. [[:alnum:]] depends on the database's
+-- locale, so also accept any non-ASCII character outside the punctuation,
+-- symbol and emoji blocks (a letter of another script).
+create or replace function private.display_name_ok(p_name text)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select char_length(coalesce(p_name, '')) between 2 and 40
+     and (p_name ~ '[[:alnum:]]'
+          or p_name ~ '[^\x01-\x7F\u0080-¿ -⯿　-〿︀-️＀-／\U0001F000-\U0001FAFF]');
+$$;
+
+-- SECURITY DEFINER so the trigger can use the private name rule when a signed-in
+-- user writes the row directly (members); it only rewrites NEW.
+create or replace function public.session_players_before_write()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  new.display_name := private.clean_display_name(new.display_name);
+  -- Length errors come from the existing check constraint; this adds "a letter or number".
+  if char_length(new.display_name) between 2 and 40 and not private.display_name_ok(new.display_name) then
+    raise exception 'name_needs_letter' using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+
+-- SECURITY DEFINER so the trigger can use the private name rule when a signed-in
+-- user writes the row directly (members); it only rewrites NEW.
+create or replace function public.members_before_write()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  new.display_name := private.clean_display_name(new.display_name);
+  if char_length(new.display_name) between 2 and 40 and not private.display_name_ok(new.display_name) then
+    raise exception 'name_needs_letter' using errcode = '23514';
+  end if;
+  new.notes := nullif(btrim(new.notes), '');
+  if tg_op = 'UPDATE' then
+    new.updated_at := now();
+  end if;
+  return new;
+end;
+$$;
+
+-- QA-05's duplicate check compares cleaned names.
+create or replace function private.player_name_key(p_name text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select lower(regexp_replace(private.clean_display_name(p_name), '\s+', '', 'g'));
+$$;
+
+revoke execute on function private.clean_display_name(text), private.display_name_ok(text) from public, anon, authenticated;
+-- Trigger functions aren't called directly by clients.
+revoke execute on function public.session_players_before_write(), public.members_before_write() from public, anon, authenticated;

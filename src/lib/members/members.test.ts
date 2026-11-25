@@ -48,3 +48,11 @@ describe("member search", () => {
     expect(duesLabel("paid", fil)).toBe("Bayad ang dues");
   });
 });
+
+describe("QA-07: member names", () => {
+  it("strips invisible characters and needs a letter or number", () => {
+    const form = (name: string) => ({ get: (k: string) => (k === "display_name" ? name : null) });
+    expect(parseMember(form("⁦Ben Cruz⁩"), en)).toMatchObject({ ok: true, data: { display_name: "Ben Cruz" } });
+    expect(parseMember(form("..."), en)).toMatchObject({ ok: false, errors: { display_name: en.members.nameNeedsLetter } });
+  });
+});

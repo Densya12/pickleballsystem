@@ -34,6 +34,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.playerPlayingGeneric;
     case "session_full":
       return t.live.sessionFull;
+    case "name_needs_letter":
+      return t.live.nameNeedsLetter;
     case "undo_not_available":
       return t.live.undoNotAvailable;
     case "court_not_found":

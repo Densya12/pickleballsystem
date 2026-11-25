@@ -112,6 +112,8 @@ const en = {
   nameRequired: "Enter the name.",
   nameTooShort: (min: number) => `Too short. At least ${min} characters.`,
   nameTooLong: (max: number) => `Up to ${max} characters.`,
+  /** QA-07 */
+  nameNeedsLetter: "Use at least one letter or number.",
   levelInvalid: "Pick a level.",
   // Session QR
   qrPageTitle: "Show QR",
@@ -258,6 +260,7 @@ const fil: typeof en = {
   nameRequired: "Pakilagay ang pangalan.",
   nameTooShort: (min: number) => `Masyadong maikli. Kahit ${min} letra.`,
   nameTooLong: (max: number) => `Hanggang ${max} letra lang.`,
+  nameNeedsLetter: "Gumamit ng kahit isang letra o numero.",
   levelInvalid: "Pumili ng level.",
   qrPageTitle: "Ipakita ang QR",
   scanToJoin: "I-scan para pumila",

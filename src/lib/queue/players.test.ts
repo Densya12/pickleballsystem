@@ -75,3 +75,13 @@ describe("QA-05: playerNameKey (same rule as private.player_name_key)", () => {
     expect(playerNameKey("Mark S.")).not.toBe(playerNameKey("Mark Santos"));
   });
 });
+
+describe("QA-07: names in parseWalkIn (check-in and walk-in)", () => {
+  it("strips invisible characters and needs a letter or number", async () => {
+    const { parseWalkIn } = await import("./players");
+    const f = (name: string) => ({ get: (k: string) => (k === "display_name" ? name : "unsure") });
+    expect(parseWalkIn(f("Ana‮abc 2"), en)).toEqual({ ok: true, data: { display_name: "Anaabc 2", level: "unsure" } });
+    expect(parseWalkIn(f("​​​"), en)).toMatchObject({ ok: false, errors: { display_name: en.live.nameRequired } });
+    expect(parseWalkIn(f("🏓🏓"), en)).toMatchObject({ ok: false, errors: { display_name: "Use at least one letter or number." } });
+  });
+});
