@@ -405,7 +405,7 @@ immutable
 set search_path = ''
 as $$
   select btrim(regexp_replace(
-    regexp_replace(coalesce(p_name, ''), '[​-‏‪-‮⁦-⁩﻿]', '', 'g'),
+    regexp_replace(coalesce(p_name, ''), '[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]', '', 'g'),
     '\s+', ' ', 'g'));
 $$;
 
@@ -420,7 +420,7 @@ set search_path = ''
 as $$
   select char_length(coalesce(p_name, '')) between 2 and 40
      and (p_name ~ '[[:alnum:]]'
-          or p_name ~ '[^\x01-\x7F\u0080-¿ -⯿　-〿︀-️＀-／\U0001F000-\U0001FAFF]');
+          or p_name ~ '[^\x01-\x7F\u0080-\u00BF\u2000-\u2BFF\u3000-\u303F\uFE00-\uFE0F\uFF00-\uFF0F\U0001F000-\U0001FAFF]');
 $$;
 
 -- SECURITY DEFINER so the trigger can use the private name rule when a signed-in
