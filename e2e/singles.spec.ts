@@ -36,13 +36,12 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   // Four walk-ins, then a phone player, then one more walk-in.
   for (const name of ["Ana", "Ben", "Carlo", "Dina"]) await addWalkIn(organizer, name);
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.getByRole("link", { name: "Courts" }).click();
 
   const player = await (await browser.newContext()).newPage();
   await player.goto(path);
   await player.getByLabel("Name", { exact: true }).fill("Pia Cruz");
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByTestId("position")).toHaveText("5");
   await expect(player.locator('[data-live-sync="connected"]')).toBeVisible();

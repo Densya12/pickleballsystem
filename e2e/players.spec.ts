@@ -22,7 +22,7 @@ async function playerPhone(browser: Browser): Promise<Page> {
 
 async function joinLink(organizer: Page): Promise<string> {
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const link = (await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!;
+  const link = (await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!;
   await organizer.getByRole("link", { name: "Courts" }).click();
   return new URL(link).pathname;
 }
@@ -31,7 +31,6 @@ async function checkIn(player: Page, path: string, name: string) {
   await player.goto(path);
   await player.getByLabel("Name", { exact: true }).fill(name);
   // Phase 5 (BR13): with a fee, pick GCash or cash. These sessions don't use pay_first.
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player).toHaveURL(new RegExp(`${path}/me$`));
   await expect(player.getByRole("heading", { level: 1, name: `Hi, ${name.split(" ")[0]}` })).toBeVisible();
@@ -106,8 +105,7 @@ test("a player checks in by link, gets called, swaps out, pauses, leaves, rejoin
   await expect(player.getByRole("heading", { level: 1, name: "Thanks for playing!" })).toBeVisible();
   await expect(queueRows(organizer).getByText("Pia Cruz")).toHaveCount(0, { timeout: 2_000 });
   await player.getByRole("link", { name: "Join again" }).click();
-  // D18: this phone is remembered, so re-joining is one tap (plus the payment choice).
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
+  // D18: this phone is remembered, so re-joining is one tap (payment is on My place, QA-06).
   await player.getByRole("button", { name: "Join as Pia Cruz" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Pia" })).toBeVisible();
   await expect(position(player)).toHaveText("2");

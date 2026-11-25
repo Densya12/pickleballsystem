@@ -26,19 +26,24 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.goto(courtsUrl);
 
-  // Phones first: 3 GCash (to check counts as paid), 1 cash (held until received).
+  // Phones first: 3 send a GCash reference on My place after joining (to check counts as paid),
+  // 1 doesn't pay yet (held until the organizer receives cash). Payment isn't on check-in (QA-06).
   const phones = new Map<string, Page>();
   for (const [index, name] of PHONES.entries()) {
     const phone = await (await browser.newContext()).newPage();
     await phone.goto(path);
     await phone.getByLabel("Name", { exact: true }).fill(name);
-    if (index < 3) await phone.getByLabel("GCash reference no.").fill(`90000000${index + 10}`);
-    else await phone.getByRole("radio", { name: "Cash", exact: true }).check();
     await phone.getByRole("button", { name: "Join queue" }).click();
     await expect(phone.getByRole("heading", { level: 1, name: `Hi, ${name.split(" ")[0]}` })).toBeVisible();
+    if (index < 3) {
+      await phone.getByRole("button", { name: "Add GCash reference" }).click();
+      await phone.getByLabel("GCash reference no.").fill(`90000000${index + 10}`);
+      await phone.getByRole("button", { name: "Send reference" }).click();
+      await expect(phone.locator('[data-payment="pending"]')).toBeVisible();
+    }
     phones.set(name, phone);
   }
   // 14 regulars, picked from members, paid in cash.
@@ -108,7 +113,7 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   expect(lines).toHaveLength(20);
   expect(lines[1]).toMatch(/^Pia Phone,Not sure,Phone,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   expect(lines.filter((l) => /^Member \d\d,Intermediate,Walk-in,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);
-  expect(lines[4]).toMatch(/^Sol Phone,Not sure,Phone,0,Unpaid,Cash,,/);
+  expect(lines[4]).toMatch(/^Sol Phone,Not sure,Phone,0,Unpaid,,,/);
   // The peso cell has commas, so it is quoted.
   expect(lines[19]).toMatch(/^Total,,18 players,\d+,14 paid · 3 to check · 0 unpaid,"₱2,100 of ₱2,550",,$/);
 

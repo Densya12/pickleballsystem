@@ -161,7 +161,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
       await expect(page.getByText(step)).toBeVisible();
     }
     await expect(page.getByText("Or go to")).toBeVisible();
-    const link = await page.getByText(/\/j\/[A-Z2-9]{6}$/).textContent();
+    const link = await page.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent();
     const code = link!.slice(-6);
     await expect(page.getByText(code, { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Share link" })).toBeVisible();

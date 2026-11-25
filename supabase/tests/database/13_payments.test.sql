@@ -274,8 +274,9 @@ select is(public.session_eligible_count(pg_temp.sid('s0')), 2, 'Fee 0 with pay_f
 reset role;
 select is((select count(*)::int from public.payments where session_id = pg_temp.sid('s0')), 0, 'Fee 0: no payment rows');
 select is((select count(*)::int from public.events where session_id = pg_temp.sid('s0')), 0, 'Fee 0: no payment events');
-select results_eq($$ select fee, pay_first from public.checkin_preview(current_setting('test.code0')) $$, $$ values (0, true) $$,
-  'checkin_preview tells the page the fee is 0');
+-- QA-06: the preview no longer returns payment details (they show after check-in).
+select results_eq($$ select fee, pay_first from public.checkin_preview(current_setting('test.code0')) $$, $$ values (null::integer, null::boolean) $$,
+  'checkin_preview returns no fee or pay_first (QA-06)');
 
 -- checkin_preview: fee and GCash for live sessions only
 update public.clubs set gcash_name = 'Juan', gcash_number = '09171234567' where id = 'cb000000-0000-0000-0000-000000000000';
@@ -285,7 +286,7 @@ reset role;
 select set_config('test.codeb', (select join_code from public.sessions where id = pg_temp.sid('sb')), true);
 set local role anon;
 select results_eq($$ select fee, pay_first, gcash_name, gcash_number from public.checkin_preview(current_setting('test.codeb')) $$,
-  $$ values (150, true, 'Juan'::text, '09171234567'::text) $$, 'checkin_preview (anon) shows the fee, pay_first and the club''s GCash for a live session');
+  $$ values (null::integer, null::boolean, null::text, null::text) $$, 'checkin_preview (anon) shows no fee, pay_first or GCash (QA-06)');
 reset role;
 
 -- Payments can be settled after the session ends.

@@ -27,7 +27,7 @@ test("10 phones: every player sees 'You\'re up' within 5 seconds of the call", a
   const courtsUrl = organizer.url();
 
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.goto(`${courtsUrl}/queue`);
 
   const phones = new Map<string, Page>();

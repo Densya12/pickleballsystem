@@ -61,7 +61,8 @@ async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">
     >
       <CheckInForm
         code={code}
-        payment={{ fee: preview.fee, payFirst: preview.payFirst, gcashName: preview.gcashName, gcashNumber: preview.gcashNumber }}
+        // QA-06: payment details aren't in the public preview; players see and pay on My place after joining.
+        payment={{ fee: 0, payFirst: false, gcashName: null, gcashNumber: null }}
         lastProfile={lastProfile}
       />
     </PageShell>

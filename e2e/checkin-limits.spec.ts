@@ -21,7 +21,6 @@ test("duplicate names at check-in, the walk-in warning, and 'New' on the Queue t
     await phone.setViewportSize({ width: 360, height: 640 });
     await phone.goto(path);
     await phone.getByLabel("Name", { exact: true }).fill(name);
-    await phone.getByRole("radio", { name: "Cash", exact: true }).check();
     await phone.getByRole("button", { name: "Join queue" }).click();
     return phone;
   };

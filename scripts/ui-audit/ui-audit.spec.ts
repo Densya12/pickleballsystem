@@ -71,19 +71,26 @@ async function phone(browser: Browser): Promise<Page> {
   return (await browser.newContext(PHONE)).newPage();
 }
 
+/** Check in; a GCash reference is sent on My place after joining (QA-06). "cash" just means: hasn't paid yet. */
 async function checkIn(player: Page, joinPath: string, name: string, pay: { reference?: string; cash?: boolean }, level?: string) {
   await player.goto(joinPath);
   await player.getByLabel("Name", { exact: true }).fill(name);
   if (level) await player.getByRole("radio", { name: level, exact: true }).check();
-  if (pay.reference) await player.getByLabel("GCash reference no.").fill(pay.reference);
-  if (pay.cash) await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByRole("heading", { level: 1, name: `Hi, ${name.split(" ")[0]}` })).toBeVisible();
+  if (pay.reference) await sendReference(player, pay.reference);
+}
+
+async function sendReference(player: Page, reference: string) {
+  await player.getByRole("button", { name: "Add GCash reference" }).click();
+  await player.getByLabel("GCash reference no.").fill(reference);
+  await player.getByRole("button", { name: "Send reference" }).click();
+  await expect(player.locator('[data-payment="pending"]')).toBeVisible();
 }
 
 async function joinPathOf(organizer: Page, courtsUrl: string): Promise<string> {
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const joinPath = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const joinPath = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.goto(courtsUrl);
   return joinPath;
 }
@@ -162,7 +169,7 @@ test("UI audit: seed a busy club and capture every screen", async ({ page: organ
   }).toPass({ timeout: 30_000 });
   const inviteUrl = (await inviteText.textContent())!;
   await organizer.goto("/settings/qr");
-  const clubQrPath = new URL((await organizer.getByText(/\/c\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const clubQrPath = new URL((await organizer.getByText(/\/c\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
 
   const coOrganizer = await (await browser.newContext(PHONE)).newPage();
   await signInNewOrganizer(coOrganizer, uniqueEmail("audit-organizer"));
@@ -235,9 +242,9 @@ test("UI audit: seed a busy club and capture every screen", async ({ page: organ
   await ana.goto(joinPath);
   await expect(ana.getByRole("button", { name: "Join as Ana Lopez" })).toBeVisible();
   await shot(ana, "22-checkin-pumila-bilang", "Check-in (returning: Join as)");
-  await ana.getByLabel("GCash reference no.").fill("1012 3456 7890");
   await ana.getByRole("button", { name: "Join as Ana Lopez" }).click();
   await expect(ana.getByRole("heading", { level: 1, name: "Hi, Ana" })).toBeVisible();
+  await sendReference(ana, "1012 3456 7890");
 
   const ben = await phone(browser);
   await ben.goto(joinPath);

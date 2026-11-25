@@ -273,3 +273,118 @@ create trigger session_players_cap_active
   for each row execute function private.cap_active_players();
 
 revoke execute on function private.player_name_key(text), private.cap_active_players() from public, anon, authenticated;
+
+-- ===========================================================================
+-- QA-06: the code preview is public (anyone with the code), so it no longer
+-- returns payment details (fee, pay first, GCash name and number). Players
+-- see them after check-in (their own session row). Same columns, now null.
+--
+-- Codes: 31 unambiguous characters (no 0/O, 1/I/L). 6 characters = 31^6 =
+-- 887,503,681 codes; 8 = 31^8 = 852,891,037,441 (about 961 times more
+-- guesses per hit). New codes can be 8 characters, but the app on main
+-- accepts only 6, so the length is a setting that starts at 6. After the app
+-- that accepts 6 or 8 is deployed, switch it with:
+--   update private.code_settings set join_code_length = 8, entry_code_length = 8;
+-- Existing 6-character codes keep working.
+-- ===========================================================================
+
+create or replace function public.checkin_preview(p_join_code text)
+returns table (
+  status text, name text, starts_at timestamptz, ends_at timestamptz, courts_count integer, waiting integer,
+  fee integer, pay_first boolean, gcash_name text, gcash_number text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_session public.sessions%rowtype;
+begin
+  select * into v_session from public.sessions s where s.join_code = upper(btrim(p_join_code));
+  if not found then
+    return query select 'not_found'::text, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer,
+                        null::integer, null::boolean, null::text, null::text;
+    return;
+  end if;
+
+  if v_session.status <> 'live' then
+    return query select v_session.status, null::text, null::timestamptz, null::timestamptz, null::integer, null::integer,
+                        null::integer, null::boolean, null::text, null::text;
+    return;
+  end if;
+
+  -- Payment details (fee, pay first, GCash) only after check-in.
+  return query
+  select v_session.status, v_session.name, v_session.starts_at, v_session.ends_at, v_session.courts_count,
+         (select count(*)::integer from public.session_players p
+          where p.session_id = v_session.id and p.status in ('queued', 'paused')),
+         null::integer, null::boolean, null::text, null::text;
+end;
+$$;
+
+create table if not exists private.code_settings (
+  id boolean primary key default true check (id),
+  join_code_length integer not null default 6 check (join_code_length in (6, 8)),
+  entry_code_length integer not null default 6 check (entry_code_length in (6, 8))
+);
+insert into private.code_settings (id) values (true) on conflict (id) do nothing;
+revoke all on private.code_settings from public, anon, authenticated;
+
+-- 6 or 8 characters, same alphabet.
+alter table public.sessions drop constraint if exists sessions_join_code_format;
+alter table public.sessions add constraint sessions_join_code_format
+  check (join_code ~ '^([ABCDEFGHJKMNPQRSTUVWXYZ2-9]{6}|[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8})$');
+alter table public.clubs drop constraint if exists clubs_entry_code_format;
+alter table public.clubs add constraint clubs_entry_code_format
+  check (entry_code ~ '^([ABCDEFGHJKMNPQRSTUVWXYZ2-9]{6}|[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8})$');
+
+create or replace function private.generate_join_code()
+returns text
+language plpgsql
+set search_path = ''
+as $$
+declare
+  -- 23 letters + 8 digits = 31 characters.
+  v_alphabet constant text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  v_length integer := coalesce((select s.join_code_length from private.code_settings s), 6);
+  v_bytes bytea;
+  v_byte integer;
+  v_code text := '';
+begin
+  while char_length(v_code) < v_length loop
+    v_bytes := extensions.gen_random_bytes(16);
+    for i in 0..15 loop
+      v_byte := get_byte(v_bytes, i);
+      -- 248 = 31 * 8: dropping bytes >= 248 keeps every character equally likely.
+      if v_byte < 248 then
+        v_code := v_code || substr(v_alphabet, (v_byte % 31) + 1, 1);
+        exit when char_length(v_code) = v_length;
+      end if;
+    end loop;
+  end loop;
+  return v_code;
+end;
+$$;
+
+create or replace function private.new_entry_code()
+returns text
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_length integer := coalesce((select s.entry_code_length from private.code_settings s), 6);
+  v_code text;
+begin
+  loop
+    -- Same generator; pad or trim to the entry code length.
+    v_code := private.generate_join_code();
+    while char_length(v_code) < v_length loop
+      v_code := v_code || private.generate_join_code();
+    end loop;
+    v_code := left(v_code, v_length);
+    exit when not exists (select 1 from public.clubs c where c.entry_code = v_code);
+  end loop;
+  return v_code;
+end;
+$$;
