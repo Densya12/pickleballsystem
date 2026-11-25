@@ -9,9 +9,24 @@ export const POINTS_CHOICES: readonly { value: `${Points}`; label: string }[] = 
   { value: "21", label: "21" },
 ];
 
-export function rotationChoices(t: Dictionary): { value: Rotation; label: string; description: string }[] {
+/**
+ * QA-13: "All off" describes who leaves the court. All doubles: "All four";
+ * all singles: "Both"; mixed or unknown (club defaults): "Everyone on court".
+ */
+export function allOffDescription(t: Dictionary, formats?: readonly string[]): string {
+  const kinds = new Set(formats ?? []);
+  if (kinds.size === 1 && kinds.has("doubles")) return t.choices.allOffDescription;
+  if (kinds.size === 1 && kinds.has("singles")) return t.choices.allOffDescriptionSingles;
+  return t.choices.allOffDescriptionMixed;
+}
+
+/** `formats`: the session's court formats, when known. */
+export function rotationChoices(
+  t: Dictionary,
+  formats?: readonly string[],
+): { value: Rotation; label: string; description: string }[] {
   return [
-    { value: "all_off", label: t.choices.allOff, description: t.choices.allOffDescription },
+    { value: "all_off", label: t.choices.allOff, description: allOffDescription(t, formats) },
     { value: "winners_stay", label: t.choices.winnersStay, description: t.choices.winnersStayDescription },
   ];
 }

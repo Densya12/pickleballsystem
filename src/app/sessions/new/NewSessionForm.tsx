@@ -102,7 +102,7 @@ export function NewSessionForm({ defaults, gcash, liveSession = null }: Props) {
         <RadioGroup
           legend={t.session.afterGame}
           name="rotation"
-          options={rotationChoices(t)}
+          options={rotationChoices(t, Array.from({ length: courtCount }, (_, i) => formats[i] ?? "doubles"))}
           defaultValue={value("rotation") as Rotation}
           error={errors.rotation}
         />

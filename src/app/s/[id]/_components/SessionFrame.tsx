@@ -236,6 +236,7 @@ export function SessionFrame({
         onClose={() => setMoreOpen(false)}
         sessionId={session.id}
         rotation={session.rotation}
+        courtFormats={courts.map((c) => c.format)}
         onRotation={(rotation) => act("set_rotation", { rotation }, t.live.outboxRotation(rotationLabel(rotation, t)))}
         details={details}
         tagatawag={tagatawag}
@@ -250,6 +251,7 @@ function MoreSheet({
   onClose,
   sessionId,
   rotation,
+  courtFormats,
   onRotation,
   details,
   tagatawag,
@@ -258,6 +260,8 @@ function MoreSheet({
   onClose: () => void;
   sessionId: string;
   rotation: string;
+  /** QA-13: so "All off" says "All four", "Both" or "Everyone on court". */
+  courtFormats: readonly string[];
   /** Resolves true when changed (or saved to the outbox). */
   onRotation: (rotation: Rotation) => Promise<boolean>;
   details: ReactNode;
@@ -308,7 +312,7 @@ function MoreSheet({
             hint={t.live.afterGameHint}
             name="rotation"
             look="list"
-            options={rotationChoices(t)}
+            options={rotationChoices(t, courtFormats)}
             value={chosen ?? (rotation as Rotation)}
             onValueChange={(next) => {
               setChosen(next);
