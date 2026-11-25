@@ -8,6 +8,7 @@ import { getSession } from "@/lib/session/data";
 import { repeatDefaults } from "@/lib/session/repeat";
 import { defaultSessionTimes } from "@/lib/session/time";
 import { COURTS_DEFAULT } from "@/lib/session/validation";
+import { createClient } from "@/lib/supabase/server";
 import { NewSessionForm } from "./NewSessionForm";
 import { NewSessionSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
@@ -25,6 +26,14 @@ export default function NewSessionPage({ searchParams }: PageProps<"/sessions/ne
 
 async function NewSessionContent({ searchParams }: Pick<PageProps<"/sessions/new">, "searchParams">) {
   const [{ club }, { ulitin }, t] = await Promise.all([requireClub("/sessions/new"), searchParams, getT()]);
+  // QA-04 / BR1: say up front that another session is live (only one can be).
+  const supabase = await createClient();
+  const { data: liveSession } = await supabase
+    .from("sessions")
+    .select("id, name")
+    .eq("club_id", club.id)
+    .eq("status", "live")
+    .maybeSingle();
   const now = new Date();
 
   // "Repeat last" (D18): only a session of the current club (RLS also limits reads to the user's clubs).
@@ -57,6 +66,7 @@ async function NewSessionContent({ searchParams }: Pick<PageProps<"/sessions/new
               }
         }
         gcash={{ name: club.gcash_name, number: club.gcash_number }}
+        liveSession={liveSession}
       />
     </PageShell>
   );

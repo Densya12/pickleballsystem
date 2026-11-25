@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Button, Card, CopyButton, Input, Notice, RadioGroup } from "@/components/ui";
 import { formatGcashNumber, formatPeso } from "@/lib/format";
+import { useFocusFirstError } from "@/lib/forms/useFocusFirstError";
 import { useT } from "@/lib/i18n/client";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 import { unlockAudio } from "@/lib/player/alert";
@@ -28,6 +29,9 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
   const t = useT();
   const router = useRouter();
   const [errors, setErrors] = useState<Errors>({});
+  // Errors show at the top; on a phone the Join button is far below (QA-04, QA-05).
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(formRef, errors, Object.values(errors).some(Boolean));
   const [pending, setPending] = useState(false);
   const [method, setMethod] = useState<"gcash" | "cash">("gcash");
   // D18: a returning player checks in with one tap; "Not {name}?" shows the empty form.
@@ -92,15 +96,21 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
     });
     if (error) {
       setPending(false);
-      setErrors({ form: playerErrorMessage(error, t) });
+      // QA-05: a name already in line is a problem with the name field (unless it's the remembered name).
+      if (error.message === "name_taken" && !remembered) setErrors({ display_name: t.player.nameTaken });
+      else setErrors({ form: playerErrorMessage(error, t) });
       return;
     }
     router.push(`/j/${code}/me`);
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3">
-      {errors.form && <Notice kind="error">{errors.form}</Notice>}
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="flex flex-col gap-3">
+      {errors.form && (
+        <Notice kind="error" tabIndex={-1} data-form-error>
+          {errors.form}
+        </Notice>
+      )}
       <Card className="flex flex-col gap-4">
         {remembered ? (
           <div className="flex flex-col">

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useTransition, type ReactNode } from "react";
 import { SessionTabBar, type SessionTab } from "@/components/nav/SessionTabBar";
 import { FeedbackBanner, type UndoOffer } from "@/components/session/FeedbackBanner";
+import { OfflineNavGuard } from "@/components/session/OfflineNavGuard";
 import { OutboxStatus } from "@/components/session/OutboxStatus";
 import { BackLink, BottomSheet, Button, ListGroup, ListRow, Notice, PageShell, RadioGroup, Toggle } from "@/components/ui";
 import { ChevronRightIcon } from "@/components/ui/icons";
@@ -229,11 +230,13 @@ export function SessionFrame({
         </div>
       </PageShell>
 
+      <OfflineNavGuard aboveTabBar={!ended} />
       <MoreSheet
         open={moreOpen}
         onClose={() => setMoreOpen(false)}
         sessionId={session.id}
         rotation={session.rotation}
+        courtFormats={courts.map((c) => c.format)}
         onRotation={(rotation) => act("set_rotation", { rotation }, t.live.outboxRotation(rotationLabel(rotation, t)))}
         details={details}
         tagatawag={tagatawag}
@@ -248,6 +251,7 @@ function MoreSheet({
   onClose,
   sessionId,
   rotation,
+  courtFormats,
   onRotation,
   details,
   tagatawag,
@@ -256,6 +260,8 @@ function MoreSheet({
   onClose: () => void;
   sessionId: string;
   rotation: string;
+  /** QA-13: so "All off" says "All four", "Both" or "Everyone on court". */
+  courtFormats: readonly string[];
   /** Resolves true when changed (or saved to the outbox). */
   onRotation: (rotation: Rotation) => Promise<boolean>;
   details: ReactNode;
@@ -306,7 +312,7 @@ function MoreSheet({
             hint={t.live.afterGameHint}
             name="rotation"
             look="list"
-            options={rotationChoices(t)}
+            options={rotationChoices(t, courtFormats)}
             value={chosen ?? (rotation as Rotation)}
             onValueChange={(next) => {
               setChosen(next);

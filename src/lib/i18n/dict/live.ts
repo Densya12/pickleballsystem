@@ -77,8 +77,18 @@ const en = {
   notLive: "This session isn't live.",
   notFound: "Can't find that. Refresh the page.",
   notOnCourt: "That player isn't on the court anymore.",
+  /** QA-02: Remove/Pause/Resume refused because the player was called meanwhile. */
+  playerPlaying: (name: string) => `${name} is on court now.`,
+  playerPlayingGeneric: "That player is on court now.",
+  /** QA-09 (BR19): Swap only after the player taps "Not ready". */
+  notFlagged: "That player hasn't said they're not ready. Only swap players who tap Not ready.",
   invalidFormat: "Pick doubles or singles.",
   invalidRotation: "Pick what happens after a game.",
+  /** QA-05 */
+  sessionFull: "This session is full (200 players). Remove someone who left first.",
+  nameInLine: (name: string) => `${name} is already in line. Add a last initial, or tap Add anyway.`,
+  addAnyway: "Add anyway",
+  newPlayer: "New",
   // Walk-in
   walkInPageTitle: "Add walk-in",
   walkInTitle: "Add walk-in",
@@ -104,6 +114,8 @@ const en = {
   nameRequired: "Enter the name.",
   nameTooShort: (min: number) => `Too short. At least ${min} characters.`,
   nameTooLong: (max: number) => `Up to ${max} characters.`,
+  /** QA-07 */
+  nameNeedsLetter: "Use at least one letter or number.",
   levelInvalid: "Pick a level.",
   // Session QR
   qrPageTitle: "Show QR",
@@ -123,6 +135,8 @@ const en = {
   undoNotAvailable: "Can't undo: 30 seconds have passed or something else changed.",
   // Offline outbox (NF10)
   offline: "Offline — will save when signal returns",
+  /** QA-01: a link tapped without signal. */
+  needsSignal: (target: string) => `Needs signal to open ${target}. Your taps are saved and will send when you're back online.`,
   waitingForSignal: (n: number) => `Waiting for signal (${n})`,
   failedAction: (label: string, message: string) => `Not sent: ${label}. ${message}`,
   discard: "Discard this action",
@@ -216,8 +230,15 @@ const fil: typeof en = {
   notLive: "Hindi live ang session na ito.",
   notFound: "Hindi makita. I-refresh ang page.",
   notOnCourt: "Wala na sa court ang player na iyon.",
+  playerPlaying: (name: string) => `Nasa court na si ${name}.`,
+  playerPlayingGeneric: "Nasa court na ang player na iyon.",
+  notFlagged: "Hindi pa sinabi ng player na hindi pa siya handa. I-swap lang ang mga pumindot ng Hindi pa handa.",
   invalidFormat: "Pumili ng Doubles o Singles.",
   invalidRotation: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
+  sessionFull: "Puno na ang session (200 player). Alisin muna ang mga umalis na.",
+  nameInLine: (name: string) => `Nasa pila na si ${name}. Magdagdag ng initial ng apelyido, o pindutin ang Idagdag pa rin.`,
+  addAnyway: "Idagdag pa rin",
+  newPlayer: "Bago",
   walkInPageTitle: "Magdagdag ng walk-in",
   walkInTitle: "Magdagdag ng walk-in",
   walkInSubtitle: "Para sa player na walang phone o hindi makapag-scan.",
@@ -242,6 +263,7 @@ const fil: typeof en = {
   nameRequired: "Pakilagay ang pangalan.",
   nameTooShort: (min: number) => `Masyadong maikli. Kahit ${min} letra.`,
   nameTooLong: (max: number) => `Hanggang ${max} letra lang.`,
+  nameNeedsLetter: "Gumamit ng kahit isang letra o numero.",
   levelInvalid: "Pumili ng level.",
   qrPageTitle: "Ipakita ang QR",
   scanToJoin: "I-scan para pumila",
@@ -258,6 +280,8 @@ const fil: typeof en = {
   undo: (s: number) => `Ibalik (${s}s)`,
   undoNotAvailable: "Hindi na maibabalik: lumipas na ang 30 segundo o may nagbago na.",
   offline: "Offline — ise-save pagbalik ng signal",
+  needsSignal: (target: string) =>
+    `Kailangan ng signal para buksan ang ${target}. Naka-save ang mga tap mo at ipapadala pagbalik ng signal.`,
   waitingForSignal: (n: number) => `Hinihintay ang signal (${n})`,
   failedAction: (label: string, message: string) => `Hindi naituloy: ${label}. ${message}`,
   discard: "Itapon ang aksyon na ito",

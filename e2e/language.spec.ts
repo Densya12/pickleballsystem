@@ -42,7 +42,7 @@ test("player: the EN | TL switch on check-in, kept after reload, separate from t
   await signInWithNewClub(organizer, "langplayer", "Lang Player Club");
   await startSession(organizer, "Lang Night", { courts: 1 });
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
 
   const player = await (await browser.newContext()).newPage();
   await player.goto(path);
@@ -62,7 +62,6 @@ test("player: the EN | TL switch on check-in, kept after reload, separate from t
 
   // Joining keeps the language on My place, which has the switch too.
   await player.getByLabel("Pangalan mo").fill("Tess Tagalog");
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Pumila na" }).click();
   await expect(player.getByRole("button", { name: "Pahinga muna" })).toBeVisible();
   await player.getByRole("radiogroup", { name: "Wika" }).getByRole("radio", { name: "English" }).click();

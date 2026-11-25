@@ -17,7 +17,7 @@ async function openClubQr(organizer: Page) {
 
 /** The club QR link ("QR link"), as a path. */
 async function clubQrPath(organizer: Page): Promise<string> {
-  const link = organizer.getByRole("region", { name: "Club QR code" }).getByText(/\/c\/[A-Z2-9]{6}$/);
+  const link = organizer.getByRole("region", { name: "Club QR code" }).getByText(/\/c\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/);
   return new URL((await link.textContent())!).pathname;
 }
 
@@ -61,7 +61,7 @@ test("club QR: prints, opens the live session, says when nothing is live, and ca
   await organizer.goto("/");
   await startSession(organizer, "Saturday Open Play", { courts: 1 });
   await player.goto(path);
-  await expect(player).toHaveURL(/\/j\/[A-Z2-9]{6}$/);
+  await expect(player).toHaveURL(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/);
   await expect(player.getByRole("heading", { level: 1, name: "Saturday Open Play" })).toBeVisible();
   await expect(player.getByRole("button", { name: "Join queue" })).toBeVisible();
 
@@ -167,21 +167,19 @@ test("a returning player checks in with one tap: Join as …", async ({ page: or
   await expect(player.getByRole("heading", { level: 1, name: "Last Week" })).toBeVisible();
   await player.getByLabel("Name", { exact: true }).fill("Rina Reyes");
   await player.getByRole("radio", { name: "Intermediate" }).check();
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Rina" })).toBeVisible();
   await endSession(organizer);
 
-  // This week: same phone, same QR. One tap (plus the payment choice, since there's a fee).
+  // This week: same phone, same QR. One tap (payment details are on My place after joining, QA-06).
   await organizer.goto("/");
   await startSession(organizer, "This Week", { courts: 1 });
   await player.goto(path);
   await expect(player.getByRole("heading", { level: 1, name: "This Week" })).toBeVisible();
   await expect(player.getByText("Intermediate")).toBeVisible();
   await expect(player.getByLabel("Name", { exact: true })).toHaveCount(0);
-  await expect(player.getByRole("heading", { name: "Payment" })).toBeVisible();
+  await expect(player.getByRole("heading", { name: "Payment" })).toHaveCount(0);
   await expect(player.getByRole("button", { name: "Not Rina Reyes?" })).toBeVisible();
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join as Rina Reyes" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Rina" })).toBeVisible();
   await openTab(organizer, "Queue");

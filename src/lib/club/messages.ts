@@ -39,6 +39,7 @@ export function clubErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.auth.notOrganizerAccount;
   }
   if (error.code === "42501") return t.club.ownerOnly;
+  if (isFeeCapViolation(error)) return t.club.feeTooHigh;
   if (error.code === "23514" || error.code === "22P02") return t.club.invalidInput;
   return t.club.generic;
 }
@@ -49,4 +50,9 @@ export function inviteExpiryText(expiresAt: string, now: Date, t: Dictionary): s
   const hours = Math.ceil(ms / 3_600_000);
   if (hours <= 24) return t.club.inviteExpiresHours(Math.max(hours, 1));
   return t.club.inviteExpiresDays(Math.ceil(hours / 24));
+}
+
+/** QA-10: the database caps fees at FEE_MAX (sessions_fee_max, clubs_default_fee_max). */
+export function isFeeCapViolation(error: { code?: string; message?: string }): boolean {
+  return error.code === "23514" && /(sessions_fee_max|clubs_default_fee_max)/.test(error.message ?? "");
 }

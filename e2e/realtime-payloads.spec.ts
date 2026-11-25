@@ -98,7 +98,7 @@ test("Realtime payloads never carry display_token, device_id or user_id", async 
 
   // A full round: walk-ins, a call, not ready + swap, a finished game, and the end.
   for (const name of ["Walk One", "Walk Two", "Walk Three", "Walk Four"]) {
-    await must(organizer.rpc("add_walk_in", { p_session_id: sessionId, p_display_name: name, p_level: "unsure" }));
+    await must(organizer.rpc("add_walk_in", { p_session_id: sessionId, p_display_name: name, p_level: "unsure", p_payment: "later" }));
   }
   const gameId = await must(organizer.rpc("call_next", { p_court_id: court.id }));
   await ok(player.rpc("player_not_ready", { p_player_id: playerId }));

@@ -77,6 +77,21 @@ describe("replayOutbox", () => {
     expect(send).toHaveBeenCalledTimes(2);
   });
 
+  it("QA-02: a Remove refused because the player is on court is NOT done: it stays, with its message", async () => {
+    for (const kind of ["remove_player", "pause_player", "resume_player"] as const) {
+      expect(isAlreadyDone(kind, "player_playing")).toBe(false);
+    }
+    const items = [item("remove_player", "Remove O5"), item("call_next", "Call Court 2")];
+    const removed: string[] = [];
+    const outcome = await replayOutbox(
+      items,
+      async (i) => (i.kind === "remove_player" ? { error: "O5 is on court now.", code: "player_playing" } : {}),
+      (i) => removed.push(i.label),
+    );
+    expect(outcome).toEqual({ status: "failed", sent: 0, item: items[0], message: "O5 is on court now." });
+    expect(removed).toEqual([]);
+  });
+
   it("stops quietly when still offline (send throws)", async () => {
     const items = [item("finish_game", "a"), item("finish_game", "b")];
     const removed: string[] = [];

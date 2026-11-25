@@ -36,13 +36,12 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   // Four walk-ins, then a phone player, then one more walk-in.
   for (const name of ["Ana", "Ben", "Carlo", "Dina"]) await addWalkIn(organizer, name);
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.getByRole("link", { name: "Courts" }).click();
 
   const player = await (await browser.newContext()).newPage();
   await player.goto(path);
   await player.getByLabel("Name", { exact: true }).fill("Pia Cruz");
-  await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByTestId("position")).toHaveText("5");
   await expect(player.locator('[data-live-sync="connected"]')).toBeVisible();
@@ -65,7 +64,8 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   await expect(player.getByText("Singles · you're highlighted")).toBeVisible();
   await expect(player.locator("[data-chip]")).toHaveText(["Pia", "Eli"]);
 
-  // Finish the singles game in winners stay: pick 1 winner; the winner stays, the next waiting joins.
+  // Finish the singles game in winners stay with only Fe waiting (fewer than 2): D23 (QA-03)
+  // sends everyone off LOSER FIRST, so Fe and the loser (Eli) play next and the winner sits out.
   await addWalkIn(organizer, "Fe");
   await openTab(organizer, "Courts");
   await organizer.getByRole("button", { name: "Done on Court 2" }).click();
@@ -74,11 +74,12 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   await expect(picker.getByRole("button", { name: "Confirm" })).toBeDisabled();
   await picker.getByRole("button", { name: "Pia Cruz" }).click();
   await picker.getByRole("button", { name: "Confirm" }).click();
-  await expect(banner(organizer)).toHaveText(/Game #2 on Court 2 is done\. Won: Pia Cruz\. Called: Pia Cruz, Fe/);
-  await expect(onCourt(organizer, "Court 2")).toHaveText(["Pia Cruz", "Fe"]);
-  await expect(player.locator("[data-chip]")).toHaveText(["Pia", "Fe"], { timeout: 2_000 });
+  await expect(banner(organizer)).toHaveText(/Game #2 on Court 2 is done\. Won: Pia Cruz\. Called: Fe, Eli/);
+  await expect(onCourt(organizer, "Court 2")).toHaveText(["Fe", "Eli"]);
+  // Pia sits out this one, first in line.
+  await expect(player.getByTestId("position")).toHaveText("1", { timeout: 2_000 });
   await openTab(organizer, "Queue");
-  await expect(queueRows(organizer)).toHaveText([/Eli/]);
+  await expect(queueRows(organizer)).toHaveText([/Pia Cruz/]);
 
   await player.context().close();
 });

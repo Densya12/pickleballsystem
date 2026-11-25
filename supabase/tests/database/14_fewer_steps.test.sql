@@ -212,7 +212,7 @@ reset role;
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.su', public.create_session('cc000000-0000-0000-0000-000000000000', 'Undo Night', now(), now() + interval '3h', 1, p_fee => 150, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('su'), n, 'unsure') from unnest(array['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']) n;
+select public.add_walk_in(pg_temp.sid('su'), n, 'unsure', 'later') from unnest(array['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']) n;
 select public.call_next(pg_temp.court1(pg_temp.sid('su')));
 reset role;
 
@@ -276,7 +276,7 @@ select is(pg_temp.state(pg_temp.sid('su')), current_setting('test.before'), 'and
 -- 4c. Another change since: with an event (pause) and without one (a walk-in, no payment event).
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select public.finish_game(pg_temp.court1(pg_temp.sid('su')), pg_temp.sid('g1'));
-select public.add_walk_in(pg_temp.sid('su'), 'P8', 'unsure');
+select public.add_walk_in(pg_temp.sid('su'), 'P8', 'unsure', 'later');
 select is(pg_temp.err(format('select public.undo_last(%L)', pg_temp.sid('su'))), 'undo_not_available',
   'Refused after another change that wrote no event (a walk-in)');
 reset role;
@@ -364,7 +364,7 @@ reset role;
 -- 4g. Winners stay: the streak and the winners' second game come back exactly.
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.sw', public.create_session('cd000000-0000-0000-0000-000000000000', 'Winners Night', now(), now() + interval '3h', 1, p_rotation => 'winners_stay', p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('sw'), n, 'unsure') from unnest(array['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8']) n;
+select public.add_walk_in(pg_temp.sid('sw'), n, 'unsure', 'later') from unnest(array['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8']) n;
 select public.call_next(pg_temp.court1(pg_temp.sid('sw')));
 select public.finish_game(pg_temp.court1(pg_temp.sid('sw')), pg_temp.running_game(pg_temp.sid('sw')),
   array[pg_temp.player(pg_temp.sid('sw'), 'W1'), pg_temp.player(pg_temp.sid('sw'), 'W2')]);

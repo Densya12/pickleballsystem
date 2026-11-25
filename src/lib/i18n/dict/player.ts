@@ -95,6 +95,9 @@ const en = {
   noRow: "You're no longer in the queue. Join again to play.",
   signInFailed: "We can't check you in right now. Tell the organizer your name.",
   invalidInput: "Something isn't right. Check your name.",
+  /** QA-05: someone in line already has this name. */
+  nameTaken: "That name is already in line. Add your last initial, e.g. Mark D.",
+  sessionFull: "This session is full (200 players). Ask the organizer.",
 };
 
 const fil: typeof en = {
@@ -184,6 +187,8 @@ const fil: typeof en = {
   noRow: "Wala ka na sa pila. Pumila ulit kung gusto mong maglaro.",
   signInFailed: "Hindi ka ma-check in ngayon. Sabihin na lang sa organizer ang pangalan mo.",
   invalidInput: "May mali sa nilagay. I-check ang pangalan mo.",
+  nameTaken: "May kapareho nang pangalan sa pila. Idagdag ang unang letra ng apelyido mo, hal. Mark D.",
+  sessionFull: "Puno na ang session (200 player). Magtanong sa organizer.",
 };
 
 export const player = { en, fil };

@@ -30,6 +30,16 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.invalidRotation;
     case "player_not_on_court":
       return t.live.notOnCourt;
+    case "player_playing":
+      return t.live.playerPlayingGeneric;
+    case "payment_required":
+      return t.live.choosePayment;
+    case "player_not_flagged":
+      return t.live.notFlagged;
+    case "session_full":
+      return t.live.sessionFull;
+    case "name_needs_letter":
+      return t.live.nameNeedsLetter;
     case "undo_not_available":
       return t.live.undoNotAvailable;
     case "court_not_found":

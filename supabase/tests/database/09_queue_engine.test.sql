@@ -113,16 +113,16 @@ reset role;
 -- BR20 + BR5: walk-ins join the end of the queue
 -- ===========================================================================
 select pg_temp.as_user('33333333-3333-3333-3333-333333333333');
-select public.add_walk_in(pg_temp.sid('s1'), 'P' || n, 'intermediate') from generate_series(1, 9) n;
+select public.add_walk_in(pg_temp.sid('s1'), 'P' || n, 'intermediate', 'later') from generate_series(1, 9) n;
 select is(pg_temp.queue(pg_temp.sid('s1')), 'P1,P2,P3,P4,P5,P6,P7,P8,P9', 'BR5/BR20: walk-ins queue in the order they were added');
 select ok((select bool_and(is_walk_in and status = 'queued' and games_played = 0) from public.session_players where session_id = pg_temp.sid('s1')),
   'Walk-ins are queued, marked as walk-ins, with 0 games');
-select lives_ok($$ select public.add_walk_in(pg_temp.sid('s1'), '   Tito    Boy  ', 'unsure') $$, 'A walk-in name is tidied');
+select lives_ok($$ select public.add_walk_in(pg_temp.sid('s1'), '   Tito    Boy  ', 'unsure', 'later') $$, 'A walk-in name is tidied');
 select is((select display_name from public.session_players where session_id = pg_temp.sid('s1') order by queue_pos desc limit 1),
   'Tito Boy', 'Spaces are trimmed and collapsed');
-select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'X', 'beginner') $$, '23514', null,
+select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'X', 'beginner', 'later') $$, '23514', null,
   'A 1-character name is refused');
-select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'Pro Player', 'pro') $$, '23514', null,
+select throws_ok($$ select public.add_walk_in(pg_temp.sid('s1'), 'Pro Player', 'pro', 'later') $$, '23514', null,
   'An unknown level is refused');
 select lives_ok($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'Tito Boy')) $$, 'BR18: remove a queued player');
 select is((select status from public.session_players where id = pg_temp.pid(pg_temp.sid('s1'), 'Tito Boy')), 'left', 'BR18: removed means left');
@@ -150,12 +150,13 @@ select is(public.session_eligible_count(pg_temp.sid('s1')), 4, 'BR6: paused play
 select set_config('test.g2', public.call_next(pg_temp.court(pg_temp.sid('s1'), 2))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s1'), 2), 'P6,P7,P8,P9', 'BR6/BR17: Court 2 skips paused P5');
 select is((select number from public.games where id = pg_temp.sid('g2')), 2, 'Game numbers count up per session');
-select is(pg_temp.err($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'Only paused players can be resumed');
-select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'A playing player cannot be paused');
-select is(pg_temp.err($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'invalid_player_status',
-  'A playing player cannot be removed');
+-- QA-02: a player on court gets its own code (player_playing), not invalid_player_status.
+select is(pg_temp.err($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'Only paused players can be resumed (a playing player: player_playing)');
+select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'A playing player cannot be paused (player_playing)');
+select is(pg_temp.err($$ select public.remove_player(pg_temp.pid(pg_temp.sid('s1'), 'P6')) $$), 'player_playing',
+  'A playing player cannot be removed (player_playing)');
 select is(pg_temp.err($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s1'), 'P5')) $$), 'invalid_player_status',
   'A paused player cannot be paused again');
 select lives_ok($$ select public.resume_player(pg_temp.pid(pg_temp.sid('s1'), 'P5')) $$, 'BR17: resume P5');
@@ -201,7 +202,7 @@ reset role;
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select set_config('test.s2', public.create_session(
   'a3333333-0000-0000-0000-000000000000', 'Small Night', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('s2'), 'S' || n, 'beginner') from generate_series(1, 3) n;
+select public.add_walk_in(pg_temp.sid('s2'), 'S' || n, 'beginner', 'later') from generate_series(1, 3) n;
 select is(pg_temp.err($$ select public.call_next(pg_temp.court(pg_temp.sid('s2'), 1)) $$), 'not_enough_players:1',
   'BR8: 3 eligible -> not_enough_players, 1 still needed');
 select lives_ok($$ select public.pause_player(pg_temp.pid(pg_temp.sid('s2'), 'S1')) $$, 'Pause one');
@@ -220,7 +221,7 @@ reset role;
 -- BR11: winners stay (3 courts; only Court 1 used)
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s3'), 'W' || n, 'advanced') from generate_series(1, 8) n;
+select public.add_walk_in(pg_temp.sid('s3'), 'W' || n, 'advanced', 'later') from generate_series(1, 8) n;
 select set_config('test.w1', public.call_next(pg_temp.court(pg_temp.sid('s3'), 1))::text, true);
 select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W1,W2,W3,W4', 'Game #1: W1-W4');
 
@@ -265,33 +266,35 @@ select is((select winner_streak from public.courts where id = pg_temp.court(pg_t
 select is(pg_temp.queue(pg_temp.sid('s3')), 'W7,W8,W2,W4', 'The beaten stayers re-joined the end');
 
 -- Fewer than 2 waiting: pause 3 of the 4 waiting. Challengers W5 + W6 win, but
--- only 1 is eligible -> all four re-join (winners first) and the first 4 are called.
+-- only 1 is eligible -> all four re-join, LOSERS FIRST (D23, QA-03), and the
+-- first 4 are called, so a winner sits out.
 select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), n)) from unnest(array['W7','W8','W2']) n;
 select set_config('test.w6', public.finish_game(pg_temp.court(pg_temp.sid('s3'), 1), pg_temp.sid('w5'),
   array[pg_temp.pid(pg_temp.sid('s3'), 'W5'), pg_temp.pid(pg_temp.sid('s3'), 'W6')])::text, true);
-select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W5,W6,W1',
-  'BR11: fewer than 2 waiting -> all four re-join winners first (W5,W6,W1,W3); the first 4 eligible are called');
-select is(pg_temp.queue(pg_temp.sid('s3')), 'W3', 'W3 (last loser) waits');
+select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W1,W3,W5',
+  'D23: fewer than 2 waiting -> all four re-join losers first (W1,W3,W5,W6); the first 4 eligible are called');
+select is(pg_temp.queue(pg_temp.sid('s3')), 'W6', 'D23: W6 (the last winner) sits out');
 select is((select winner_streak from public.courts where id = pg_temp.court(pg_temp.sid('s3'), 1)), 0, 'Streak reset');
 select ok(pg_temp.invariants_ok(pg_temp.sid('s3')), 'Invariants hold in winners stay');
 
--- Fewer than 2 and fewer than 4: the court stays empty.
-select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), 'W3'));
+-- Nobody else eligible: pause W6 (the only one waiting). The four on court are re-queued
+-- (losers first, D23) and called again.
+select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), 'W6'));
 select set_config('test.w7', public.finish_game(pg_temp.court(pg_temp.sid('s3'), 1), pg_temp.sid('w6'),
   array[pg_temp.pid(pg_temp.sid('s3'), 'W4'), pg_temp.pid(pg_temp.sid('s3'), 'W5')])::text, true);
 select is(pg_temp.cur(pg_temp.sid('s3'), 1), pg_temp.sid('w7'), 'finish_game returns the next game id (here: the re-queued four)');
-select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W5,W6,W1', 'Only the four re-queued are eligible, so they are called again');
+select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W1,W3,W4,W5', 'Only the four re-queued are eligible, so they are called again (losers first)');
 select ok(pg_temp.invariants_ok(pg_temp.sid('s3')), 'Invariants hold');
 
 -- ===========================================================================
 -- end_session (BR4): running games closed, courts freed, everyone left
 -- ===========================================================================
 select set_config('test.running', pg_temp.cur(pg_temp.sid('s3'), 1)::text, true);
-select set_config('test.played_before', pg_temp.played(pg_temp.sid('s3'), array['W4','W5','W6','W1'])::text, true);
+select set_config('test.played_before', pg_temp.played(pg_temp.sid('s3'), array['W1','W3','W4','W5'])::text, true);
 select lives_ok($$ select public.end_session(pg_temp.sid('s3')) $$, 'End the winners-stay session mid-game');
 select ok((select ended_at is not null and winner_ids is null from public.games where id = pg_temp.sid('running')),
   'end_session: the running game is closed with no winner');
-select is(pg_temp.played(pg_temp.sid('s3'), array['W4','W5','W6','W1'])::text, current_setting('test.played_before'),
+select is(pg_temp.played(pg_temp.sid('s3'), array['W1','W3','W4','W5'])::text, current_setting('test.played_before'),
   'end_session: games_played unchanged for the closed game');
 select is((select count(*)::int from public.courts where session_id = pg_temp.sid('s3') and (current_game_id is not null or winner_streak <> 0)), 0,
   'end_session: every court is empty');

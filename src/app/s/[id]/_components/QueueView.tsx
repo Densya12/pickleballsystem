@@ -9,7 +9,8 @@ import { useT } from "@/lib/i18n/client";
 import { courtsLineup, type LineupPlayer } from "@/lib/player/courts";
 import type { CallRules } from "@/lib/player/state";
 import type { LiveState, QueueEntry } from "@/lib/queue/data";
-import { levelLabel } from "@/lib/queue/players";
+import { isNewCheckIn, levelLabel } from "@/lib/queue/players";
+import { useNow } from "@/lib/useNow";
 import { useSessionFrame } from "./SessionFrame";
 
 /**
@@ -19,6 +20,7 @@ import { useSessionFrame } from "./SessionFrame";
  */
 export function QueueView({ state, rules, sessionId }: { state: LiveState; rules: CallRules; sessionId: string }) {
   const t = useT();
+  const now = useNow();
   const [openId, setOpenId] = useState<string | null>(null);
   const byId = new Map(state.queue.map((p) => [p.id, p]));
   const open = openId ? (byId.get(openId) ?? null) : null;
@@ -51,7 +53,13 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
               {badge}
             </span>
           )}
-          <span className="min-w-0 flex-1 font-medium [overflow-wrap:anywhere]">{player.name}</span>
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-medium [overflow-wrap:anywhere]">{player.name}</span>
+            {entry && isNewCheckIn(entry, now) && (
+              // QA-05: phone check-ins from the last 10 minutes, so a flood is easy to spot.
+              <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.live.newPlayer}</span>
+            )}
+          </span>
           {reason ? <StatusChip kind={reason} /> : entry && <span className="shrink-0 text-sm text-muted">{levelLabel(entry.level, t)}</span>}
         </button>
       </li>

@@ -70,7 +70,7 @@ select set_config('test.draft', public.create_session('aaaaaaaa-aaaa-aaaa-aaaa-a
 reset role;
 select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
 select set_config('test.t', public.create_session('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Other Club Night', now(), now() + interval '3h', 1, p_start => true)::text, true);
-select public.add_walk_in(pg_temp.sid('t'), 'Other Walk-in', 'beginner');
+select public.add_walk_in(pg_temp.sid('t'), 'Other Walk-in', 'beginner', 'later');
 reset role;
 select pg_temp.as_user('44444444-4444-4444-4444-444444444444');
 select set_config('test.e', public.create_session('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Ended Night', now() - interval '1 day', now() - interval '21h', 1, p_start => true)::text, true);
@@ -216,7 +216,7 @@ reset role;
 -- ===========================================================================
 select pg_temp.as_player('77777777-0000-0000-0000-000000000001');
 select is(pg_temp.err($$ select public.call_next(pg_temp.sid('court')) $$), 'not_organizer_account', 'Player: call_next refused');
-select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'Friend', 'beginner') $$), 'not_organizer_account', 'Player: add_walk_in refused');
+select is(pg_temp.err($$ select public.add_walk_in(pg_temp.sid('s'), 'Friend', 'beginner', 'later') $$), 'not_organizer_account', 'Player: add_walk_in refused');
 select is(pg_temp.err($$ select public.pause_player(pg_temp.sid('p2')) $$), 'not_organizer_account', 'Player: organizer pause refused');
 select is(pg_temp.err($$ select public.swap_not_ready(pg_temp.sid('court'), pg_temp.sid('p2')) $$), 'not_organizer_account', 'Player: swap_not_ready refused');
 select is(pg_temp.err($$ select public.end_session(pg_temp.sid('s')) $$), 'not_organizer_account', 'Player: end_session refused');
@@ -227,7 +227,7 @@ reset role;
 -- BR19: not ready -> organizer swaps -> replaced player at the FRONT
 -- ===========================================================================
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
-select public.add_walk_in(pg_temp.sid('s'), 'W' || n, 'beginner') from generate_series(1, 4) n;
+select public.add_walk_in(pg_temp.sid('s'), 'W' || n, 'beginner', 'later') from generate_series(1, 4) n;
 -- Queue: Ana (P2), Tito Boy (P1b), W1, W2, W3, W4
 select set_config('test.g1', public.call_next(pg_temp.sid('court'))::text, true);
 reset role;

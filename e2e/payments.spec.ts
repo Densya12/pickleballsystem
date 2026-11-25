@@ -10,18 +10,29 @@ async function phone(browser: Browser): Promise<Page> {
   return page;
 }
 
-async function checkIn(player: Page, path: string, name: string, pay: { reference?: string; cash?: boolean }) {
+/**
+ * QA-06: the check-in page (open to anyone with the code) shows no payment
+ * details. After joining, My place shows the fee, the hold and the club's
+ * GCash, and takes the reference.
+ */
+async function checkIn(player: Page, path: string, name: string, pay: { reference?: string } = {}) {
   await player.goto(path);
-  await expect(player.getByRole("heading", { name: "Payment" })).toBeVisible();
-  await expect(player.getByText("₱150", { exact: true })).toBeVisible();
-  await expect(player.getByText("Pay before you can be called.")).toBeVisible();
-  await expect(player.getByText(/Juan Dela Cruz/)).toBeVisible();
+  await expect(player.getByRole("button", { name: "Join queue" })).toBeVisible();
+  await expect(player.getByRole("heading", { name: "Payment" })).toHaveCount(0);
+  await expect(player.getByText(/Juan Dela Cruz|0917 123 4567/)).toHaveCount(0);
   await player.getByLabel("Name", { exact: true }).fill(name);
-  if (pay.reference) await player.getByLabel("GCash reference no.").fill(pay.reference);
-  if (pay.cash) await player.getByRole("radio", { name: "Cash", exact: true }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByRole("heading", { level: 1, name: `Hi, ${name.split(" ")[0]}` })).toBeVisible();
   await expect(player.locator('[data-live-sync="connected"]')).toBeVisible();
+  await expect(player.locator("[data-payment]")).toContainText("Payment · ₱150");
+  await expect(player.getByText("You'll be skipped until you pay.")).toBeVisible();
+  if (pay.reference) {
+    await player.getByRole("button", { name: "Add GCash reference" }).click();
+    await expect(player.getByText(/Juan Dela Cruz/)).toBeVisible();
+    await expect(player.getByText("0917 123 4567")).toBeVisible();
+    await player.getByLabel("GCash reference no.").fill(pay.reference);
+    await player.getByRole("button", { name: "Send reference" }).click();
+  }
 }
 
 function paymentLine(player: Page) {
@@ -62,7 +73,7 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await addWalkIn(organizer, "Cash Two", "Beginner", { choice: "Paid cash" });
 
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.goto(`${courtsUrl}/queue`);
 
   // Ana pays by GCash (to check); Ben will pay cash (held).
@@ -70,8 +81,8 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await checkIn(ana, path, "Ana Phone", { reference: "1234 5678 90" });
   await expect(paymentLine(ana)).toHaveText(/GCash · waiting for the organizer/);
   const ben = await phone(browser);
-  await checkIn(ben, path, "Ben Phone", { cash: true });
-  await expect(paymentLine(ben)).toHaveText(/Cash · give it to the organizer/);
+  await checkIn(ben, path, "Ben Phone");
+  await expect(paymentLine(ben)).toHaveText(/Not paid yet/);
   await expect(ben.getByText("You'll be skipped until you pay.")).toBeVisible();
 
   // Queue: unpaid players are On hold with "Unpaid"; Ana (to check) is not.
@@ -112,7 +123,7 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   // Remind copies the reminder; then Ben's cash is received.
   const unpaid = organizer.getByRole("region", { name: "Unpaid", exact: true });
   const benRow = unpaid.getByRole("group", { name: "Ben Phone" });
-  await expect(benRow.getByText("Paying cash")).toBeVisible();
+  await expect(benRow.getByText("Must pay before being called")).toBeVisible();
   await benRow.getByRole("button", { name: "Remind Ben Phone" }).click();
   await expect(status(organizer, "Reminder for Ben Phone copied.")).toBeVisible();
   expect(await organizer.evaluate(() => navigator.clipboard.readText())).toBe(
@@ -125,8 +136,8 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   // D18: "Undo" reverses the last Received (cash still chosen), then it's received again.
   await organizer.getByRole("button", { name: /^Undo \(\d+s\)$/ }).click();
   await expect(status(organizer, "Ben Phone's payment is back to how it was.")).toBeVisible();
-  await expect(paymentLine(ben)).toHaveText(/Cash · give it to the organizer/, { timeout: 2_000 });
-  await expect(benRow).toContainText("Paying cash");
+  await expect(paymentLine(ben)).toHaveText(/Not paid yet/, { timeout: 2_000 });
+  await expect(benRow).toContainText("Must pay before being called");
   await benRow.getByRole("button", { name: "Cash received from Ben Phone" }).click();
   await expect(paymentLine(ben)).toHaveText(/Paid/, { timeout: 2_000 });
   await expect(organizer.getByTestId("payment-counts")).toHaveText("4 paid · 1 to check · 1 unpaid · ₱150 each");
@@ -167,7 +178,7 @@ test("a free session has no payment step", async ({ page: organizer, browser }) 
   await expect(organizer).toHaveURL(/\/queue$/);
 
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   const player = await phone(browser);
   await player.goto(path);
   await expect(player.getByRole("button", { name: "Join queue" })).toBeVisible();

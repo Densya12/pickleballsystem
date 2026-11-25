@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import Link from "next/link";
+import { useActionState, useRef, useState } from "react";
 import { Button, Card, Input, Notice, RadioGroup, Stepper, Toggle } from "@/components/ui";
+import { useFocusFirstError } from "@/lib/forms/useFocusFirstError";
 import { POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
 import type { Points, Rotation } from "@/lib/club/validation";
 import { formatGcashNumber } from "@/lib/format";
@@ -13,22 +15,40 @@ import { CourtFormats } from "./CourtFormats";
 type Props = {
   defaults: Record<SessionField, string>;
   gcash: { name: string | null; number: string | null };
+  /** BR1: the club's live session, if any (only one can be live). */
+  liveSession?: { id: string; name: string } | null;
 };
 
 const FORM_ID = "new-session";
 
 /** New session (BR2): grouped cards, then Start (the main button) or Save as draft. */
-export function NewSessionForm({ defaults, gcash }: Props) {
+export function NewSessionForm({ defaults, gcash, liveSession = null }: Props) {
   const t = useT();
   const [state, formAction, pending] = useActionState<NewSessionState, FormData>(createSessionAction, {});
   const value = (field: SessionField) => state.values?.[field] ?? defaults[field];
   const errors = state.fieldErrors ?? {};
   const [courtCount, setCourtCount] = useState(() => Number(defaults.courts_count) || COURTS_MIN);
   const [formats, setFormats] = useState<CourtFormat[]>(() => (defaults.court_formats ? defaults.court_formats.split(",") : []) as CourtFormat[]);
+  // QA-04: after a failed submit, focus the first invalid field (or the alert).
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(formRef, state, Boolean(state.error) || Object.values(errors).some(Boolean));
 
   return (
-    <form id={FORM_ID} action={formAction} noValidate className="flex flex-col gap-3">
-      {state.error && <Notice kind="error">{state.error}</Notice>}
+    <form ref={formRef} id={FORM_ID} action={formAction} noValidate className="flex flex-col gap-3">
+      {liveSession && (
+        // BR1, before anyone fills in the form: only one session can be live.
+        <Notice kind="warning">
+          <span className="block">{t.session.liveNow(liveSession.name)}</span>
+          <Link href={`/s/${liveSession.id}`} className="mt-1 inline-flex min-h-11 items-center font-semibold underline underline-offset-2">
+            {t.home.openSession(liveSession.name)}
+          </Link>
+        </Notice>
+      )}
+      {state.error && (
+        <Notice kind="error" tabIndex={-1} data-form-error>
+          {state.error}
+        </Notice>
+      )}
       <Card className="flex flex-col gap-4">
         <Input
           label={t.session.name}
@@ -82,7 +102,7 @@ export function NewSessionForm({ defaults, gcash }: Props) {
         <RadioGroup
           legend={t.session.afterGame}
           name="rotation"
-          options={rotationChoices(t)}
+          options={rotationChoices(t, Array.from({ length: courtCount }, (_, i) => formats[i] ?? "doubles"))}
           defaultValue={value("rotation") as Rotation}
           error={errors.rotation}
         />
@@ -101,6 +121,12 @@ export function NewSessionForm({ defaults, gcash }: Props) {
       </Card>
 
       <div className="mt-2 flex flex-col gap-1">
+        {/* QA-04: the same message right where the user tapped (quiet copy; the alert above is announced). */}
+        {state.error && (
+          <Notice kind="error" live={false} className="mb-1">
+            {state.error}
+          </Notice>
+        )}
         <Button type="submit" name="intent" value="start" size="lg" fullWidth disabled={pending}>
           {pending ? t.session.starting : t.session.start}
         </Button>

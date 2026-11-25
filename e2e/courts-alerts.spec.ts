@@ -10,7 +10,7 @@ async function phone(browser: Browser): Promise<Page> {
 
 async function joinPath(organizer: Page): Promise<string> {
   await organizer.getByRole("link", { name: "Show QR" }).click();
-  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+  const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
   await organizer.getByRole("link", { name: "Courts" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   return path;
@@ -36,13 +36,17 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await addWalkIn(organizer, "Unpaid Uno", "Beginner", { choice: "Pay later" });
   const path = await joinPath(organizer);
 
-  // Mia checks in with GCash (to check counts as paid, BR14) and opens Courts.
+  // Mia checks in, sends a GCash reference on My place (to check counts as paid, BR14;
+  // payment isn't on the check-in page, QA-06) and opens Courts.
   const mia = await phone(browser);
   await mia.goto(path);
   await mia.getByLabel("Name", { exact: true }).fill("Mia Phone");
-  await mia.getByLabel("GCash reference no.").fill("9876 5432 10");
   await mia.getByRole("button", { name: "Join queue" }).click();
   await expect(mia.getByRole("heading", { level: 1, name: "Hi, Mia" })).toBeVisible();
+  await mia.getByRole("button", { name: "Add GCash reference" }).click();
+  await mia.getByLabel("GCash reference no.").fill("9876 5432 10");
+  await mia.getByRole("button", { name: "Send reference" }).click();
+  await expect(mia.locator('[data-payment="pending"]')).toBeVisible();
   await mia.getByRole("link", { name: "View courts" }).click();
   await expect(mia.getByRole("heading", { level: 1, name: "Courts" })).toBeVisible();
   await expect(mia.locator('[data-live-sync="connected"]').filter({ visible: true })).toHaveCount(1);

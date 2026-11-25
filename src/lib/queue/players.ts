@@ -3,6 +3,7 @@
  * rules; this layer gives a message per field, in the device's language.
  */
 import type { Dictionary } from "@/lib/i18n/dictionary";
+import { cleanDisplayName, hasLetterOrNumber } from "@/lib/names";
 import { toParseResult, type ParseResult } from "@/lib/club/validation";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 
@@ -26,9 +27,9 @@ export type WalkInInput = { display_name: string; level: Level };
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
 
-/** Same tidy-up as the database trigger: trim and collapse spaces. */
+/** QA-07: the database trigger's tidy-up (src/lib/names.ts): no invisible characters, spaces joined, trimmed. */
 export function tidyName(raw: string): string {
-  return raw.replace(/\s+/g, " ").trim();
+  return cleanDisplayName(raw);
 }
 
 export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInInput> {
@@ -48,7 +49,9 @@ export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInIn
             ? t.live.nameTooShort(PLAYER_NAME_MIN)
             : length > PLAYER_NAME_MAX
               ? t.live.nameTooLong(PLAYER_NAME_MAX)
-              : undefined,
+              : !hasLetterOrNumber(name)
+                ? t.live.nameNeedsLetter
+                : undefined,
       level: (LEVEL_VALUES as readonly string[]).includes(level) ? undefined : t.live.levelInvalid,
     },
   );
@@ -60,6 +63,19 @@ export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInIn
  */
 export const WALK_IN_PAYMENTS = ["cash_received", "gcash", "later"] as const;
 export type WalkInPayment = (typeof WALK_IN_PAYMENTS)[number];
+
+/**
+ * QA-05: how names are compared for "already in line" (the same rule as
+ * private.player_name_key in the database): lower case, no spaces.
+ */
+export function playerNameKey(name: string): string {
+  return cleanDisplayName(name).replace(/\s+/g, "").toLowerCase();
+}
+
+/** QA-05: checked in from a phone (not added by the organizer) in the last 10 minutes: "New". */
+export function isNewCheckIn(player: { isWalkIn: boolean; joinedAt: string }, now: number): boolean {
+  return !player.isWalkIn && now - Date.parse(player.joinedAt) < 10 * 60_000;
+}
 
 export function walkInPaymentChoices(t: Dictionary): { value: WalkInPayment; label: string }[] {
   return [

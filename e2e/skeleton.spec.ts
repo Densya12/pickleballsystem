@@ -104,7 +104,7 @@ test.describe("skeleton loading", () => {
     test.setTimeout(120_000);
     const courtsUrl = await seedClub(page);
     await page.getByRole("link", { name: "Show QR" }).click();
-    const joinPath = new URL((await page.getByText(/\/j\/[A-Z2-9]{6}$/).textContent())!).pathname;
+    const joinPath = new URL((await page.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
 
     await watch(page);
     await setDelay(context, page, DELAY_MS);
@@ -167,7 +167,6 @@ test.describe("skeleton loading", () => {
     const player = await playerContext.newPage();
     await player.goto(joinPath);
     await player.getByLabel("Name", { exact: true }).fill("Pia Cruz");
-    await player.getByRole("radio", { name: "Cash", exact: true }).check();
     await player.getByRole("button", { name: "Join queue" }).click();
     await expect(player.getByTestId("position")).toBeVisible();
     await watch(player);

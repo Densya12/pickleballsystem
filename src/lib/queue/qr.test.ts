@@ -8,7 +8,12 @@ describe("join codes and QR", () => {
     expect(normalizeJoinCode(" abc234 ")).toBe("ABC234");
   });
 
-  it.each(["ABC10O", "ABCDE", "ABCDEFG", "ABC-23", ""])("refuses %j", (code) => {
+  it("QA-06: accepts 8-character codes too (new codes), and still 6", () => {
+    expect(normalizeJoinCode(" abcd2345 ")).toBe("ABCD2345");
+    expect(normalizeJoinCode("ABC234")).toBe("ABC234");
+  });
+
+  it.each(["ABC10O", "ABCDE", "ABCDEFG", "ABCDEFGHJ", "ABCD10O2", "ABC-23", ""])("refuses %j", (code) => {
     expect(normalizeJoinCode(code)).toBeNull();
   });
 

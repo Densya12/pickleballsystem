@@ -3,6 +3,7 @@
  * Server Action; the database checks the same rules.
  */
 import type { Dictionary } from "@/lib/i18n/dictionary";
+import { hasLetterOrNumber } from "@/lib/names";
 import { LEVEL_VALUES, PLAYER_NAME_MAX, PLAYER_NAME_MIN, tidyName, type Level } from "@/lib/queue/players";
 
 export const DUES_VALUES = ["paid", "unpaid", "none"] as const;
@@ -48,6 +49,7 @@ export function parseMember(
   if (length === 0) errors.display_name = t.members.nameRequired;
   else if (length < PLAYER_NAME_MIN) errors.display_name = t.members.nameTooShort(PLAYER_NAME_MIN);
   else if (length > PLAYER_NAME_MAX) errors.display_name = t.members.nameTooLong(PLAYER_NAME_MAX);
+  else if (!hasLetterOrNumber(name)) errors.display_name = t.members.nameNeedsLetter;
   if (!(LEVEL_VALUES as readonly string[]).includes(level)) errors.level = t.members.levelInvalid;
   if (!(DUES_VALUES as readonly string[]).includes(dues)) errors.dues_status = t.members.duesInvalid;
   if ([...notes].length > NOTES_MAX) errors.notes = t.members.notesTooLong(NOTES_MAX);
