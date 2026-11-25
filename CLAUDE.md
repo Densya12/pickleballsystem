@@ -3,11 +3,12 @@
 # Open Play Queue: project rules
 
 Mobile-first PWA for running pickleball open play (organizer queue + rotation, payment tracking,
-guest check-in). UI copy is Taglish; code is English.
+guest check-in). UI copy is English by default with Taglish as the second language (D20); code is
+English.
 
 ## Spec and phases
 
-- Source of truth: **"Pickleball Open Play Queue — Build Spec"**: decisions **D1–D14**, business
+- Source of truth: **"Pickleball Open Play Queue — Build Spec"**: decisions **D1–D20**, business
   rules **BR1–BR21**, non-functional rules **NF1–NF14**. Cite the IDs when a change implements or
   touches one.
 - Build **one phase at a time**. Don't start the next phase's features, tables or screens early.
@@ -34,16 +35,41 @@ before `npx supabase db push`.
 
 Fix failures; don't skip or weaken tests to make them pass.
 
-## UI rules
+## UI rules (v5 "Clean 2026", D19)
 
-- Body text ≥16px. `text-sm` (14px) only for chips and secondary hints. `text-xs` is removed.
-- Tap targets ≥48px.
+Source of truth for the look: `docs/design/v5/`.
+
+- Type: one scale, as tokens in `src/app/globals.css`. Inter for text: `text-body` 15px (body),
+  `text-sm` 13px (secondary lines, chips), `text-xs` 12px (captions, tab labels); `text-lg` 17,
+  `text-xl` 20. Space Grotesk (`font-display`) for titles: `text-2xl` 28, `text-3xl` 30. Display
+  sizes only for big numbers: `text-display-court` (court on You're up), `text-display-number`
+  (place in line). Tailwind's default sizes are switched off, so no other size exists; don't add
+  one-off `text-[..px]` sizes.
+- Buttons: compact buttons 36–40px tall with a 44×44 touch area (`touch-target`); the main button
+  50–54px, and only **one main button per screen**. Icon-only buttons are round, 36–40px, with an
+  `aria-label`.
+- Cards: radius 18–20px, no borders and no boxes inside boxes; separate rows with hairline dividers.
+- Navigation: floating pill tab bars: **Home · Members · Settings**, and inside a live session
+  **Courts · Queue · Payments · More** (More is a sheet). Sub-pages use the `BackLink` with the
+  parent's name, e.g. **"‹ Home"**.
+- Status words, one per state, everywhere (chip with words, never color alone): **Unpaid, Resting,
+  Not ready, To check, Paid, Received** (Taglish: Bayad muna, Pahinga, Hindi pa handa, I-check,
+  Bayad na, Natanggap).
 - Every icon is paired with words (icons are `aria-hidden`); never color alone for status.
-- Text contrast ≥4.5:1 (form-control borders ≥3:1).
-- Sub-pages use the labelled **"Bumalik"** back link (`BackLink`).
+- Contrast: text ≥4.5:1; form-field borders and other UI boundaries ≥3:1 (`border-field`).
 - Tap only: no swipe-only actions. Every action needs a visible button.
 - Use the tokens in `src/app/globals.css` and the components in `src/components/ui/` before adding
   new ones. No extra UI libraries.
+
+## Language (D20)
+
+- English is the default; Taglish is second. The choice is per device (cookie): Settings › Language
+  for organizers, the EN | TL switch for players. `<html lang>` and Tagatawag follow it.
+- Every user-facing string lives in the typed dictionaries in `src/lib/i18n/dict/` (`en` and `fil`
+  with the same keys). Add each new string to **both**; a missing key fails typecheck and the
+  parity test (`src/lib/i18n/dictionary.test.ts`).
+- Server code uses `getT()` from `@/lib/i18n/server`; client code uses `useT()` from
+  `@/lib/i18n/client`.
 
 ## Next.js 16 + Supabase
 

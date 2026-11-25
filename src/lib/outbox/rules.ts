@@ -18,9 +18,8 @@ export const QUEUEABLE_KINDS = [
 ] as const;
 export type OutboxKind = (typeof QUEUEABLE_KINDS)[number];
 
-/** These need the server's answer right away (30-second window; closing check-in). */
+/** These need the server's answer right away (30-second window; closing check-in). Message: t.live.onlineOnly. */
 export const ONLINE_ONLY_KINDS = ["undo_last", "end_session"] as const;
-export const ONLINE_ONLY_MESSAGE = "Kailangan ng internet para dito.";
 
 export function isQueueable(kind: string): kind is OutboxKind {
   return (QUEUEABLE_KINDS as readonly string[]).includes(kind);
@@ -50,7 +49,7 @@ export type OutboxItem = {
   sessionId: string;
   kind: OutboxKind;
   args: Record<string, string | string[] | null>;
-  /** What the organizer did, in Taglish ("Tapos na: Laro #3 sa Court 1"). */
+  /** What the organizer did, in the language at the time ("Done: Game #3 on Court 1"). */
   label: string;
   createdAt: number;
 };
@@ -97,5 +96,3 @@ export function isNetworkError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
   return /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(message);
 }
-
-export const NETWORK_ERROR_MESSAGE = "Walang signal o hindi maabot ang server. Subukan ulit pagbalik ng internet.";

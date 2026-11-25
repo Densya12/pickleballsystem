@@ -23,6 +23,8 @@ export type LiveGame = {
   id: string;
   number: number;
   format: string;
+  /** ISO time the game started (minutes on the court card). */
+  startedAt: string;
   players: { id: string; name: string; notReady: boolean }[];
 };
 export type LiveCourt = { id: string; number: number; label: string; format: string; game: LiveGame | null };
@@ -35,15 +37,18 @@ export type LiveState = {
   playingCount: number;
   /** Players who can be called now (BR6), for "Kailangan pa ng N player". */
   eligibleCount: number;
-  /** "Bayad {paid}/{total}": confirmed, and everyone who owes the fee (not left, or left after paying). */
-  payments: { paid: number; total: number };
+  /**
+   * Confirmed, everyone who owes the fee (not left, or left after paying),
+   * and of those, how many are pending (to check) or unpaid: the Payments badge.
+   */
+  payments: { paid: number; total: number; toCheck: number; unpaid: number };
 };
 
 export async function getLiveState(sessionId: string): Promise<LiveState> {
   const supabase = await createClient();
   const [courts, games, players, eligible] = await Promise.all([
     supabase.from("courts").select("id, number, label, format, current_game_id").eq("session_id", sessionId).order("number"),
-    supabase.from("games").select("id, court_id, number, format, player_ids").eq("session_id", sessionId).is("ended_at", null),
+    supabase.from("games").select("id, court_id, number, format, player_ids, started_at").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
       .select("id, display_name, level, status, games_played, queue_pos, not_ready_at, payment_status, member_id")
@@ -88,6 +93,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
             id: game.id,
             number: game.number,
             format: game.format,
+            startedAt: game.started_at,
             players: game.player_ids.map((id) => ({ id, name: byId.get(id)?.name ?? "?", notReady: byId.get(id)?.notReady ?? false })),
           }
         : null,
@@ -104,7 +110,12 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
     queue,
     playingCount: all.filter((p) => p.status === "playing").length,
     eligibleCount: eligible.data ?? 0,
-    payments: { paid: counted.filter((p) => p.payment_status === "confirmed").length, total: counted.length },
+    payments: {
+      paid: counted.filter((p) => p.payment_status === "confirmed").length,
+      total: counted.length,
+      toCheck: counted.filter((p) => p.payment_status === "pending").length,
+      unpaid: counted.filter((p) => p.payment_status === "unpaid").length,
+    },
   };
 }
 

@@ -1,31 +1,18 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { BackLink, Card, PageShell } from "@/components/ui";
+import { BackLink, PageShell } from "@/components/ui";
 import { requireClub } from "@/lib/auth/dal";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { MemberForm } from "../MemberForm";
 
 export const metadata: Metadata = {
-  title: "Bagong member · Open Play Queue",
+  title: `${en.members.newTitle} · ${en.common.appName}`,
 };
-
-function Header() {
-  return (
-    <div className="flex flex-col gap-1">
-      <BackLink href="/members" />
-      <h1 className="text-3xl">Bagong member</h1>
-    </div>
-  );
-}
 
 export default function NewMemberPage() {
   return (
-    <Suspense
-      fallback={
-        <PageShell header={<Header />}>
-          <p className="text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
       <NewMemberContent />
     </Suspense>
   );
@@ -33,11 +20,10 @@ export default function NewMemberPage() {
 
 async function NewMemberContent() {
   await requireClub("/members/new");
+  const t = await getT();
   return (
-    <PageShell header={<Header />}>
-      <Card>
-        <MemberForm member={null} />
-      </Card>
+    <PageShell top={<BackLink href="/members" label={t.members.title} />} title={t.members.newTitle}>
+      <MemberForm member={null} />
     </PageShell>
   );
 }

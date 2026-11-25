@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { BackLink, PageShell } from "@/components/ui";
+import { IconLink, PageShell } from "@/components/ui";
+import { DownloadIcon } from "@/components/ui/icons";
 import { requireUser } from "@/lib/auth/dal";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { getSessionPayments } from "@/lib/payments/data";
+import { getLiveState } from "@/lib/queue/data";
 import { getSession } from "@/lib/session/data";
-import { PaymentsView } from "./PaymentsView";
+import { PaymentsView } from "../_components/PaymentsView";
+import { SessionDetails } from "../_components/SessionDetails";
+import { SessionFrame } from "../_components/SessionFrame";
 
 export const metadata: Metadata = {
-  title: "Bayad · Open Play Queue",
+  title: `${en.payments.pageTitle} · ${en.common.appName}`,
 };
 
-/** Bayad: who has paid, who to check in GCash, who still owes (D16). */
+/** Payments tab (D16, D19). Also open after the session ends, to settle the rest. */
 export default function PaymentsPage({ params }: PageProps<"/s/[id]/payments">) {
   return (
-    <Suspense
-      fallback={
-        <PageShell>
-          <p className="text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
       <PaymentsContent params={params} />
     </Suspense>
   );
@@ -31,23 +31,40 @@ async function PaymentsContent({ params }: Pick<PageProps<"/s/[id]/payments">, "
   await requireUser(`/s/${encodeURIComponent(id)}/payments`);
   const session = await getSession(id);
   if (!session) notFound();
-  // Drafts have no players yet; live and ended sessions can be settled here.
-  if (session.status === "draft") redirect(`/s/${session.id}/live`);
+  // Drafts have no players yet.
+  if (session.status === "draft") redirect(`/s/${session.id}`);
 
-  const players = await getSessionPayments(session.id);
+  const [players, state, t] = await Promise.all([getSessionPayments(session.id), getLiveState(session.id), getT()]);
+  const ended = session.status === "ended";
+
   return (
-    <PaymentsView
-      header={<BackLink href={`/s/${session.id}/live`} />}
-      session={{
-        id: session.id,
-        name: session.name,
-        fee: session.fee,
-        payFirst: session.pay_first,
-        status: session.status,
-        gcashName: session.gcash_name,
-        gcashNumber: session.gcash_number,
-      }}
-      players={players}
-    />
+    <SessionFrame
+      session={{ id: session.id, fee: session.fee }}
+      tab="payments"
+      title={t.payments.title}
+      actions={
+        <IconLink href={`/s/${session.id}/export`} label={t.payments.downloadList} prefetch={false}>
+          <DownloadIcon className="size-[18px]" />
+        </IconLink>
+      }
+      courts={state.courts}
+      queueCount={state.queue.length}
+      paymentsBadge={state.payments.toCheck + state.payments.unpaid}
+      details={<SessionDetails session={session} t={t} />}
+      ended={ended}
+    >
+      <PaymentsView
+        session={{
+          id: session.id,
+          name: session.name,
+          fee: session.fee,
+          payFirst: session.pay_first,
+          status: session.status,
+          gcashName: session.gcash_name,
+          gcashNumber: session.gcash_number,
+        }}
+        players={players}
+      />
+    </SessionFrame>
   );
 }

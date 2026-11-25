@@ -3,38 +3,28 @@ import { Suspense } from "react";
 import { PageShell } from "@/components/ui";
 import { loginErrorMessage } from "@/lib/auth/messages";
 import { safeNextPath } from "@/lib/auth/paths";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
-  title: "Mag-sign in · Open Play Queue",
+  title: `${en.auth.pageTitle} · ${en.common.appName}`,
 };
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <PageShell
-      header={
-        <div className="flex flex-col gap-2 pt-10">
-          <h1 className="text-3xl">Mag-sign in bilang organizer</h1>
-          <p className="text-muted">
-            Para sa nag-aayos ng open play. Hindi kailangang mag-sign in ng mga player.
-          </p>
-        </div>
-      }
-    >
-      <Suspense fallback={<p className="pt-4 text-muted">Sandali lang…</p>}>
-        <LoginFormFromParams searchParams={searchParams} />
-      </Suspense>
-    </PageShell>
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
+      <LoginContent searchParams={searchParams} />
+    </Suspense>
   );
 }
 
-async function LoginFormFromParams({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
-  const params = await searchParams;
+async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
+  const [params, t] = await Promise.all([searchParams, getT()]);
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   return (
-    <LoginForm
-      next={safeNextPath(first(params.next))}
-      initialError={loginErrorMessage(first(params.error))}
-    />
+    <PageShell title={t.auth.title} titleSize="xl" subtitle={t.auth.subtitle}>
+      <LoginForm next={safeNextPath(first(params.next))} initialError={loginErrorMessage(first(params.error), t)} />
+    </PageShell>
   );
 }

@@ -34,8 +34,9 @@ export async function magicLinkFor(email: string): Promise<string> {
 /** Signs in a new organizer with an email magic link. Ends on /club/new. */
 export async function signInNewOrganizer(page: Page, email: string): Promise<void> {
   await page.goto("/login");
-  await page.getByLabel("Email mo").fill(email);
-  await page.getByRole("button", { name: "Ipadala ang login link" }).click();
+  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await expect(page.getByText(email)).toBeVisible();
 
   await page.goto(await magicLinkFor(email));
@@ -45,7 +46,7 @@ export async function signInNewOrganizer(page: Page, email: string): Promise<voi
 /** New organizer with a new club. Ends on Home. */
 export async function signInWithNewClub(page: Page, prefix: string, clubName: string): Promise<void> {
   await signInNewOrganizer(page, uniqueEmail(prefix));
-  await page.getByLabel("Pangalan ng club").fill(clubName);
-  await page.getByRole("button", { name: "Gawin ang club" }).click();
+  await page.getByLabel("Club name").fill(clubName);
+  await page.getByRole("button", { name: "Create club" }).click();
   await expect(page.getByRole("heading", { level: 1, name: clubName })).toBeVisible();
 }

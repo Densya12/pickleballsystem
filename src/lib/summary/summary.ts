@@ -4,6 +4,7 @@
  * Each check-in row is one player (someone who left and checked in again
  * appears twice, as on the Bayad screen).
  */
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import { formatPeso } from "@/lib/format";
 import { summarizePayments, type PayingPlayer, type PaymentSummary } from "@/lib/payments/summary";
 import { levelLabel } from "@/lib/queue/players";
@@ -46,26 +47,22 @@ export function sessionSummary(input: {
   };
 }
 
-/** "2 oras 15 minuto", "45 minuto", "1 oras" */
-export function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  const parts = [];
-  if (hours > 0) parts.push(`${hours} oras`);
-  if (rest > 0 || hours === 0) parts.push(`${rest} minuto`);
-  return parts.join(" ");
+/** "2 h 15 min" / "2 oras 15 minuto" */
+export function formatDuration(minutes: number, t: Dictionary): string {
+  return t.time.duration(Math.floor(minutes / 60), minutes % 60);
 }
 
-export function paymentStatusWords(status: string, fee: number): string {
-  if (fee === 0) return "Libre";
-  if (status === "confirmed") return "Bayad na";
-  if (status === "pending") return "I-check";
-  return "Hindi pa bayad";
+/** One status word per state (D19). */
+export function paymentStatusWords(status: string, fee: number, t: Dictionary): string {
+  if (fee === 0) return t.common.free;
+  if (status === "confirmed") return t.status.paid;
+  if (status === "pending") return t.status.toCheck;
+  return t.status.unpaid;
 }
 
-function methodWords(method: string | null): string {
-  if (method === "gcash") return "GCash";
-  if (method === "cash") return "Cash";
+function methodWords(method: string | null, t: Dictionary): string {
+  if (method === "gcash") return t.player.gcash;
+  if (method === "cash") return t.player.cash;
   return "";
 }
 
@@ -92,48 +89,35 @@ export function toCsv(rows: readonly (readonly (string | number | null | undefin
   return CSV_BOM + rows.map((row) => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
-export const CSV_HEADER = [
-  "Pangalan",
-  "Level",
-  "Paano pumila",
-  "Laro",
-  "Bayad",
-  "Paraan",
-  "Reference",
-  "Oras ng check-in",
-] as const;
-
 /** One row per player (check-in order), then a totals row. */
-export function summaryCsv(players: readonly SummaryPlayer[], fee: number): string {
+export function summaryCsv(players: readonly SummaryPlayer[], fee: number, t: Dictionary): string {
   const ordered = [...players].sort((a, b) => a.checkedInAt.localeCompare(b.checkedInAt));
   const payments = summarizePayments(players, fee, { sessionEnded: true });
   const rows = ordered.map((p) => [
     p.name,
-    levelLabel(p.level),
-    p.isWalkIn ? "Walk-in" : "Phone",
+    levelLabel(p.level, t),
+    p.isWalkIn ? t.payments.csvWalkIn : t.payments.csvPhone,
     p.gamesPlayed,
-    paymentStatusWords(p.paymentStatus, fee),
-    methodWords(p.method),
+    paymentStatusWords(p.paymentStatus, fee, t),
+    methodWords(p.method, t),
     p.referenceDigits,
     toManilaLocal(new Date(p.checkedInAt)).replace("T", " "),
   ]);
   const totals = [
-    "Kabuuan",
+    t.payments.csvTotal,
     "",
-    `${players.length} players`,
+    t.payments.csvPlayers(players.length),
     players.reduce((sum, p) => sum + p.gamesPlayed, 0),
-    fee > 0
-      ? `${payments.confirmed.length} bayad · ${payments.pending.length} i-check · ${payments.unpaid.length} hindi pa`
-      : "Libre",
-    fee > 0 ? `${formatPeso(payments.confirmedTotal)} sa ${formatPeso(payments.expectedTotal)}` : "",
+    fee > 0 ? t.payments.csvCounts(payments.confirmed.length, payments.pending.length, payments.unpaid.length) : t.common.free,
+    fee > 0 ? t.payments.csvAmounts(formatPeso(payments.confirmedTotal), formatPeso(payments.expectedTotal)) : "",
     "",
     "",
   ];
-  return toCsv([CSV_HEADER, ...rows, totals]);
+  return toCsv([t.payments.csvHeader, ...rows, totals]);
 }
 
-/** "buod-friday-night-2026-11-24.csv" */
-export function summaryFileName(sessionName: string, startedAt: string): string {
+/** "summary-friday-night-2026-11-24.csv" (prefix from the dictionary). */
+export function summaryFileName(sessionName: string, startedAt: string, t: Dictionary): string {
   const slug =
     sessionName
       .normalize("NFD")
@@ -142,5 +126,5 @@ export function summaryFileName(sessionName: string, startedAt: string): string 
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 40) || "session";
-  return `buod-${slug}-${toManilaLocal(new Date(startedAt)).slice(0, 10)}.csv`;
+  return `${t.payments.csvFileName}-${slug}-${toManilaLocal(new Date(startedAt)).slice(0, 10)}.csv`;
 }

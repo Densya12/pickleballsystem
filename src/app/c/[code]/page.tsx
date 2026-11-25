@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { Notice, PageShell } from "@/components/ui";
 import { getClubEntry } from "@/lib/club/entry";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 
 export const metadata: Metadata = {
-  title: "Pumila · Open Play Queue",
+  title: `${en.player.checkInPageTitle} · ${en.common.appName}`,
 };
 
 /**
@@ -15,13 +18,7 @@ export const metadata: Metadata = {
  */
 export default function ClubEntryPage({ params }: PageProps<"/c/[code]">) {
   return (
-    <Suspense
-      fallback={
-        <PageShell>
-          <p className="pt-10 text-muted">Sandali lang…</p>
-        </PageShell>
-      }
-    >
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
       <ClubEntryContent params={params} />
     </Suspense>
   );
@@ -31,23 +28,24 @@ async function ClubEntryContent({ params }: Pick<PageProps<"/c/[code]">, "params
   const code = normalizeJoinCode((await params).code);
   const entry = code ? await getClubEntry(code) : ({ status: "not_found" } as const);
   if (entry.status === "live") redirect(`/j/${entry.joinCode}`);
+  const t = await getT();
 
   return (
     <PageShell
-      header={
-        <div className="flex flex-col gap-1 pt-10">
-          <p className="text-muted">Pumila sa open play</p>
-          <h1 className="text-3xl break-words">{entry.status === "none" ? entry.clubName : "Open play"}</h1>
-        </div>
+      top={
+        <>
+          <span />
+          <LanguageSwitch />
+        </>
       }
+      eyebrow={t.system.clubEntryEyebrow}
+      title={entry.status === "none" ? entry.clubName : t.common.appName}
     >
-      <div className="pt-4">
-        {entry.status === "none" ? (
-          <Notice kind="info">Wala pang open play ngayon. Balikan ang QR na ito kapag nagsimula na ang session.</Notice>
-        ) : (
-          <Notice kind="error">Hindi makita ang QR na ito. Tanungin ang organizer kung may bagong QR.</Notice>
-        )}
-      </div>
+      {entry.status === "none" ? (
+        <Notice kind="info">{t.system.clubEntryNone}</Notice>
+      ) : (
+        <Notice kind="error">{t.system.clubEntryNotFound}</Notice>
+      )}
     </PageShell>
   );
 }

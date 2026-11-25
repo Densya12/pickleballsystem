@@ -1,19 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveAsMemberAction } from "@/app/s/[id]/member-actions";
+import { saveAsMemberAction } from "@/app/s/[id]/_lib/member-actions";
 import { Button, Notice } from "@/components/ui";
 import { CheckIcon } from "@/components/ui/icons";
-import { isNetworkError, NETWORK_ERROR_MESSAGE } from "@/lib/outbox/rules";
+import { useT } from "@/lib/i18n/client";
+import { isNetworkError } from "@/lib/outbox/rules";
 
 type Props = { sessionId: string; playerId: string; playerName: string; isMember: boolean };
 
 /**
- * "I-save bilang member": makes a member from the player and links them. If a
- * member with the same name exists, offers to link to them instead of making a
- * duplicate.
+ * "Save as member": makes a member from the player and links them. If a
+ * member with the same name exists, offers to link to them instead of making
+ * a duplicate. compact: a small pill for list rows.
  */
-export function SaveAsMember({ sessionId, playerId, playerName, isMember }: Props) {
+export function SaveAsMember({ sessionId, playerId, playerName, isMember, compact = false }: Props & { compact?: boolean }) {
+  const t = useT();
   const [state, setState] = useState<
     { kind: "idle" } | { kind: "exists"; member: { id: string; name: string } } | { kind: "saved"; name: string }
   >({ kind: "idle" });
@@ -30,16 +32,16 @@ export function SaveAsMember({ sessionId, playerId, playerName, isMember }: Prop
         else setError(result.error);
       } catch (caught) {
         if (!isNetworkError(caught)) throw caught;
-        setError(NETWORK_ERROR_MESSAGE);
+        setError(t.live.network);
       }
     });
   }
 
   if (isMember || state.kind === "saved") {
     return (
-      <p className="inline-flex items-center gap-1.5 font-semibold text-success">
-        <CheckIcon className="size-5 shrink-0" />
-        Member na
+      <p className="inline-flex items-center gap-1 text-sm font-medium text-success">
+        <CheckIcon className="size-4 shrink-0" />
+        {t.members.isMember}
       </p>
     );
   }
@@ -48,21 +50,25 @@ export function SaveAsMember({ sessionId, playerId, playerName, isMember }: Prop
     <div className="flex flex-col gap-2">
       {error && <Notice kind="error">{error}</Notice>}
       {state.kind === "exists" ? (
-        <div role="group" aria-label={`May member na na ${state.member.name}`} className="flex flex-col gap-2 rounded-control border-[1.5px] border-ink bg-surface p-4">
-          <p className="font-semibold">May member na na {state.member.name}. I-link si {playerName} sa kanya?</p>
-          <Button fullWidth disabled={busy} onClick={() => save({ linkTo: state.member.id })}>
-            I-link sa kanya
+        <div role="group" aria-label={t.members.existsGroup(state.member.name)} className="flex flex-col gap-2 rounded-control bg-info p-3">
+          <p className="text-sm font-medium">{t.members.existsQuestion(state.member.name, playerName)}</p>
+          <Button size="md" fullWidth disabled={busy} onClick={() => save({ linkTo: state.member.id })}>
+            {t.members.link}
           </Button>
-          <Button variant="secondary" fullWidth disabled={busy} onClick={() => save({ createNew: true })}>
-            Gumawa ng bagong member
+          <Button size="md" variant="outline" fullWidth disabled={busy} onClick={() => save({ createNew: true })}>
+            {t.members.createNew}
           </Button>
-          <Button variant="secondary" fullWidth disabled={busy} onClick={() => setState({ kind: "idle" })}>
-            Huwag
+          <Button size="md" variant="ghost" fullWidth disabled={busy} onClick={() => setState({ kind: "idle" })}>
+            {t.common.cancel}
           </Button>
         </div>
+      ) : compact ? (
+        <Button size="sm" variant="outline" disabled={busy} onClick={() => save()} className="self-start">
+          {busy ? t.common.saving : t.members.saveAsMember}
+        </Button>
       ) : (
-        <Button variant="secondary" fullWidth disabled={busy} onClick={() => save()}>
-          {busy ? "Sine-save…" : "I-save bilang member"}
+        <Button size="md" variant="outline" fullWidth disabled={busy} onClick={() => save()}>
+          {busy ? t.common.saving : t.members.saveAsMember}
         </Button>
       )}
     </div>

@@ -4,7 +4,7 @@ test.describe("signed-out visitor", () => {
   test("visiting / redirects to /login", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Mag-sign in bilang organizer" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
   });
 
   test("private pages redirect to /login and remember where to return", async ({ page }) => {
@@ -15,16 +15,16 @@ test.describe("signed-out visitor", () => {
   test("/login shows both sign-in options", async ({ page }) => {
     await page.goto("/login");
     await expect(
-      page.getByText("Para sa nag-aayos ng open play. Hindi kailangang mag-sign in ng mga player."),
+      page.getByText("For the people who run open play. Players don't need to sign in."),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mag-sign in gamit ang Google" })).toBeVisible();
-    await expect(page.getByLabel("Email mo")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Ipadala ang login link" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+    await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
   });
 
   test("an unsafe next value is ignored", async ({ page }) => {
     await page.goto("/login?next=//evil.example");
-    await expect(page.getByRole("button", { name: "Mag-sign in gamit ang Google" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   });
 
   test("the design system stays public", async ({ page }) => {

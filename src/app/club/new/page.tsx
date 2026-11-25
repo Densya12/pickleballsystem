@@ -3,26 +3,19 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageShell } from "@/components/ui";
 import { getCurrentMembership, requireUser } from "@/lib/auth/dal";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 import { CreateClubForm } from "./CreateClubForm";
 
 export const metadata: Metadata = {
-  title: "Gawin ang club mo · Open Play Queue",
+  title: `${en.club.newPageTitle} · ${en.common.appName}`,
 };
 
 export default function NewClubPage() {
   return (
-    <PageShell
-      header={
-        <div className="flex flex-col gap-2 pt-10">
-          <h1 className="text-3xl">Gawin ang club mo</h1>
-          <p className="text-muted">Pwede mong baguhin ito mamaya sa Settings.</p>
-        </div>
-      }
-    >
-      <Suspense fallback={<p className="pt-4 text-muted">Sandali lang…</p>}>
-        <NewClubGate />
-      </Suspense>
-    </PageShell>
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
+      <NewClubGate />
+    </Suspense>
   );
 }
 
@@ -30,9 +23,10 @@ export default function NewClubPage() {
 async function NewClubGate() {
   const user = await requireUser("/club/new");
   if (await getCurrentMembership(user.id)) redirect("/");
+  const t = await getT();
   return (
-    <div className="pt-4">
+    <PageShell title={t.club.newTitle} titleSize="xl" subtitle={t.club.newSubtitle}>
       <CreateClubForm />
-    </div>
+    </PageShell>
   );
 }

@@ -22,17 +22,17 @@ afterEach(() => {
 describe("LoginForm", () => {
   it("shows both sign-in options", () => {
     render(<LoginForm next="/" />);
-    expect(screen.getByRole("button", { name: /Mag-sign in gamit ang Google/ })).toBeVisible();
-    expect(screen.getByLabelText("Email mo")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Ipadala ang login link" })).toBeVisible();
+    expect(screen.getByRole("button", { name: /Continue with Google/ })).toBeVisible();
+    expect(screen.getByLabelText("Email")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
   });
 
   it("validates the email before calling Supabase", async () => {
     render(<LoginForm next="/" />);
-    await userEvent.type(screen.getByLabelText("Email mo"), "juan");
-    await userEvent.click(screen.getByRole("button", { name: "Ipadala ang login link" }));
-    expect(screen.getByLabelText("Email mo")).toHaveAccessibleDescription(
-      "Mukhang mali ang email. Hal. juan@gmail.com",
+    await userEvent.type(screen.getByLabelText("Email"), "juan");
+    await userEvent.click(screen.getByRole("button", { name: "Email me a sign-in link" }));
+    expect(screen.getByLabelText("Email")).toHaveAccessibleDescription(
+      "That email doesn't look right. E.g. juan@gmail.com",
     );
     expect(signInWithOtp).not.toHaveBeenCalled();
   });
@@ -40,27 +40,27 @@ describe("LoginForm", () => {
   it("sends the magic link with the confirm URL and next path", async () => {
     signInWithOtp.mockResolvedValue({ error: null });
     render(<LoginForm next="/invite/abc" />);
-    await userEvent.type(screen.getByLabelText("Email mo"), " tito@gmail.com ");
-    await userEvent.click(screen.getByRole("button", { name: "Ipadala ang login link" }));
+    await userEvent.type(screen.getByLabelText("Email"), " tito@gmail.com ");
+    await userEvent.click(screen.getByRole("button", { name: "Email me a sign-in link" }));
 
     expect(signInWithOtp).toHaveBeenCalledWith({
       email: "tito@gmail.com",
       options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Finvite%2Fabc` },
     });
-    expect(await screen.findByRole("heading", { name: "I-check ang email mo" })).toBeVisible();
-    expect(screen.getByText("tito@gmail.com")).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeVisible();
+    expect(screen.getByText(/tito@gmail\.com/)).toBeVisible();
   });
 
-  it("enables 'Ipadala ulit' only after 60 seconds", async () => {
+  it("enables 'Send again' only after 60 seconds", async () => {
     vi.useFakeTimers();
     signInWithOtp.mockResolvedValue({ error: null });
     render(<LoginForm next="/" />);
-    fireEvent.change(screen.getByLabelText("Email mo"), { target: { value: "tito@gmail.com" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "tito@gmail.com" } });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Ipadala ang login link" }));
+      fireEvent.click(screen.getByRole("button", { name: "Email me a sign-in link" }));
     });
 
-    const resend = screen.getByRole("button", { name: "Ipadala ulit" });
+    const resend = screen.getByRole("button", { name: "Send again" });
     expect(resend).toBeDisabled();
 
     await act(async () => {
@@ -79,18 +79,18 @@ describe("LoginForm", () => {
       error: { status: 400, code: "email_address_not_authorized", message: "Email address not authorized" },
     });
     render(<LoginForm next="/" />);
-    await userEvent.type(screen.getByLabelText("Email mo"), "tito@gmail.com");
-    await userEvent.click(screen.getByRole("button", { name: "Ipadala ang login link" }));
+    await userEvent.type(screen.getByLabelText("Email"), "tito@gmail.com");
+    await userEvent.click(screen.getByRole("button", { name: "Email me a sign-in link" }));
     expect(
-      await screen.findByText("Hindi maipadala ang login link ngayon. Subukan ang Google sign-in."),
+      await screen.findByText("We can't send a sign-in link right now. Try Google instead."),
     ).toBeVisible();
-    expect(screen.queryByRole("heading", { name: "I-check ang email mo" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Check your email" })).not.toBeInTheDocument();
   });
 
   it("starts Google sign-in with the callback URL", async () => {
     signInWithOAuth.mockResolvedValue({ error: null });
     render(<LoginForm next="/settings" />);
-    await userEvent.click(screen.getByRole("button", { name: /Mag-sign in gamit ang Google/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Continue with Google/ }));
     expect(signInWithOAuth).toHaveBeenCalledWith({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=%2Fsettings` },
@@ -98,7 +98,7 @@ describe("LoginForm", () => {
   });
 
   it("shows an error passed from the auth callback", () => {
-    render(<LoginForm next="/" initialError="Hindi natuloy ang pag-sign in. Subukan ulit." />);
-    expect(screen.getByRole("alert")).toHaveTextContent("Hindi natuloy ang pag-sign in. Subukan ulit.");
+    render(<LoginForm next="/" initialError="Sign-in didn't finish. Try again." />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Sign-in didn't finish. Try again.");
   });
 });

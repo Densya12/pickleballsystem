@@ -1,65 +1,81 @@
-import { expect, test } from "@playwright/test";
-import { addWalkIn, banner, court, onCourt, queue, startSession, stat } from "./support/live";
+import { expect, test, type Page } from "@playwright/test";
+import {
+  addWalkIn,
+  banner,
+  court,
+  endSession,
+  onCourt,
+  openPlayer,
+  openTab,
+  queueRows,
+  queueSection,
+  sessionTabs,
+  startSession,
+} from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
-test.describe("queue engine and Live screen", () => {
+function liveLine(page: Page) {
+  return page.getByText(/^Live · \d+ playing · \d+ in queue$/);
+}
+
+test.describe("queue engine, Courts and Queue tabs", () => {
   test("all off: 2 courts, 9 walk-ins, call, finish, pause, remove, end", async ({ page }) => {
     await signInWithNewClub(page, "alloff", "Makati Picklers");
     await startSession(page, "All Off Night", { courts: 2 });
 
-    await expect(court(page, "Court 1").getByText("Kailangan pa ng 4 player")).toBeVisible();
+    await expect(court(page, "Court 1").getByRole("button", { name: "Need 4 more" })).toBeVisible();
     const names = ["Ana", "Ben", "Carlo", "Dina", "Eli", "Fe", "Gil", "Hans", "Ivy"];
     for (const name of names) await addWalkIn(page, name);
-    await expect(stat(page, "Nakapila")).toHaveText("9");
-    await expect(queue(page).getByRole("listitem").first()).toContainText("1");
-    await expect(queue(page).getByRole("listitem").first()).toContainText("Ana");
+    await expect(sessionTabs(page).getByRole("link", { name: /^Queue · 9/ })).toBeVisible();
+    await expect(queueSection(page, "Up next").getByRole("listitem")).toHaveText([/1\s*Ana/, /2\s*Ben/, /3\s*Carlo/, /4\s*Dina/]);
+    await expect(queueSection(page, "After that").getByRole("listitem")).toHaveCount(5);
 
     // BR7: each court calls the first 4 in queue order
-    await court(page, "Court 1").getByRole("button", { name: "Tawagin ang susunod" }).click();
-    await expect(banner(page)).toHaveText(/Tinawag sa Court 1: Ana, Ben, Carlo, Dina/);
+    await openTab(page, "Courts");
+    await expect(page.getByText("Up next:")).toBeVisible();
+    await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
+    await expect(banner(page)).toHaveText(/Called to Court 1: Ana, Ben, Carlo, Dina/);
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
-    await expect(court(page, "Court 1").getByText("Laro #1")).toBeVisible();
-    await court(page, "Court 2").getByRole("button", { name: "Tawagin ang susunod" }).click();
-    await expect(banner(page)).toHaveText(/Tinawag sa Court 2: Eli, Fe, Gil, Hans/);
-    await expect(stat(page, "Naglalaro")).toHaveText("8");
-    await expect(stat(page, "Nakapila")).toHaveText("1");
-    await expect(page.getByText("VS", { exact: true })).toHaveCount(0);
+    await expect(court(page, "Court 1").getByText(/^Doubles · \d+ min$/)).toBeVisible();
+    await court(page, "Court 2").getByRole("button", { name: "Call next 4" }).click();
+    await expect(banner(page)).toHaveText(/Called to Court 2: Eli, Fe, Gil, Hans/);
+    await expect(liveLine(page)).toHaveText("Live · 8 playing · 1 in queue");
 
     // BR10: all four re-join the end; Court 1 calls Ivy and the first three of them
-    await court(page, "Court 1").getByRole("button", { name: "Tapos na · tawagin ang susunod" }).click();
-    await expect(banner(page)).toHaveText(/Tapos ang Laro #1 sa Court 1\. Tinawag: Ivy, Ana, Ben, Carlo/);
+    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    await expect(banner(page)).toHaveText(/Game #1 on Court 1 is done\. Called: Ivy, Ana, Ben, Carlo/);
     await expect(onCourt(page, "Court 1")).toHaveText(["Ivy", "Ana", "Ben", "Carlo"]);
-    await expect(queue(page).getByRole("listitem")).toHaveCount(1);
-    await expect(queue(page).getByRole("listitem")).toContainText("Dina");
 
     // BR17: pause Dina from her sheet; she is skipped and keeps her place
-    await queue(page).getByRole("button", { name: /Dina/ }).click();
-    const sheet = page.getByRole("dialog", { name: "Dina" });
-    await expect(sheet).toBeVisible();
-    await sheet.getByRole("button", { name: "I-pause" }).click();
-    await expect(banner(page)).toHaveText(/Naka-pause si Dina/);
+    await openTab(page, "Queue");
+    await expect(queueRows(page)).toHaveCount(1);
+    await expect(queueRows(page)).toContainText("Dina");
+    let sheet = await openPlayer(page, "Dina");
+    await expect(sheet.getByText("#1 in queue · Not sure")).toBeVisible();
+    await sheet.getByRole("button", { name: "Pause" }).click();
+    await expect(banner(page)).toHaveText(/Dina is paused/);
     await expect(sheet).toBeHidden();
-    await expect(queue(page).getByRole("listitem")).toContainText("Naka-pause");
+    await expect(queueSection(page, "On hold").getByRole("listitem")).toContainText("Resting");
 
-    await court(page, "Court 2").getByRole("button", { name: "Tapos na · tawagin ang susunod" }).click();
-    await expect(banner(page)).toHaveText(/Tapos ang Laro #2 sa Court 2\. Tinawag: Eli, Fe, Gil, Hans/);
-    await expect(queue(page).getByRole("listitem").first()).toContainText("Dina");
+    await openTab(page, "Courts");
+    await page.getByRole("button", { name: "Done on Court 2" }).click();
+    await expect(banner(page)).toHaveText(/Game #2 on Court 2 is done\. Called: Eli, Fe, Gil, Hans/);
 
     // BR18: remove Dina (with a confirm step)
-    await queue(page).getByRole("button", { name: /Dina/ }).click();
-    await expect(sheet.getByRole("button", { name: "Ituloy" })).toBeVisible();
-    await sheet.getByRole("button", { name: "Alisin sa pila" }).click();
-    await expect(sheet.getByText("Alisin si Dina sa pila?")).toBeVisible();
-    await sheet.getByRole("button", { name: "Oo, alisin" }).click();
-    await expect(banner(page)).toHaveText(/Inalis si Dina sa pila\./);
-    await expect(queue(page).getByText("Wala pang nakapila.", { exact: false })).toBeVisible();
-    await expect(stat(page, "Nakapila")).toHaveText("0");
+    await openTab(page, "Queue");
+    await expect(queueRows(page).first()).toContainText("Dina");
+    sheet = await openPlayer(page, "Dina");
+    await expect(sheet.getByRole("button", { name: "Resume" })).toBeVisible();
+    await sheet.getByRole("button", { name: "Remove from queue" }).click();
+    await expect(sheet.getByText("Remove Dina from the queue?")).toBeVisible();
+    await sheet.getByRole("button", { name: "Yes, remove" }).click();
+    await expect(banner(page)).toHaveText(/Dina was removed from the queue\./);
+    await expect(page.getByText("Nobody in the queue.", { exact: false })).toBeVisible();
+    await expect(sessionTabs(page).getByRole("link", { name: /^Queue · 0/ })).toBeVisible();
 
-    // End the session (Phase 2 confirmation kept)
-    await page.getByRole("button", { name: "Tapusin ang session" }).click();
-    await page.getByRole("button", { name: "Oo, tapusin" }).click();
-    await expect(page.getByText("Tapos na", { exact: true })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Court 1" })).toHaveCount(0);
+    // End the session (More › End session, with its confirm step)
+    await endSession(page);
+    await expect(page.getByRole("region", { name: "Court 1", exact: true })).toHaveCount(0);
   });
 
   test("winners stay: pick 2 winners; after 2 wins in a row all four go off", async ({ page }) => {
@@ -67,97 +83,101 @@ test.describe("queue engine and Live screen", () => {
     await startSession(page, "Winners Night", { courts: 1, winnersStay: true });
     for (const name of ["Ana", "Ben", "Carlo", "Dina", "Eli", "Fe"]) await addWalkIn(page, name);
 
-    await court(page, "Court 1").getByRole("button", { name: "Tawagin ang susunod" }).click();
+    await openTab(page, "Courts");
+    await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
 
-    // "Tapos na" asks who won first
-    await court(page, "Court 1").getByRole("button", { name: "Tapos na · tawagin ang susunod" }).click();
-    const picker = court(page, "Court 1").getByRole("group", { name: "Sino ang nanalo?" });
+    // "Done" asks who won first
+    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    const picker = court(page, "Court 1").getByRole("group", { name: "Who won?" });
     await expect(picker).toBeVisible();
-    await expect(picker.getByRole("button", { name: "Kumpirmahin" })).toBeDisabled();
+    await expect(picker.getByRole("button", { name: "Confirm" })).toBeDisabled();
     await picker.getByRole("button", { name: "Carlo" }).click();
     await picker.getByRole("button", { name: "Ana" }).click();
-    await picker.getByRole("button", { name: "Kumpirmahin" }).click();
-    await expect(banner(page)).toHaveText(/Tapos ang Laro #1 sa Court 1\. Panalo: Carlo at Ana\. Tinawag: Ana, Carlo, Eli, Fe/);
+    await picker.getByRole("button", { name: "Confirm" }).click();
+    await expect(banner(page)).toHaveText(/Game #1 on Court 1 is done\. Won: Carlo and Ana\. Called: Ana, Carlo, Eli, Fe/);
+    // The staying pair is listed first (on the left of the mini court).
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Carlo", "Eli", "Fe"]);
-    await expect(queue(page).getByRole("listitem")).toHaveText([/Ben/, /Dina/]);
+    await openTab(page, "Queue");
+    await expect(queueRows(page)).toHaveText([/Ben/, /Dina/]);
 
     // Second win in a row: all four go off (winners first) and the next 4 are called
-    await court(page, "Court 1").getByRole("button", { name: "Tapos na · tawagin ang susunod" }).click();
+    await openTab(page, "Courts");
+    await page.getByRole("button", { name: "Done on Court 1" }).click();
     await picker.getByRole("button", { name: "Ana" }).click();
     await picker.getByRole("button", { name: "Carlo" }).click();
-    await picker.getByRole("button", { name: "Kumpirmahin" }).click();
-    await expect(banner(page)).toHaveText(/Tapos ang Laro #2 sa Court 1\. Panalo: Ana at Carlo\. Tinawag: Ben, Dina, Ana, Carlo/);
-    await expect(queue(page).getByRole("listitem")).toHaveText([/Eli/, /Fe/]);
+    await picker.getByRole("button", { name: "Confirm" }).click();
+    await expect(banner(page)).toHaveText(/Game #2 on Court 1 is done\. Won: Ana and Carlo\. Called: Ben, Dina, Ana, Carlo/);
+    await openTab(page, "Queue");
+    await expect(queueRows(page)).toHaveText([/Eli/, /Fe/]);
 
-    await page.getByRole("button", { name: "Tapusin ang session" }).click();
-    await page.getByRole("button", { name: "Oo, tapusin" }).click();
-    await expect(page.getByText("Tapos na", { exact: true })).toBeVisible();
+    await endSession(page);
   });
 
   test("NF9: an action in one browser shows in another within 2 seconds", async ({ page, browser }) => {
     await signInWithNewClub(page, "realtime", "Taguig Smashers");
     await startSession(page, "Realtime Night", { courts: 1 });
-    const liveUrl = page.url();
+    const courtsUrl = page.url();
 
-    // A second phone signed in as the same organizer.
+    // A second phone signed in as the same organizer, on the Queue tab.
     const other = await browser.newContext({ storageState: await page.context().storageState() });
     const second = await other.newPage();
-    await second.goto(liveUrl);
+    await second.goto(`${courtsUrl}/queue`);
     await expect(second.locator('[data-live-sync="connected"]')).toBeVisible();
 
     await addWalkIn(page, "Rita");
-    await expect(queue(second).getByText("Rita")).toBeVisible({ timeout: 2_000 });
+    await expect(queueRows(second).getByText("Rita")).toBeVisible({ timeout: 2_000 });
 
     for (const name of ["Sam", "Tess", "Uly"]) await addWalkIn(page, name);
-    await expect(queue(second).getByRole("listitem")).toHaveCount(4, { timeout: 2_000 });
-    await court(page, "Court 1").getByRole("button", { name: "Tawagin ang susunod" }).click();
+    await expect(queueRows(second)).toHaveCount(4, { timeout: 2_000 });
+    await openTab(page, "Courts");
+    await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
+    await openTab(second, "Courts");
     await expect(onCourt(second, "Court 1")).toHaveText(["Rita", "Sam", "Tess", "Uly"], { timeout: 2_000 });
-    await expect(stat(second, "Naglalaro")).toHaveText("4", { timeout: 2_000 });
+    await expect(liveLine(second)).toHaveText("Live · 4 playing · 0 in queue", { timeout: 2_000 });
 
     // Losing the connection shows a notice; back online, it refetches what was missed.
+    await openTab(second, "Queue");
     await other.setOffline(true);
     // NF10 (Phase 7): offline, the organizer's phone says taps will be saved.
-    await expect(second.getByText("Offline — ise-save pagbalik ng signal")).toBeVisible();
+    await expect(second.getByText("Offline — will save when signal returns").filter({ visible: true })).toBeVisible();
     await addWalkIn(page, "Vic");
     await other.setOffline(false);
-    await expect(queue(second).getByText("Vic")).toBeVisible({ timeout: 15_000 });
-    await expect(second.getByText("Nawalan ng koneksyon.", { exact: false })).toBeHidden();
+    await expect(queueRows(second).getByText("Vic")).toBeVisible({ timeout: 15_000 });
+    await expect(second.getByText("Connection lost.", { exact: false })).toBeHidden();
     await other.close();
   });
 
   test("QR page and the public /j link", async ({ page, browser }) => {
     await signInWithNewClub(page, "qr", "QC Paddlers");
     await startSession(page, "QR Night", { courts: 1 });
-    await page.getByRole("link", { name: "Ipakita ang QR" }).click();
+    await page.getByRole("link", { name: "Show QR" }).click();
 
     await expect(page.getByRole("heading", { level: 1, name: "QR Night" })).toBeVisible();
-    await expect(page.getByText("I-scan para pumila")).toBeVisible();
+    await expect(page.getByText("Scan to join")).toBeVisible();
     await expect(page.getByRole("img", { name: /QR code/ }).locator("svg")).toBeVisible();
-    for (const step of ["Buksan ang camera ng phone.", "Itapat sa QR code.", "Pindutin ang link na lalabas. Walang app na kailangan."]) {
+    for (const step of ["Open the phone's camera.", "Point it at the QR code.", "Tap the link that appears. No app needed."]) {
       await expect(page.getByText(step)).toBeVisible();
     }
-    await expect(page.getByText("O pumunta sa:")).toBeVisible();
+    await expect(page.getByText("Or go to")).toBeVisible();
     const link = await page.getByText(/\/j\/[A-Z2-9]{6}$/).textContent();
     const code = link!.slice(-6);
     await expect(page.getByText(code, { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "I-share sa Messenger" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "I-print ang QR" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share link" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Print QR" })).toBeVisible();
 
     // The QR link is public: a signed-out phone sees the check-in form while live...
     const player = await (await browser.newContext()).newPage();
     await player.goto(`/j/${code}`);
     await expect(player.getByRole("heading", { level: 1, name: "QR Night" })).toBeVisible();
-    await expect(player.getByRole("button", { name: "Pumila na" })).toBeVisible();
+    await expect(player.getByRole("button", { name: "Join queue" })).toBeVisible();
     await player.goto("/j/ZZZZZZ");
-    await expect(player.getByText("Sarado na ang check-in.", { exact: false })).toBeVisible();
+    await expect(player.getByText("Check-in is closed.", { exact: false })).toBeVisible();
 
     // ...and "closed" once the session ends.
-    await page.getByRole("link", { name: "Bumalik" }).click();
-    await page.getByRole("button", { name: "Tapusin ang session" }).click();
-    await page.getByRole("button", { name: "Oo, tapusin" }).click();
-    await expect(page.getByText("Tapos na", { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Courts" }).click();
+    await endSession(page);
     await player.goto(`/j/${code.toLowerCase()}`);
-    await expect(player.getByText("Sarado na ang check-in.", { exact: false })).toBeVisible();
+    await expect(player.getByText("Check-in is closed.", { exact: false })).toBeVisible();
   });
 });

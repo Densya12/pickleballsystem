@@ -1,36 +1,42 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { Button, PageShell } from "@/components/ui";
+import { en } from "@/lib/i18n/dictionary";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Salamat · Open Play Queue",
+  title: `${en.player.byeTitle} · ${en.common.appName}`,
 };
 
-/** After "Aalis na ako" (BR18). Checking in again puts the player at the end of the queue. */
+/** After leaving (BR18). Joining again puts the player at the end of the queue. */
 export default function ByePage({ params }: PageProps<"/j/[code]/bye">) {
   return (
-    <PageShell
-      header={
-        <div className="flex flex-col gap-2 pt-10">
-          <h1 className="text-3xl">Salamat sa paglalaro!</h1>
-          <p className="text-muted">Wala ka na sa pila. Kung gusto mong maglaro ulit, pumila ka sa dulo.</p>
-        </div>
-      }
-    >
-      <div className="pt-4">
-        <Suspense fallback={null}>
-          <CheckInAgain params={params} />
-        </Suspense>
-      </div>
-    </PageShell>
+    <Suspense fallback={<PageShell>{null}</PageShell>}>
+      <Bye params={params} />
+    </Suspense>
   );
 }
 
-async function CheckInAgain({ params }: Pick<PageProps<"/j/[code]/bye">, "params">) {
-  const { code } = await params;
+async function Bye({ params }: Pick<PageProps<"/j/[code]/bye">, "params">) {
+  const [{ code }, t] = await Promise.all([params, getT()]);
   return (
-    <Button href={`/j/${encodeURIComponent(code)}`} size="lg" fullWidth>
-      Pumila ulit
-    </Button>
+    <PageShell
+      top={
+        <>
+          <span />
+          <LanguageSwitch />
+        </>
+      }
+      title={t.player.byeTitle}
+      subtitle={t.player.byeBody}
+      footer={
+        <Button href={`/j/${encodeURIComponent(code)}`} fullWidth>
+          {t.player.joinAgain}
+        </Button>
+      }
+    >
+      {null}
+    </PageShell>
   );
 }

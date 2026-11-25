@@ -2,7 +2,8 @@
 
 import { RadioGroup } from "@/components/ui";
 import { AlertIcon } from "@/components/ui/icons";
-import { COURT_FORMAT_CHOICES, type CourtFormat } from "@/lib/session/validation";
+import { useT } from "@/lib/i18n/client";
+import { courtFormatChoices, type CourtFormat } from "@/lib/session/validation";
 
 type Props = {
   count: number;
@@ -13,27 +14,30 @@ type Props = {
 };
 
 /**
- * One Doubles / Singles choice per court. Fewer courts hide the extra rows but
+ * One Doubles / Singles switch per court. Fewer courts hide the extra rows but
  * keep their choices; more courts add Doubles rows.
  */
 export function CourtFormats({ count, formats, onChange, error }: Props) {
+  const t = useT();
   return (
-    <fieldset className="flex min-w-0 flex-col gap-3">
-      <legend className="mb-1.5 text-body font-semibold text-ink">Doubles o Singles?</legend>
+    <fieldset className="flex min-w-0 flex-col gap-2.5">
+      <legend className="mb-1.5 text-sm font-medium text-secondary">{t.session.courtFormatsLegend}</legend>
       {Array.from({ length: count }, (_, index) => (
-        <div key={index} onChange={(event) => onChange(index, (event.target as HTMLInputElement).value as CourtFormat)}>
+        <div key={index} className="flex items-center gap-3">
           <RadioGroup
-            legend={`Court ${index + 1}`}
+            className="flex-1"
+            legend={t.session.courtFormat(index + 1)}
             name={`court_format_${index + 1}`}
-            layout="row"
-            options={COURT_FORMAT_CHOICES}
+            look="segmented"
+            options={courtFormatChoices(t)}
             defaultValue={formats[index] ?? "doubles"}
+            onValueChange={(format) => onChange(index, format)}
           />
         </div>
       ))}
       {error && (
-        <p className="flex items-start gap-1.5 text-base font-medium text-danger">
-          <AlertIcon className="mt-0.5 size-[18px] shrink-0" />
+        <p className="flex items-start gap-1.5 text-sm font-medium text-danger">
+          <AlertIcon className="mt-px size-4 shrink-0" />
           <span>{error}</span>
         </p>
       )}

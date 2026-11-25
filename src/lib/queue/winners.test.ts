@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { en, fil } from "@/lib/i18n/dictionary";
 import { canConfirmWinners, toggleWinner, winnersFor, winnersHint } from "./winners";
 
 describe("winner picker", () => {
@@ -22,9 +23,10 @@ describe("winner picker", () => {
   });
 
   it("says how many are left", () => {
-    expect(winnersHint([])).toBe("Pumili ng 2 pa.");
-    expect(winnersHint(["a"])).toBe("Pumili ng 1 pa.");
-    expect(winnersHint(["a", "b"])).toBe("Handa na. Pindutin ang Kumpirmahin.");
+    expect(winnersHint([], 2, en)).toBe("Pick 2 more.");
+    expect(winnersHint(["a"], 2, en)).toBe("Pick 1 more.");
+    expect(winnersHint(["a", "b"], 2, en)).toBe("Ready. Tap Confirm.");
+    expect(winnersHint([], 2, fil)).toBe("Pumili ng 2 pa.");
   });
 });
 
@@ -43,7 +45,7 @@ describe("winner picker for singles (1 winner)", () => {
   it("confirms with exactly 1", () => {
     expect(canConfirmWinners([], 1)).toBe(false);
     expect(canConfirmWinners(["a"], 1)).toBe(true);
-    expect(winnersHint([], 1)).toBe("Pumili ng 1 pa.");
-    expect(winnersHint(["a"], 1)).toBe("Handa na. Pindutin ang Kumpirmahin.");
+    expect(winnersHint([], 1, en)).toBe("Pick 1 more.");
+    expect(winnersHint(["a"], 1, fil)).toBe("Handa na. Pindutin ang Kumpirmahin.");
   });
 });

@@ -1,0 +1,2468 @@
+[
+  {
+    "screen": "Login",
+    "file": "screens/01-login.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 1,
+    "buttons": 2,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Mag-sign in gamit ang Google",
+      "Ipadala ang login link"
+    ],
+    "primaryLabels": [
+      "Mag-sign in gamit ang Google"
+    ],
+    "cards": 0,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 2,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Mag-sign in bilang organizer"
+      }
+    ],
+    "radii": [
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 56px | 18px"
+    ],
+    "icons": 1,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Mag-sign in bilang organizer",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Club/new (first club)",
+    "file": "screens/02-club-new.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 2,
+    "buttons": 1,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Gawin ang club"
+    ],
+    "primaryLabels": [
+      "Gawin ang club"
+    ],
+    "cards": 0,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 1,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Gawin ang club mo"
+      }
+    ],
+    "radii": [
+      "14px"
+    ],
+    "borderWidths": [],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 0,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Gawin ang club mo",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Home (empty club)",
+    "file": "screens/03-home-empty.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 4,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Bagong open play",
+      "Mga member",
+      "Settings ng club",
+      "Gabay para sa organizer"
+    ],
+    "primaryLabels": [
+      "Bagong open play"
+    ],
+    "cards": 2,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "white (on-primary)"
+    ],
+    "hintLines": 3,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Pasig Pickleball Club"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga susunod na session"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Nakaraang session"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 1,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Pasig Pickleball Club",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Home (live + drafts + past)",
+    "file": "screens/04-home-full.png",
+    "viewport": "390×844",
+    "pageHeight": 1219,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 6,
+    "primaryButtons": 2,
+    "buttonLabels": [
+      "Buksan ang session",
+      "Bagong open play",
+      "Ulitin: Sabado Smash",
+      "Mga member",
+      "Settings ng club",
+      "Gabay para sa organizer"
+    ],
+    "primaryLabels": [
+      "Buksan ang session",
+      "Bagong open play"
+    ],
+    "cards": 4,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "on-accent-soft",
+      "white (on-primary)"
+    ],
+    "hintLines": 2,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Pasig Pickleball Club"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga susunod na session"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Nakaraang session"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 6,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Pasig Pickleball Club",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Nob 25, 2026 ×2"
+    ]
+  },
+  {
+    "screen": "Bagong open play (empty)",
+    "file": "screens/05-sessions-new.png",
+    "viewport": "390×844",
+    "pageHeight": 1769,
+    "horizontalOverflow": false,
+    "optionCards": 10,
+    "inputs": 4,
+    "buttons": 4,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Bawas",
+      "Dagdag",
+      "Simulan ang session",
+      "I-save muna"
+    ],
+    "primaryLabels": [
+      "Simulan ang session"
+    ],
+    "cards": 4,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 5,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Bagong open play"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 56px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Bagong open play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Singles ×2"
+    ]
+  },
+  {
+    "screen": "Bagong open play (Ulitin pre-filled)",
+    "file": "screens/06-sessions-new-ulitin.png",
+    "viewport": "390×844",
+    "pageHeight": 1824,
+    "horizontalOverflow": false,
+    "optionCards": 10,
+    "inputs": 4,
+    "buttons": 4,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Bawas",
+      "Dagdag",
+      "Simulan ang session",
+      "I-save muna"
+    ],
+    "primaryLabels": [
+      "Simulan ang session"
+    ],
+    "cards": 4,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 6,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Bagong open play"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 56px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Bagong open play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Singles ×2"
+    ]
+  },
+  {
+    "screen": "Live (busy) (360×800)",
+    "file": "screens/07-live-busy-360.png",
+    "viewport": "360×800",
+    "pageHeight": 2716,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 15,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "Palitan",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ana LopezIntermediate",
+      "Pang-2Ben OcampoIntermediate",
+      "Pang-3Jojo VillanuevaIntermediate",
+      "Pang-4Karen AquinoAdvanced",
+      "Pang-5Leo NavarroBeginner",
+      "Pang-6Mika TorresIntermediateHold · bayad muna",
+      "Pang-7Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-8Ella MarquezAdvancedNaka-pause",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Walk-in"
+    ],
+    "cards": 18,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 172px | 17px",
+      "transparent | 0px ink | 166px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 18,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Tapos na · tawagin ang susunod ×3",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Live (busy)",
+    "file": "screens/07-live-busy.png",
+    "viewport": "390×844",
+    "pageHeight": 2445,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 15,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "Palitan",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ana LopezIntermediate",
+      "Pang-2Ben OcampoIntermediate",
+      "Pang-3Jojo VillanuevaIntermediate",
+      "Pang-4Karen AquinoAdvanced",
+      "Pang-5Leo NavarroBeginner",
+      "Pang-6Mika TorresIntermediateHold · bayad muna",
+      "Pang-7Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-8Ella MarquezAdvancedNaka-pause",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Walk-in"
+    ],
+    "cards": 18,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "transparent | 0px ink | 115px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 18,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Tapos na · tawagin ang susunod ×3",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Live (winner picker open)",
+    "file": "screens/08-live-winner-picker.png",
+    "viewport": "390×844",
+    "pageHeight": 2753,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 20,
+    "primaryButtons": 3,
+    "buttonLabels": [
+      "Palitan",
+      "Dino Reyes",
+      "Fe Castillo",
+      "Bong Santos",
+      "Carlo Mendoza",
+      "Kumpirmahin",
+      "Huwag muna",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ana LopezIntermediate",
+      "Pang-2Ben OcampoIntermediate",
+      "Pang-3Jojo VillanuevaIntermediate",
+      "Pang-4Karen AquinoAdvanced",
+      "Pang-5Leo NavarroBeginner",
+      "Pang-6Mika TorresIntermediateHold · bayad muna",
+      "Pang-7Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-8Ella MarquezAdvancedNaka-pause",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Walk-in"
+    ],
+    "cards": 19,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 8,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "white (on-primary) | 1px border-strong | 69px | 17px",
+      "subtle | 0px border-default | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "transparent | 0px ink | 115px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 18,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Dino Reyes ×2",
+      "Bong Santos ×2",
+      "Carlo Mendoza ×2",
+      "Tapos na · tawagin ang susunod ×2",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Live (queue player sheet open)",
+    "file": "screens/09-live-player-sheet.png",
+    "viewport": "390×844",
+    "pageHeight": 2445,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 19,
+    "primaryButtons": 5,
+    "buttonLabels": [
+      "Palitan",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ana LopezIntermediate",
+      "Pang-2Ben OcampoIntermediate",
+      "Pang-3Jojo VillanuevaIntermediate",
+      "Pang-4Karen AquinoAdvanced",
+      "Pang-5Leo NavarroBeginner",
+      "Pang-6Mika TorresIntermediateHold · bayad muna",
+      "Pang-7Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-8Ella MarquezAdvancedNaka-pause",
+      "I-pause",
+      "I-save bilang member",
+      "Alisin sa pila",
+      "Isara",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "I-pause",
+      "Walk-in"
+    ],
+    "cards": 19,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 8,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Ana Lopez"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "transparent | 0px ink | 115px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 19,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Tapos na · tawagin ang susunod ×3",
+      "Ana Lopez ×2",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Live (undo banner)",
+    "file": "screens/10-live-undo-banner.png",
+    "viewport": "390×844",
+    "pageHeight": 2595,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 17,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "Ibalik (30s)",
+      "Isara",
+      "Palitan",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ben OcampoIntermediate",
+      "Pang-2Jojo VillanuevaIntermediate",
+      "Pang-3Karen AquinoAdvanced",
+      "Pang-4Leo NavarroBeginner",
+      "Pang-5Mika TorresIntermediateHold · bayad muna",
+      "Pang-6Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-7Ella MarquezAdvancedNaka-pause",
+      "Pang-8Ivy BautistaIntermediate",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Walk-in"
+    ],
+    "cards": 19,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "success",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      }
+    ],
+    "radii": [
+      "14px",
+      "20px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 16px",
+      "transparent | 0px success | 48px | 16px",
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "transparent | 0px ink | 115px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 20,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Tapos na · tawagin ang susunod ×3",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Live (offline, 1 action waiting)",
+    "file": "screens/11-live-offline-outbox.png",
+    "viewport": "390×844",
+    "pageHeight": 2583,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 0,
+    "buttons": 15,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "Palitan",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Pang-1Ana LopezIntermediate",
+      "Pang-2Ben OcampoIntermediate",
+      "Pang-3Jojo VillanuevaIntermediate",
+      "Pang-4Karen AquinoAdvanced",
+      "Pang-5Leo NavarroBeginner",
+      "Pang-6Mika TorresIntermediateHold · bayad muna",
+      "Pang-7Carla DiazHindi siguradoHold · bayad muna",
+      "Pang-8Ella MarquezAdvancedNaka-pause",
+      "Walk-in",
+      "Ipakita ang QR",
+      "Tapusin ang session"
+    ],
+    "primaryLabels": [
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Tapos na · tawagin ang susunod",
+      "Walk-in"
+    ],
+    "cards": 20,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "warn",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod sa pila"
+      }
+    ],
+    "radii": [
+      "14px",
+      "20px",
+      "0px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "ink | 0px white (on-primary) | 61px | 18px",
+      "transparent | 0px ink | 70px | 17px",
+      "transparent | 0px ink | 95px | 17px",
+      "transparent | 0px ink | 115px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 56px | 18px"
+    ],
+    "icons": 19,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Doubles ×2",
+      "Tapos na · tawagin ang susunod ×3",
+      "Intermediate ×4",
+      "Advanced ×2",
+      "Hold · bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "Walk-in",
+    "file": "screens/12-walk-in.png",
+    "viewport": "390×844",
+    "pageHeight": 1238,
+    "horizontalOverflow": false,
+    "optionCards": 7,
+    "inputs": 3,
+    "buttons": 1,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Ilagay sa pila"
+    ],
+    "primaryLabels": [
+      "Ilagay sa pila"
+    ],
+    "cards": 1,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 3,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Magdagdag ng walk-in"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 2,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Magdagdag ng walk-in",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Session QR",
+    "file": "screens/13-session-qr.png",
+    "viewport": "390×844",
+    "pageHeight": 1041,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 2,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "I-share sa Messenger",
+      "I-print ang QR"
+    ],
+    "primaryLabels": [
+      "I-share sa Messenger"
+    ],
+    "cards": 2,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "20px",
+      "30px",
+      "48px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 2,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 4,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "NS84TS",
+      "size": "48px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Bayad (360×800)",
+    "file": "screens/14-bayad-360.png",
+    "viewport": "360×800",
+    "pageHeight": 1514,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 8,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "GCash reference•••• 7890Ipakita lahat",
+      "Natanggap na",
+      "GCash reference•••• 3210Ipakita lahat",
+      "Natanggap na",
+      "Natanggap na (cash)",
+      "Paalalahanan",
+      "Natanggap na (cash)",
+      "Paalalahanan"
+    ],
+    "primaryLabels": [
+      "Natanggap na",
+      "Natanggap na",
+      "Natanggap na (cash)",
+      "Natanggap na (cash)"
+    ],
+    "cards": 5,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Bayad"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "I-check sa GCash mo (2)"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Hindi pa bayad (2)"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "subtle | 0px ink | 65px | 17px",
+      "ink | 0px white (on-primary) | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 7,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Bayad",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "I-check ×2",
+      "GCash reference ×2",
+      "Ipakita lahat ×2",
+      "Natanggap na ×2",
+      "Natanggap na (cash) ×2",
+      "Paalalahanan ×2"
+    ]
+  },
+  {
+    "screen": "Bayad",
+    "file": "screens/14-bayad.png",
+    "viewport": "390×844",
+    "pageHeight": 1514,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 8,
+    "primaryButtons": 4,
+    "buttonLabels": [
+      "GCash reference•••• 7890Ipakita lahat",
+      "Natanggap na",
+      "GCash reference•••• 3210Ipakita lahat",
+      "Natanggap na",
+      "Natanggap na (cash)",
+      "Paalalahanan",
+      "Natanggap na (cash)",
+      "Paalalahanan"
+    ],
+    "primaryLabels": [
+      "Natanggap na",
+      "Natanggap na",
+      "Natanggap na (cash)",
+      "Natanggap na (cash)"
+    ],
+    "cards": 5,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Bayad"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "I-check sa GCash mo (2)"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Hindi pa bayad (2)"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "subtle | 0px ink | 65px | 17px",
+      "ink | 0px white (on-primary) | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 7,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Bayad",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "I-check ×2",
+      "GCash reference ×2",
+      "Ipakita lahat ×2",
+      "Natanggap na ×2",
+      "Natanggap na (cash) ×2",
+      "Paalalahanan ×2"
+    ]
+  },
+  {
+    "screen": "Buod ng session (ended)",
+    "file": "screens/15-buod.png",
+    "viewport": "390×844",
+    "pageHeight": 1805,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 2,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "I-download (Excel)",
+      "Paalalahanan"
+    ],
+    "primaryLabels": [
+      "I-download (Excel)"
+    ],
+    "cards": 8,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)",
+      "success"
+    ],
+    "hintLines": 15,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Buod ng session"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Bayad"
+      },
+      {
+        "tag": "h3",
+        "size": "20px",
+        "text": "Hindi pa bayad (1)"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Laro bawat player"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 8,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Buod ng session",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Courts ×2",
+      "Karen Aquino ×2",
+      "2 laro ×3",
+      "Member na ×5",
+      "1 laro ×2"
+    ]
+  },
+  {
+    "screen": "Mga member",
+    "file": "screens/16-members.png",
+    "viewport": "390×844",
+    "pageHeight": 1313,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 1,
+    "buttons": 1,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Magdagdag ng member"
+    ],
+    "primaryLabels": [
+      "Magdagdag ng member"
+    ],
+    "cards": 1,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "white (on-primary)",
+      "muted"
+    ],
+    "hintLines": 0,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Mga member"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 14,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Mga member",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Intermediate · Bayad ang dues ×2",
+      "Intermediate · Hindi pa bayad ang dues ×2",
+      "Intermediate · Walang dues ×2"
+    ]
+  },
+  {
+    "screen": "Member (edit)",
+    "file": "screens/17-member-edit.png",
+    "viewport": "390×844",
+    "pageHeight": 996,
+    "horizontalOverflow": false,
+    "optionCards": 7,
+    "inputs": 2,
+    "buttons": 1,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "I-save"
+    ],
+    "primaryLabels": [
+      "I-save"
+    ],
+    "cards": 1,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "white (on-primary)"
+    ],
+    "hintLines": 0,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "I-edit ang member"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 1,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "I-edit ang member",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Settings (owner)",
+    "file": "screens/18-settings-owner.png",
+    "viewport": "390×844",
+    "pageHeight": 2703,
+    "horizontalOverflow": false,
+    "optionCards": 5,
+    "inputs": 5,
+    "buttons": 7,
+    "primaryButtons": 2,
+    "buttonLabels": [
+      "I-print ang QR",
+      "Palitan ang QR",
+      "Alisin",
+      "Gumawa ng invite link",
+      "Gabay para sa organizer",
+      "Mag-sign out",
+      "I-save"
+    ],
+    "primaryLabels": [
+      "I-print ang QR",
+      "I-save"
+    ],
+    "cards": 6,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 7,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Settings ng club"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Club"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Bayad"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Default na rules"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "QR ng club"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Mga organizer"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 3,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Settings ng club",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Gabay (guide)",
+    "file": "screens/19-guide.png",
+    "viewport": "390×844",
+    "pageHeight": 2645,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 1,
+    "primaryButtons": 0,
+    "buttonLabels": [
+      "I-print ang gabay"
+    ],
+    "primaryLabels": [],
+    "cards": 0,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "20px",
+      "24px",
+      "36px"
+    ],
+    "textColors": [
+      "ink",
+      "muted"
+    ],
+    "hintLines": 1,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "36px",
+        "text": "Gabay para sa organizer"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "1. Bago ang session"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "2. Pagsisimula"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "3. Habang naglalaro"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "4. Bayad"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "5. Kapag may problema"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "6. Pagkatapos"
+      }
+    ],
+    "radii": [
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 2,
+    "backLinks": [
+      "Bumalik"
+    ],
+    "largestInFirstViewport": {
+      "text": "Gabay para sa organizer",
+      "size": "36px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Invite (signed in, before joining)",
+    "file": "screens/20-invite.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 1,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Sumali"
+    ],
+    "primaryLabels": [
+      "Sumali"
+    ],
+    "cards": 1,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "white (on-primary)"
+    ],
+    "hintLines": 0,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Sumali bilang organizer ng Pasig Pickleball Club"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px"
+    ],
+    "icons": 0,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Sumali bilang organizer ng Pasig Pickleball Club",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Check-in (fee, first time)",
+    "file": "screens/21-checkin-first-time.png",
+    "viewport": "390×844",
+    "pageHeight": 1403,
+    "horizontalOverflow": false,
+    "optionCards": 5,
+    "inputs": 2,
+    "buttons": 2,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Kopyahin ang number",
+      "Pumila na"
+    ],
+    "primaryLabels": [
+      "Pumila na"
+    ],
+    "cards": 2,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink"
+    ],
+    "hintLines": 8,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "20px",
+        "text": "Bayad · ₱150"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "accent | 0px ink | 56px | 18px"
+    ],
+    "icons": 0,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Check-in (returning: Pumila bilang)",
+    "file": "screens/22-checkin-pumila-bilang.png",
+    "viewport": "390×844",
+    "pageHeight": 1195,
+    "horizontalOverflow": false,
+    "optionCards": 1,
+    "inputs": 1,
+    "buttons": 3,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Kopyahin ang number",
+      "Pumila bilang Ana Lopez",
+      "Hindi ako si Ana Lopez"
+    ],
+    "primaryLabels": [
+      "Pumila bilang Ana Lopez"
+    ],
+    "cards": 3,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "16px",
+      "17px",
+      "18px",
+      "20px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink"
+    ],
+    "hintLines": 10,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Biyernes Night Open Play"
+      },
+      {
+        "tag": "h2",
+        "size": "20px",
+        "text": "Bayad · ₱150"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "accent | 0px ink | 56px | 18px"
+    ],
+    "icons": 0,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Biyernes Night Open Play",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (queued) (360×800)",
+    "file": "screens/23-pwesto-queued-360.png",
+    "viewport": "360×800",
+    "pageHeight": 800,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 3,
+    "primaryButtons": 0,
+    "buttonLabels": [
+      "Pahinga muna",
+      "Aalis na ako",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [],
+    "cards": 3,
+    "chips": 0,
+    "fontSizes": [
+      "16px",
+      "17px",
+      "18px",
+      "30px",
+      "60px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "success",
+      "danger"
+    ],
+    "hintLines": 4,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Hi, Ana Lopez!"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 4,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "#1",
+      "size": "60px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (queued)",
+    "file": "screens/23-pwesto-queued.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 3,
+    "primaryButtons": 0,
+    "buttonLabels": [
+      "Pahinga muna",
+      "Aalis na ako",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [],
+    "cards": 3,
+    "chips": 0,
+    "fontSizes": [
+      "16px",
+      "17px",
+      "18px",
+      "30px",
+      "60px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "success",
+      "danger"
+    ],
+    "hintLines": 4,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Hi, Ana Lopez!"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 4,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "#1",
+      "size": "60px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (held for payment)",
+    "file": "screens/24-pwesto-held.png",
+    "viewport": "390×844",
+    "pageHeight": 1020,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 4,
+    "primaryButtons": 0,
+    "buttonLabels": [
+      "Ilagay ang GCash reference",
+      "Pahinga muna",
+      "Aalis na ako",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [],
+    "cards": 3,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "20px",
+      "30px",
+      "60px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "warn",
+      "danger"
+    ],
+    "hintLines": 4,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Hi, Carla Diaz!"
+      },
+      {
+        "tag": "h2",
+        "size": "20px",
+        "text": "Mga nauuna sa iyo"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "white (on-primary) | 1px ink | 48px | 17px",
+      "white (on-primary) | 1px ink | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "#7",
+      "size": "60px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (called) (360×800)",
+    "file": "screens/25-pwesto-called-360.png",
+    "viewport": "360×800",
+    "pageHeight": 800,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 3,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Papunta na ako",
+      "Hindi pa ako handa (ibalik sa pila)",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [
+      "Papunta na ako"
+    ],
+    "cards": 5,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "20px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "success",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 0,
+    "headings": [
+      {
+        "tag": "h2",
+        "size": "20px",
+        "text": "Kasama mo sa court:"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Pumunta ka na sa Court 1",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (called)",
+    "file": "screens/25-pwesto-called.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 3,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Papunta na ako",
+      "Hindi pa ako handa (ibalik sa pila)",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [
+      "Papunta na ako"
+    ],
+    "cards": 5,
+    "chips": 0,
+    "fontSizes": [
+      "17px",
+      "18px",
+      "20px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "success",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 0,
+    "headings": [
+      {
+        "tag": "h2",
+        "size": "20px",
+        "text": "Kasama mo sa court:"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Pumunta ka na sa Court 1",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Pwesto (paused)",
+    "file": "screens/26-pwesto-paused.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 3,
+    "primaryButtons": 1,
+    "buttonLabels": [
+      "Handa na ulit akong maglaro",
+      "Aalis na ako",
+      "Tingnan ang mga court"
+    ],
+    "primaryLabels": [
+      "Handa na ulit akong maglaro"
+    ],
+    "cards": 2,
+    "chips": 0,
+    "fontSizes": [
+      "16px",
+      "17px",
+      "18px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink",
+      "success",
+      "white (on-primary)",
+      "danger"
+    ],
+    "hintLines": 1,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Nagpapahinga ka"
+      }
+    ],
+    "radii": [
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [
+      "ink | 0px white (on-primary) | 56px | 18px",
+      "white (on-primary) | 1px danger | 48px | 17px",
+      "white (on-primary) | 1px ink | 48px | 17px"
+    ],
+    "icons": 3,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Nagpapahinga ka",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  },
+  {
+    "screen": "Mga court",
+    "file": "screens/27-mga-court.png",
+    "viewport": "390×844",
+    "pageHeight": 1389,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 0,
+    "primaryButtons": 0,
+    "buttonLabels": [],
+    "primaryLabels": [],
+    "cards": 16,
+    "chips": 0,
+    "fontSizes": [
+      "14px",
+      "17px",
+      "24px",
+      "30px"
+    ],
+    "textColors": [
+      "ink",
+      "muted",
+      "white (on-primary)",
+      "warn"
+    ],
+    "hintLines": 10,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Mga court"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Court 1"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Court 2"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Court 3"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Maghanda na"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Susunod pagkatapos"
+      },
+      {
+        "tag": "h2",
+        "size": "24px",
+        "text": "Hindi pa matatawag"
+      }
+    ],
+    "radii": [
+      "20px",
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [],
+    "icons": 1,
+    "backLinks": [
+      "Bumalik sa pwesto ko"
+    ],
+    "largestInFirstViewport": {
+      "text": "Mga court",
+      "size": "30px"
+    },
+    "repeatedTexts": [
+      "Pang-1. ×2",
+      "bayad muna ×2"
+    ]
+  },
+  {
+    "screen": "/c/[code] (nothing live)",
+    "file": "screens/28-club-qr-none.png",
+    "viewport": "390×844",
+    "pageHeight": 844,
+    "horizontalOverflow": false,
+    "optionCards": 0,
+    "inputs": 0,
+    "buttons": 0,
+    "primaryButtons": 0,
+    "buttonLabels": [],
+    "primaryLabels": [],
+    "cards": 1,
+    "chips": 0,
+    "fontSizes": [
+      "16px",
+      "17px",
+      "30px"
+    ],
+    "textColors": [
+      "muted",
+      "ink"
+    ],
+    "hintLines": 1,
+    "headings": [
+      {
+        "tag": "h1",
+        "size": "30px",
+        "text": "Pasig Pickleball Club"
+      }
+    ],
+    "radii": [
+      "14px"
+    ],
+    "borderWidths": [
+      "1px"
+    ],
+    "buttonStyles": [],
+    "icons": 1,
+    "backLinks": [],
+    "largestInFirstViewport": {
+      "text": "Pasig Pickleball Club",
+      "size": "30px"
+    },
+    "repeatedTexts": []
+  }
+]

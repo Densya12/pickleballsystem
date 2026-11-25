@@ -1,21 +1,23 @@
 import { getAuthUser } from "@/lib/auth/dal";
+import { getT } from "@/lib/i18n/server";
 import { getSession } from "@/lib/session/data";
 import { getSummaryData } from "@/lib/summary/data";
 import { summaryCsv, summaryFileName } from "@/lib/summary/summary";
 
 /**
- * "I-download (Excel)": the ended session as CSV (UTF-8 with BOM). Staff of
- * the session's club only (RLS); others get 404, like the page.
+ * Download (Excel): the session as CSV (UTF-8 with BOM), in the device's
+ * language. Live or ended (the Payments tab has a download button, D19);
+ * staff of the session's club only (RLS), others get 404 like the page.
  */
 export async function GET(_request: Request, { params }: RouteContext<"/s/[id]/export">) {
   const { id } = await params;
-  if (!(await getAuthUser())) return new Response("Hindi makita.", { status: 404 });
+  if (!(await getAuthUser())) return new Response("Not found", { status: 404 });
   const session = await getSession(id);
-  if (!session || session.status !== "ended") return new Response("Hindi makita.", { status: 404 });
+  if (!session || session.status === "draft") return new Response("Not found", { status: 404 });
 
-  const { players } = await getSummaryData(session.id);
-  const fileName = summaryFileName(session.name, session.started_at ?? session.starts_at);
-  return new Response(summaryCsv(players, session.fee), {
+  const [{ players }, t] = await Promise.all([getSummaryData(session.id), getT()]);
+  const fileName = summaryFileName(session.name, session.started_at ?? session.starts_at, t);
+  return new Response(summaryCsv(players, session.fee, t), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${fileName}"`,

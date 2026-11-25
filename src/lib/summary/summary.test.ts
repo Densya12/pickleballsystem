@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { en, fil } from "@/lib/i18n/dictionary";
 import { CSV_BOM, csvCell, formatDuration, sessionSummary, summaryCsv, summaryFileName, toCsv, type SummaryPlayer } from "./summary";
 
 function player(over: Partial<SummaryPlayer> & { name: string }): SummaryPlayer {
@@ -57,11 +58,12 @@ describe("sessionSummary", () => {
 });
 
 describe("formatDuration", () => {
-  it("says hours and minutes in Taglish", () => {
-    expect(formatDuration(135)).toBe("2 oras 15 minuto");
-    expect(formatDuration(60)).toBe("1 oras");
-    expect(formatDuration(45)).toBe("45 minuto");
-    expect(formatDuration(0)).toBe("0 minuto");
+  it("says hours and minutes in the device's language", () => {
+    expect(formatDuration(135, en)).toBe("2 h 15 min");
+    expect(formatDuration(60, en)).toBe("1 h");
+    expect(formatDuration(45, en)).toBe("45 min");
+    expect(formatDuration(0, en)).toBe("0 min");
+    expect(formatDuration(135, fil)).toBe("2 oras 15 minuto");
   });
 });
 
@@ -90,29 +92,37 @@ describe("CSV", () => {
   });
 
   it("one row per player in check-in order, then the totals row", () => {
-    const csv = summaryCsv([PLAYERS[3], PLAYERS[0], PLAYERS[2], PLAYERS[1], player({ name: "Niño, Jr.", checkedInAt: "2026-11-24T10:05:00Z" })], 150);
+    const csv = summaryCsv([PLAYERS[3], PLAYERS[0], PLAYERS[2], PLAYERS[1], player({ name: "Niño, Jr.", checkedInAt: "2026-11-24T10:05:00Z" })], 150, en);
     const lines = csv.slice(1).trimEnd().split("\r\n");
-    expect(lines[0]).toBe("Pangalan,Level,Paano pumila,Laro,Bayad,Paraan,Reference,Oras ng check-in");
+    expect(lines[0]).toBe("Name,Level,Joined by,Games,Payment,Method,Reference,Checked in");
     expect(lines.slice(1, -1)).toEqual([
-      "Ana,Hindi sigurado,Phone,3,Bayad na,GCash,1234567890,2026-11-24 18:01",
-      "Ben,Hindi sigurado,Walk-in,5,Bayad na,Cash,,2026-11-24 18:02",
-      "Carlo,Hindi sigurado,Phone,3,I-check,GCash,5555555555,2026-11-24 18:03",
-      "Dina,Hindi sigurado,Walk-in,1,Hindi pa bayad,Cash,,2026-11-24 18:04",
-      '"Niño, Jr.",Hindi sigurado,Walk-in,0,Hindi pa bayad,,,2026-11-24 18:05',
+      "Ana,Not sure,Phone,3,Paid,GCash,1234567890,2026-11-24 18:01",
+      "Ben,Not sure,Walk-in,5,Paid,Cash,,2026-11-24 18:02",
+      "Carlo,Not sure,Phone,3,To check,GCash,5555555555,2026-11-24 18:03",
+      "Dina,Not sure,Walk-in,1,Unpaid,Cash,,2026-11-24 18:04",
+      '"Niño, Jr.",Not sure,Walk-in,0,Unpaid,,,2026-11-24 18:05',
     ]);
-    expect(lines.at(-1)).toBe("Kabuuan,,5 players,12,2 bayad · 1 i-check · 1 hindi pa,₱300 sa ₱600,,");
+    expect(lines.at(-1)).toBe("Total,,5 players,12,2 paid · 1 to check · 1 unpaid,₱300 of ₱600,,");
   });
 
-  it("free sessions say Libre", () => {
-    const csv = summaryCsv([player({ name: "Ana", gamesPlayed: 2 })], 0);
+  it("Taglish column names and words when the device is set to Taglish", () => {
+    const csv = summaryCsv([PLAYERS[1]], 150, fil);
+    const lines = csv.slice(1).trimEnd().split("\r\n");
+    expect(lines[0]).toBe("Pangalan,Level,Paano pumila,Laro,Bayad,Paraan,Reference,Oras ng check-in");
+    expect(lines[1]).toBe("Ben,Hindi sigurado,Walk-in,5,Bayad na,Cash,,2026-11-24 18:02");
+    expect(lines.at(-1)).toBe("Kabuuan,,1 players,5,1 bayad · 0 i-check · 0 hindi pa,₱150 sa ₱150,,");
+  });
+
+  it("free sessions say Libre (Taglish)", () => {
+    const csv = summaryCsv([player({ name: "Ana", gamesPlayed: 2 })], 0, fil);
     const lines = csv.slice(1).trimEnd().split("\r\n");
     expect(lines[1]).toContain(",Libre,");
     expect(lines.at(-1)).toBe("Kabuuan,,1 players,2,Libre,,,");
   });
 
   it("file name: slug and Manila date", () => {
-    expect(summaryFileName("Friday Night Open Play!", "2026-11-24T17:00:00Z")).toBe("buod-friday-night-open-play-2026-11-25.csv");
-    expect(summaryFileName("Ñino's ✨", "2026-11-24T01:00:00Z")).toBe("buod-nino-s-2026-11-24.csv");
-    expect(summaryFileName("✨✨", "2026-11-24T01:00:00Z")).toBe("buod-session-2026-11-24.csv");
+    expect(summaryFileName("Friday Night Open Play!", "2026-11-24T17:00:00Z", en)).toBe("summary-friday-night-open-play-2026-11-25.csv");
+    expect(summaryFileName("Ñino's ✨", "2026-11-24T01:00:00Z", fil)).toBe("buod-nino-s-2026-11-24.csv");
+    expect(summaryFileName("✨✨", "2026-11-24T01:00:00Z", en)).toBe("summary-session-2026-11-24.csv");
   });
 });

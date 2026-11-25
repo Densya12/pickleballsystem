@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Card, Input, Notice } from "@/components/ui";
+import { useT } from "@/lib/i18n/client";
 import { GoogleIcon, MailIcon } from "@/components/ui/icons";
-import { AUTH_MESSAGES, otpErrorMessage, validateEmail } from "@/lib/auth/messages";
+import { otpErrorMessage, validateEmail } from "@/lib/auth/messages";
 import { createClient } from "@/lib/supabase/client";
 
 /** Matches Supabase's default 60-second limit between magic links. */
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function LoginForm({ next, initialError }: Props) {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string>();
   const [error, setError] = useState(initialError);
@@ -49,7 +51,7 @@ export function LoginForm({ next, initialError }: Props) {
       // On success the browser navigates to Google, so only errors land here.
       if (oauthError) throw oauthError;
     } catch {
-      setError(AUTH_MESSAGES.googleFailed);
+      setError(t.auth.googleFailed);
       setGoogleLoading(false);
     }
   }
@@ -63,7 +65,7 @@ export function LoginForm({ next, initialError }: Props) {
         options: { emailRedirectTo: callbackUrl("/auth/confirm") },
       });
       if (otpError) {
-        setError(otpErrorMessage(otpError));
+        setError(otpErrorMessage(otpError, t));
         return;
       }
       const sentAt = Date.now();
@@ -71,7 +73,7 @@ export function LoginForm({ next, initialError }: Props) {
       setNow(sentAt);
       setResendAt(sentAt + RESEND_SECONDS * 1000);
     } catch {
-      setError(AUTH_MESSAGES.emailFailed);
+      setError(t.auth.emailFailed);
     } finally {
       setSending(false);
     }
@@ -79,83 +81,76 @@ export function LoginForm({ next, initialError }: Props) {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const problem = validateEmail(email);
+    const problem = validateEmail(email, t);
     setEmailError(problem);
     if (!problem) void sendMagicLink(email.trim());
   }
 
   if (sentTo) {
     return (
-      <Card className="mt-4 flex flex-col gap-4">
+      <Card className="flex flex-col gap-4">
         <div className="flex items-start gap-3">
-          <MailIcon className="mt-1 size-6 shrink-0" />
+          <MailIcon className="mt-0.5 size-6 shrink-0" />
           <div className="flex flex-col gap-1">
-            <h2 className="text-2xl">I-check ang email mo</h2>
-            <p>
-              Pinadala namin ang login link sa <strong className="break-all">{sentTo}</strong>. Buksan
-              ito para makapasok.
-            </p>
+            <h2 className="font-display text-xl">{t.auth.checkEmail}</h2>
+            <p className="[overflow-wrap:anywhere]">{t.auth.sentTo(sentTo)}</p>
           </div>
         </div>
         {error && <Notice kind="error">{error}</Notice>}
-        <Button
-          variant="secondary"
-          fullWidth
-          disabled={secondsLeft > 0 || sending}
-          onClick={() => void sendMagicLink(sentTo)}
-        >
-          {sending ? "Pinapadala…" : "Ipadala ulit"}
+        <Button variant="outline" size="md" fullWidth disabled={secondsLeft > 0 || sending} onClick={() => void sendMagicLink(sentTo)}>
+          {sending ? t.auth.sending : t.auth.resend}
         </Button>
-        {secondsLeft > 0 && (
-          <p className="text-muted">Pwede nang ipadala ulit pagkalipas ng {secondsLeft} segundo.</p>
-        )}
+        {secondsLeft > 0 && <p className="text-sm text-muted">{t.auth.resendIn(secondsLeft)}</p>}
         <Button
-          variant="secondary"
+          variant="ghost"
+          size="md"
           fullWidth
           onClick={() => {
             setSentTo(null);
             setError(undefined);
           }}
         >
-          Gumamit ng ibang email
+          {t.auth.otherEmail}
         </Button>
       </Card>
     );
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       {error && <Notice kind="error">{error}</Notice>}
 
       <Button size="lg" fullWidth onClick={() => void signInWithGoogle()} disabled={googleLoading}>
-        <span className="flex size-7 items-center justify-center rounded-full bg-surface">
-          <GoogleIcon className="size-5" />
+        <span className="flex size-6 items-center justify-center rounded-full bg-surface">
+          <GoogleIcon className="size-4" />
         </span>
-        {googleLoading ? "Binubuksan ang Google…" : "Mag-sign in gamit ang Google"}
+        {googleLoading ? t.auth.googleOpening : t.auth.google}
       </Button>
 
-      <div className="flex items-center gap-3 text-muted" role="separator" aria-label="o">
-        <span aria-hidden="true" className="flex-1 border-t border-default" />
-        <span aria-hidden="true">o</span>
-        <span aria-hidden="true" className="flex-1 border-t border-default" />
+      <div className="flex items-center gap-3 text-sm text-muted" role="separator" aria-label={t.auth.or}>
+        <span aria-hidden="true" className="flex-1 border-t border-quiet" />
+        <span aria-hidden="true">{t.auth.or}</span>
+        <span aria-hidden="true" className="flex-1 border-t border-quiet" />
       </div>
 
-      <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
-        <Input
-          label="Email mo"
-          type="email"
-          name="email"
-          autoComplete="email"
-          inputMode="email"
-          placeholder="juan@gmail.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          error={emailError}
-        />
-        <Button type="submit" variant="secondary" size="lg" fullWidth disabled={sending}>
-          {sending ? "Pinapadala…" : "Ipadala ang login link"}
-        </Button>
-      </form>
+      <Card>
+        <form noValidate onSubmit={onSubmit} className="flex flex-col gap-3">
+          <Input
+            label={t.auth.email}
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder={t.auth.emailPlaceholder}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            error={emailError}
+          />
+          <Button type="submit" variant="outline" size="md" fullWidth disabled={sending}>
+            {sending ? t.auth.sending : t.auth.sendLink}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

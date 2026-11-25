@@ -1,0 +1,149 @@
+"use client";
+
+import { useState } from "react";
+import { SaveAsMember } from "@/components/session/SaveAsMember";
+import { BottomSheet, Button, EmptyState, ListGroup, Section, StatusChip } from "@/components/ui";
+import { PauseIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/cn";
+import { useT } from "@/lib/i18n/client";
+import { courtsLineup, type LineupPlayer } from "@/lib/player/courts";
+import type { CallRules } from "@/lib/player/state";
+import type { LiveState, QueueEntry } from "@/lib/queue/data";
+import { levelLabel } from "@/lib/queue/players";
+import { useSessionFrame } from "./SessionFrame";
+
+/**
+ * Queue tab (D19): "Up next" (the next 4 eligible, or 2 when every court is
+ * singles), "After that", and "On hold" (unpaid under pay first, or resting).
+ * Tap a row for its actions.
+ */
+export function QueueView({ state, rules, sessionId }: { state: LiveState; rules: CallRules; sessionId: string }) {
+  const t = useT();
+  const [openId, setOpenId] = useState<string | null>(null);
+  const byId = new Map(state.queue.map((p) => [p.id, p]));
+  const open = openId ? (byId.get(openId) ?? null) : null;
+  const lineup = courtsLineup(
+    state.queue.map((p) => ({ id: p.id, name: p.name, status: p.status, queuePos: p.position, paymentStatus: p.paymentStatus })),
+    state.courts.map((c) => c.format),
+    rules,
+    Infinity,
+  );
+
+  if (state.queue.length === 0) return <EmptyState>{t.live.queueEmpty}</EmptyState>;
+
+  const row = (player: LineupPlayer, badge: number | null, tone: "next" | "after" | "hold", reason?: "unpaid" | "resting") => {
+    const entry = byId.get(player.id);
+    return (
+      <li key={player.id} className={cn(tone === "next" && "bg-accent-faint")}>
+        <button
+          type="button"
+          onClick={() => setOpenId(player.id)}
+          className="flex min-h-12 w-full items-center gap-3 px-4 py-[11px] text-left hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
+        >
+          {badge !== null && (
+            <span
+              className={cn(
+                "flex size-[26px] shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+                tone === "next" ? "bg-accent text-on-accent" : "bg-subtle text-ink",
+              )}
+            >
+              <span className="sr-only">#</span>
+              {badge}
+            </span>
+          )}
+          <span className="min-w-0 flex-1 font-medium [overflow-wrap:anywhere]">{player.name}</span>
+          {reason ? <StatusChip kind={reason} /> : entry && <span className="shrink-0 text-sm text-muted">{levelLabel(entry.level, t)}</span>}
+        </button>
+      </li>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-5">
+      {lineup.ready.length > 0 && (
+        <Section id="up-next" label={t.live.upNextSection}>
+          <ListGroup>{lineup.ready.map((p, i) => row(p, i + 1, "next"))}</ListGroup>
+        </Section>
+      )}
+      {lineup.after.length > 0 && (
+        <Section id="after-that" label={t.live.afterThat}>
+          <ListGroup>{lineup.after.map((p, i) => row(p, lineup.ready.length + i + 1, "after"))}</ListGroup>
+        </Section>
+      )}
+      {lineup.notCallable.length > 0 && (
+        <Section id="on-hold" label={t.live.onHold}>
+          <ListGroup>{lineup.notCallable.map((p) => row(p, null, "hold", p.reason))}</ListGroup>
+        </Section>
+      )}
+
+      <PlayerSheet sessionId={sessionId} player={open} onClose={() => setOpenId(null)} />
+    </div>
+  );
+}
+
+/** Pause / Resume, Remove (with confirm), Save as member. */
+function PlayerSheet({ sessionId, player, onClose }: { sessionId: string; player: QueueEntry | null; onClose: () => void }) {
+  const t = useT();
+  const { act, busy } = useSessionFrame();
+  const [confirming, setConfirming] = useState(false);
+
+  async function run(kind: "pause_player" | "resume_player" | "remove_player") {
+    if (!player) return;
+    const label =
+      kind === "pause_player"
+        ? t.live.outboxPause(player.name)
+        : kind === "resume_player"
+          ? t.live.outboxResume(player.name)
+          : t.live.outboxRemove(player.name);
+    if (await act(kind, { playerId: player.id }, label)) close();
+  }
+
+  function close() {
+    setConfirming(false);
+    onClose();
+  }
+
+  return (
+    <BottomSheet
+      open={player !== null}
+      onClose={close}
+      title={player?.name ?? ""}
+      subtitle={player ? t.live.placeInLine(player.position, levelLabel(player.level, t)) : undefined}
+    >
+      {player &&
+        (confirming ? (
+          <div className="flex flex-col gap-2 rounded-group bg-surface p-4">
+            <p className="font-medium">{t.live.removeQuestion(player.name)}</p>
+            <Button variant="danger-outline" size="md" fullWidth disabled={busy} onClick={() => void run("remove_player")}>
+              {busy ? t.live.removing : t.live.yesRemove}
+            </Button>
+            <Button variant="ghost" size="md" fullWidth disabled={busy} onClick={() => setConfirming(false)}>
+              {t.common.cancel}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {player.status === "paused" ? (
+              <Button size="lg" fullWidth disabled={busy} onClick={() => void run("resume_player")}>
+                {t.live.resume}
+              </Button>
+            ) : (
+              <Button size="lg" fullWidth disabled={busy} onClick={() => void run("pause_player")}>
+                <PauseIcon className="size-4" />
+                {t.live.pause}
+              </Button>
+            )}
+            <div className="rounded-group bg-surface p-3">
+              <SaveAsMember key={player.id} sessionId={sessionId} playerId={player.id} playerName={player.name} isMember={player.memberId !== null} />
+            </div>
+            <Button variant="danger" size="md" fullWidth className="bg-surface" disabled={busy} onClick={() => setConfirming(true)}>
+              {t.live.remove}
+            </Button>
+            <Button variant="ghost" size="md" fullWidth onClick={close}>
+              {t.common.close}
+            </Button>
+          </div>
+        ))}
+    </BottomSheet>
+  );
+}

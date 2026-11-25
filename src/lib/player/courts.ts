@@ -9,18 +9,27 @@ import { callSizeFor, isCallable, isHeld, type CallRules, type QueuePlayer } fro
 export const AFTER_SHOWN = 2;
 
 export type LineupPlayer = { id: string; name: string };
-export type WaitingNote = LineupPlayer & { reason: "bayad muna" | "nagpapahinga" };
+export type WaitingNote = LineupPlayer & { reason: "unpaid" | "resting" };
 
 export type Lineup = {
   /** The next eligible players for the next empty court: 4, or 2 when every court is singles. */
   ready: LineupPlayer[];
-  /** The 2 eligible players after them. */
+  /** The eligible players after them (2 by default). */
   after: LineupPlayer[];
   /** Waiting but not callable now, in queue order: held for payment or paused. */
   notCallable: WaitingNote[];
 };
 
-export function courtsLineup(players: readonly QueuePlayer[], courtFormats: readonly string[], rules: CallRules): Lineup {
+/**
+ * "after" holds the next AFTER_SHOWN eligible players (player view), or all
+ * the rest when afterLimit is Infinity (the organizer's Queue screen).
+ */
+export function courtsLineup(
+  players: readonly QueuePlayer[],
+  courtFormats: readonly string[],
+  rules: CallRules,
+  afterLimit = AFTER_SHOWN,
+): Lineup {
   const waiting = players
     .filter((p) => p.status === "queued" || p.status === "paused")
     .sort((a, b) => a.queuePos - b.queuePos);
@@ -28,10 +37,10 @@ export function courtsLineup(players: readonly QueuePlayer[], courtFormats: read
   const size = callSizeFor(courtFormats);
   return {
     ready: eligible.slice(0, size),
-    after: eligible.slice(size, size + AFTER_SHOWN),
+    after: eligible.slice(size, size + afterLimit),
     notCallable: waiting.flatMap((p): WaitingNote[] => {
-      if (p.status === "paused") return [{ id: p.id, name: p.name, reason: "nagpapahinga" }];
-      if (isHeld(p, rules)) return [{ id: p.id, name: p.name, reason: "bayad muna" }];
+      if (p.status === "paused") return [{ id: p.id, name: p.name, reason: "resting" }];
+      if (isHeld(p, rules)) return [{ id: p.id, name: p.name, reason: "unpaid" }];
       return [];
     }),
   };
