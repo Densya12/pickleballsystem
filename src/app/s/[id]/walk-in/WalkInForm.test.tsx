@@ -119,4 +119,14 @@ describe("WalkInForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
     expect(loadOutbox("s1")).toHaveLength(1);
   });
+
+  it("QA-05: a name already in line is a warning the organizer can override", async () => {
+    render(<WalkInForm sessionId="s1" fee={0} inLine={["Mark Santos"]} />);
+    await userEvent.type(screen.getByLabelText("Name"), "  mark  santos");
+    await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
+    expect(screen.getByText("mark santos is already in line. Add a last initial, or tap Add anyway.")).toBeInTheDocument();
+    expect(addWalkIn).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Add anyway" }));
+    expect(addWalkIn).toHaveBeenCalledTimes(1);
+  });
 });

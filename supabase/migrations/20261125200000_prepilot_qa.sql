@@ -170,3 +170,106 @@ begin
   );
 end;
 $$;
+
+-- ===========================================================================
+-- QA-05: one phone can't flood a queue.
+-- (a) A check-in can't use the name of someone already in line (compared
+--     without case or spaces). Walk-ins added by the organizer may (the app
+--     warns and lets them override), so add_walk_in is unchanged here.
+-- (b) At most 200 active (waiting or playing) players per session, for every
+--     way in: check-in, walk-in, and a left player coming back (Undo).
+-- ===========================================================================
+
+-- How names are compared: lower case, no spaces ("  Mark  SANTOS" = "marksantos").
+create or replace function private.player_name_key(p_name text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select lower(regexp_replace(coalesce(p_name, ''), '\s+', '', 'g'));
+$$;
+
+create or replace function public.join_session(
+  p_join_code text,
+  p_display_name text,
+  p_level text default 'unsure',
+  p_method text default null,
+  p_reference text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := private.assert_signed_in();
+  v_session_id uuid;
+  v_status text;
+  v_fee integer;
+  v_player_id uuid;
+begin
+  select s.id into v_session_id from public.sessions s where s.join_code = upper(btrim(p_join_code));
+  if not found then
+    raise exception 'session_not_found' using errcode = 'P0001';
+  end if;
+
+  select s.status, s.fee into v_status, v_fee from public.sessions s where s.id = v_session_id for update;
+  if v_status <> 'live' then
+    raise exception 'checkin_closed' using errcode = 'P0001';
+  end if;
+
+  select p.id into v_player_id
+  from public.session_players p
+  where p.session_id = v_session_id and p.user_id = v_uid and p.status <> 'left';
+  if found then
+    return v_player_id;
+  end if;
+
+  if p_method is not null and p_method not in ('gcash', 'cash') then
+    raise exception 'invalid_payment_method' using errcode = 'P0001';
+  end if;
+
+  -- QA-05 (a): the session row is locked above, so two phones can't both take a name.
+  if exists (
+    select 1 from public.session_players p
+    where p.session_id = v_session_id and p.status <> 'left'
+      and private.player_name_key(p.display_name) = private.player_name_key(p_display_name)
+  ) then
+    raise exception 'name_taken' using errcode = 'P0001';
+  end if;
+
+  insert into public.session_players (session_id, display_name, level, user_id, is_walk_in)
+  values (v_session_id, p_display_name, coalesce(p_level, 'unsure'), v_uid, false)
+  returning id into v_player_id;
+
+  if v_fee > 0 and p_method is not null then
+    perform private.apply_payment_choice(v_player_id, p_method, p_reference);
+  end if;
+  return v_player_id;
+end;
+$$;
+
+-- QA-05 (b): every insert path locks the session row first, so the count can't race.
+create or replace function private.cap_active_players()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.status <> 'left' and (tg_op = 'INSERT' or old.status = 'left') then
+    if (select count(*) from public.session_players p
+        where p.session_id = new.session_id and p.status <> 'left' and p.id <> new.id) >= 200 then
+      raise exception 'session_full' using errcode = 'P0001';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists session_players_cap_active on public.session_players;
+create trigger session_players_cap_active
+  before insert or update of status on public.session_players
+  for each row execute function private.cap_active_players();
+
+revoke execute on function private.player_name_key(text), private.cap_active_players() from public, anon, authenticated;

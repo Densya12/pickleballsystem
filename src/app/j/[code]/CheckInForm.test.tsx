@@ -157,4 +157,13 @@ describe("CheckInForm", () => {
       expect(rpc).toHaveBeenCalledWith("join_session", expect.objectContaining({ p_display_name: "Ana Dela Cruz", p_method: "cash" }));
     });
   });
+
+  it("QA-05: a name already in line shows on the name field", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "name_taken", code: "P0001" } });
+    render(<CheckInForm code="ABC234" payment={FREE} />);
+    await userEvent.type(screen.getByLabelText("Name"), "Mark Santos");
+    await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription("That name is already in line. Add your last initial, e.g. Mark D.");
+    expect(push).not.toHaveBeenCalled();
+  });
 });

@@ -67,3 +67,11 @@ describe("parseWalkInPayment (D18: no default with a fee)", () => {
   });
 });
 
+
+describe("QA-05: playerNameKey (same rule as private.player_name_key)", () => {
+  it("ignores case and spaces", async () => {
+    const { playerNameKey } = await import("./players");
+    expect(playerNameKey("  Mark   SANTOS ")).toBe(playerNameKey("marksantos"));
+    expect(playerNameKey("Mark S.")).not.toBe(playerNameKey("Mark Santos"));
+  });
+});

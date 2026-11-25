@@ -61,6 +61,19 @@ export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInIn
 export const WALK_IN_PAYMENTS = ["cash_received", "gcash", "later"] as const;
 export type WalkInPayment = (typeof WALK_IN_PAYMENTS)[number];
 
+/**
+ * QA-05: how names are compared for "already in line" (the same rule as
+ * private.player_name_key in the database): lower case, no spaces.
+ */
+export function playerNameKey(name: string): string {
+  return name.replace(/\s+/g, "").toLowerCase();
+}
+
+/** QA-05: checked in from a phone (not added by the organizer) in the last 10 minutes: "New". */
+export function isNewCheckIn(player: { isWalkIn: boolean; joinedAt: string }, now: number): boolean {
+  return !player.isWalkIn && now - Date.parse(player.joinedAt) < 10 * 60_000;
+}
+
 export function walkInPaymentChoices(t: Dictionary): { value: WalkInPayment; label: string }[] {
   return [
     { value: "cash_received", label: t.live.paidCash },

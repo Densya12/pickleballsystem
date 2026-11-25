@@ -82,6 +82,11 @@ const en = {
   playerPlayingGeneric: "That player is on court now.",
   invalidFormat: "Pick doubles or singles.",
   invalidRotation: "Pick what happens after a game.",
+  /** QA-05 */
+  sessionFull: "This session is full (200 players). Remove someone who left first.",
+  nameInLine: (name: string) => `${name} is already in line. Add a last initial, or tap Add anyway.`,
+  addAnyway: "Add anyway",
+  newPlayer: "New",
   // Walk-in
   walkInPageTitle: "Add walk-in",
   walkInTitle: "Add walk-in",
@@ -225,6 +230,10 @@ const fil: typeof en = {
   playerPlayingGeneric: "Nasa court na ang player na iyon.",
   invalidFormat: "Pumili ng Doubles o Singles.",
   invalidRotation: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
+  sessionFull: "Puno na ang session (200 player). Alisin muna ang mga umalis na.",
+  nameInLine: (name: string) => `Nasa pila na si ${name}. Magdagdag ng initial ng apelyido, o pindutin ang Idagdag pa rin.`,
+  addAnyway: "Idagdag pa rin",
+  newPlayer: "Bago",
   walkInPageTitle: "Magdagdag ng walk-in",
   walkInTitle: "Magdagdag ng walk-in",
   walkInSubtitle: "Para sa player na walang phone o hindi makapag-scan.",

@@ -13,6 +13,7 @@ import {
   levelChoices,
   levelLabel,
   parseWalkIn,
+  playerNameKey,
   parseWalkInPayment,
   PLAYER_NAME_MAX,
   walkInPaymentChoices,
@@ -32,8 +33,22 @@ const FORM_ID = "walk-in";
  * (one tap plus payment for regulars). With a fee there is no default payment
  * choice (D18). Without signal the walk-in is saved to the outbox (NF10).
  */
-export function WalkInForm({ sessionId, fee, members = [] }: { sessionId: string; fee: number; members?: Member[] }) {
+export function WalkInForm({
+  sessionId,
+  fee,
+  members = [],
+  inLine = [],
+}: {
+  sessionId: string;
+  fee: number;
+  members?: Member[];
+  /** QA-05: names already in line (warn, but let the organizer add anyway). */
+  inLine?: string[];
+}) {
   const t = useT();
+  const inLineKeys = new Set(inLine.map(playerNameKey));
+  // The name the organizer was warned about; adding it again means "Add anyway".
+  const [warnedFor, setWarnedFor] = useState<string | null>(null);
   const router = useRouter();
   const outbox = useOutbox(sessionId, sendOrganizerAction);
   const [errors, setErrors] = useState<Errors>({});
@@ -59,6 +74,13 @@ export function WalkInForm({ sessionId, fee, members = [] }: { sessionId: string
     const paid = parseWalkInPayment(fee, String(form.get("payment") ?? ""), String(form.get("reference") ?? ""), t);
     if (!parsed.ok || !paid.ok) {
       setErrors({ ...(parsed.ok ? {} : parsed.errors), ...(paid.ok ? {} : paid.errors) });
+      return;
+    }
+    // QA-05: same name as someone in line: warn once, then "Add anyway" adds it.
+    const nameKey = playerNameKey(parsed.data.display_name);
+    if (inLineKeys.has(nameKey) && warnedFor !== nameKey) {
+      setWarnedFor(nameKey);
+      setErrors({ display_name: t.live.nameInLine(parsed.data.display_name) });
       return;
     }
     setErrors({});
@@ -205,7 +227,7 @@ export function WalkInForm({ sessionId, fee, members = [] }: { sessionId: string
 
       <Button type="submit" size="lg" fullWidth disabled={pending} className="mt-2">
         <PlusIcon className="size-4" />
-        {pending ? t.live.adding : t.live.addToQueue}
+        {pending ? t.live.adding : warnedFor ? t.live.addAnyway : t.live.addToQueue}
       </Button>
     </form>
   );

@@ -19,6 +19,10 @@ export function playerErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.player.changed;
     case "player_not_found":
       return t.player.noRow;
+    case "name_taken":
+      return t.player.nameTaken;
+    case "session_full":
+      return t.player.sessionFull;
   }
   if (error.code === "23514" || error.code === "23502") return t.player.invalidInput;
   // supabase-js reports a failed fetch as an error object, not a throw.
