@@ -165,11 +165,12 @@ select set_config('test.y5', public.finish_game(pg_temp.court(pg_temp.sid('s2'),
 select is(pg_temp.on_court(pg_temp.sid('s2'), 1), 'Y1,Y2', 'The challenger who wins stays');
 select is(pg_temp.streak(pg_temp.sid('s2'), 1), 1, 'Beating the stayer starts a new streak at 1');
 
--- Fewer than 1 waiting: pause everyone waiting. Y2 (challenger) wins -> both re-join, winner first; the normal call runs.
+-- Fewer than 2 waiting (none here): pause everyone waiting. Y2 (challenger) wins -> both
+-- re-join, LOSER FIRST (D23, QA-03); the normal call takes them (the same two again).
 select public.pause_player(pg_temp.pid(pg_temp.sid('s2'), n)) from unnest(array['Y3', 'Y4', 'Y5']) n;
 select set_config('test.y6', public.finish_game(pg_temp.court(pg_temp.sid('s2'), 1), pg_temp.sid('y5'), array[pg_temp.pid(pg_temp.sid('s2'), 'Y2')])::text, true);
-select is(pg_temp.on_court(pg_temp.sid('s2'), 1), 'Y2,Y1',
-  'Fewer than 1 waiting: both re-join winner first and the normal call takes them');
+select is(pg_temp.on_court(pg_temp.sid('s2'), 1), 'Y1,Y2',
+  'D23: nobody waiting: both re-join loser first and the normal call takes them');
 select is(pg_temp.streak(pg_temp.sid('s2'), 1), 0, 'Streak reset');
 select ok(pg_temp.invariants_ok(pg_temp.sid('s2')), 'Invariants hold');
 reset role;

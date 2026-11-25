@@ -266,33 +266,35 @@ select is((select winner_streak from public.courts where id = pg_temp.court(pg_t
 select is(pg_temp.queue(pg_temp.sid('s3')), 'W7,W8,W2,W4', 'The beaten stayers re-joined the end');
 
 -- Fewer than 2 waiting: pause 3 of the 4 waiting. Challengers W5 + W6 win, but
--- only 1 is eligible -> all four re-join (winners first) and the first 4 are called.
+-- only 1 is eligible -> all four re-join, LOSERS FIRST (D23, QA-03), and the
+-- first 4 are called, so a winner sits out.
 select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), n)) from unnest(array['W7','W8','W2']) n;
 select set_config('test.w6', public.finish_game(pg_temp.court(pg_temp.sid('s3'), 1), pg_temp.sid('w5'),
   array[pg_temp.pid(pg_temp.sid('s3'), 'W5'), pg_temp.pid(pg_temp.sid('s3'), 'W6')])::text, true);
-select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W5,W6,W1',
-  'BR11: fewer than 2 waiting -> all four re-join winners first (W5,W6,W1,W3); the first 4 eligible are called');
-select is(pg_temp.queue(pg_temp.sid('s3')), 'W3', 'W3 (last loser) waits');
+select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W1,W3,W5',
+  'D23: fewer than 2 waiting -> all four re-join losers first (W1,W3,W5,W6); the first 4 eligible are called');
+select is(pg_temp.queue(pg_temp.sid('s3')), 'W6', 'D23: W6 (the last winner) sits out');
 select is((select winner_streak from public.courts where id = pg_temp.court(pg_temp.sid('s3'), 1)), 0, 'Streak reset');
 select ok(pg_temp.invariants_ok(pg_temp.sid('s3')), 'Invariants hold in winners stay');
 
--- Fewer than 2 and fewer than 4: the court stays empty.
-select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), 'W3'));
+-- Nobody else eligible: pause W6 (the only one waiting). The four on court are re-queued
+-- (losers first, D23) and called again.
+select public.pause_player(pg_temp.pid(pg_temp.sid('s3'), 'W6'));
 select set_config('test.w7', public.finish_game(pg_temp.court(pg_temp.sid('s3'), 1), pg_temp.sid('w6'),
   array[pg_temp.pid(pg_temp.sid('s3'), 'W4'), pg_temp.pid(pg_temp.sid('s3'), 'W5')])::text, true);
 select is(pg_temp.cur(pg_temp.sid('s3'), 1), pg_temp.sid('w7'), 'finish_game returns the next game id (here: the re-queued four)');
-select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W4,W5,W6,W1', 'Only the four re-queued are eligible, so they are called again');
+select is(pg_temp.on_court(pg_temp.sid('s3'), 1), 'W1,W3,W4,W5', 'Only the four re-queued are eligible, so they are called again (losers first)');
 select ok(pg_temp.invariants_ok(pg_temp.sid('s3')), 'Invariants hold');
 
 -- ===========================================================================
 -- end_session (BR4): running games closed, courts freed, everyone left
 -- ===========================================================================
 select set_config('test.running', pg_temp.cur(pg_temp.sid('s3'), 1)::text, true);
-select set_config('test.played_before', pg_temp.played(pg_temp.sid('s3'), array['W4','W5','W6','W1'])::text, true);
+select set_config('test.played_before', pg_temp.played(pg_temp.sid('s3'), array['W1','W3','W4','W5'])::text, true);
 select lives_ok($$ select public.end_session(pg_temp.sid('s3')) $$, 'End the winners-stay session mid-game');
 select ok((select ended_at is not null and winner_ids is null from public.games where id = pg_temp.sid('running')),
   'end_session: the running game is closed with no winner');
-select is(pg_temp.played(pg_temp.sid('s3'), array['W4','W5','W6','W1'])::text, current_setting('test.played_before'),
+select is(pg_temp.played(pg_temp.sid('s3'), array['W1','W3','W4','W5'])::text, current_setting('test.played_before'),
   'end_session: games_played unchanged for the closed game');
 select is((select count(*)::int from public.courts where session_id = pg_temp.sid('s3') and (current_game_id is not null or winner_streak <> 0)), 0,
   'end_session: every court is empty');
