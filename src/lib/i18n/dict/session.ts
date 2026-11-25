@@ -35,6 +35,8 @@ const en = {
   courtFormatsInvalid: "Pick doubles or singles for each court.",
   // Errors
   liveExists: "Another session is live. End it before starting a new one.",
+  /** QA-04: shown when New session opens while a session is live. */
+  liveNow: (name: string) => `${name} is live now. Save this one as a draft, or end that session first.`,
   changed: "This session changed. Refresh the page to see the latest.",
   notFound: "This session can't be found. It may have been deleted.",
   notStaff: "Only this club's organizers can do this.",
@@ -110,6 +112,7 @@ const fil: typeof en = {
   courtsInvalid: (min: number, max: number) => `Pumili ng ${min} hanggang ${max} court.`,
   courtFormatsInvalid: "Pumili ng Doubles o Singles para sa bawat court.",
   liveExists: "May live na session pa. Tapusin muna iyon bago magsimula ng bago.",
+  liveNow: (name: string) => `Live pa ang ${name}. I-save muna ito bilang draft, o tapusin muna ang session na iyon.`,
   changed: "Nagbago na ang session na ito. I-refresh ang page para makita ang bago.",
   notFound: "Hindi makita ang session na ito. Baka nabura na.",
   notStaff: "Para lang sa mga organizer ng club na ito.",
