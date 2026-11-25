@@ -39,7 +39,7 @@ async function PaymentsContent({ params }: Pick<PageProps<"/s/[id]/payments">, "
 
   return (
     <SessionFrame
-      session={{ id: session.id, fee: session.fee }}
+      session={{ id: session.id, fee: session.fee, rotation: session.rotation }}
       tab="payments"
       title={t.payments.title}
       actions={

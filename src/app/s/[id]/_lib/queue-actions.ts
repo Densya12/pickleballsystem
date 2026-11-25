@@ -2,7 +2,8 @@
 
 import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
-import { queueErrorMessage } from "@/lib/queue/messages";
+import { rotationLabel } from "@/lib/club/options";
+import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeSession } from "./authorize";
@@ -16,10 +17,10 @@ export type QueueActionResult = {
   undo?: { banner: string };
 };
 
-async function nextGameNames(gameId: string | null): Promise<string[] | null> {
+async function nextGamePlayers(gameId: string | null): Promise<{ playerIds: string[]; names: string[] } | null> {
   if (!gameId) return null;
   const game = await getGame(gameId);
-  return game ? playerNames(game.playerIds) : null;
+  return game ? { playerIds: game.playerIds, names: await playerNames(game.playerIds) } : null;
 }
 
 export async function callNextAction(sessionId: string, courtId: string): Promise<QueueActionResult> {
@@ -54,12 +55,20 @@ export async function finishGameAction(
   if (error) return { error: queueErrorMessage(error, t), code: error.message };
 
   const [next, winners] = await Promise.all([
-    nextGameNames(nextGameId),
+    nextGamePlayers(nextGameId),
     winnerIds ? playerNames(winnerIds) : Promise.resolve(null),
   ]);
   refresh();
   return {
-    banner: finished ? t.live.finished({ courtLabel: finished.courtLabel, gameNumber: finished.number, winners, next }) : undefined,
+    banner: finished
+      ? finishedBanner(t, {
+          courtLabel: finished.courtLabel,
+          gameNumber: finished.number,
+          finishedPlayerIds: finished.playerIds,
+          winners,
+          next,
+        })
+      : undefined,
     undo: { banner: finished ? t.live.undoneFinish(finished.courtLabel, finished.number) : t.live.undoneFinish("", 0) },
   };
 }
@@ -95,6 +104,19 @@ export async function setCourtFormatAction(
   const { data: courtRow } = await supabase.from("courts").select("label").eq("id", courtId).maybeSingle();
   refresh();
   return { banner: t.live.formatChanged(courtRow?.label ?? "court", courtFormatLabel(format, t)) };
+}
+
+/** More › After a game: All off / Winners stay while live. It applies from the next Done. */
+export async function setRotationAction(sessionId: string, rotation: "all_off" | "winners_stay"): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_session_rotation", { p_session_id: sessionId, p_rotation: rotation });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.live.rotationChanged(rotationLabel(rotation, t)) };
 }
 
 type PlayerRpc = "pause_player" | "resume_player" | "remove_player";

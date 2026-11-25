@@ -15,6 +15,7 @@ export const QUEUEABLE_KINDS = [
   "confirm_payment",
   "swap_not_ready",
   "set_court_format",
+  "set_rotation",
 ] as const;
 export type OutboxKind = (typeof QUEUEABLE_KINDS)[number];
 
@@ -38,6 +39,8 @@ const ALREADY_DONE: Record<OutboxKind, readonly string[]> = {
   swap_not_ready: ["player_not_on_court"],
   // Setting the same format again succeeds, so there's nothing to treat as done.
   set_court_format: [],
+  // Idempotent too: choosing the current rotation changes nothing (set_session_rotation).
+  set_rotation: [],
 };
 
 export function isAlreadyDone(kind: OutboxKind, code: string | undefined): boolean {

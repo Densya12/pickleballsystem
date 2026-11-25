@@ -59,10 +59,10 @@ async function Courts({ session }: { session: Session }) {
   const [state, t] = await Promise.all([getLiveState(session.id), getT()]);
   return (
     <SessionFrame
-      session={{ id: session.id, fee: session.fee }}
+      session={{ id: session.id, fee: session.fee, rotation: session.rotation }}
       tab="courts"
       title={session.name}
-      subtitle={<LiveLine playing={state.playingCount} waiting={state.queue.length} t={t} />}
+      subtitle={<LiveLine rotation={session.rotation} playing={state.playingCount} waiting={state.queue.length} t={t} />}
       actions={<LiveHeaderActions sessionId={session.id} t={t} />}
       courts={state.courts}
       queueCount={state.queue.length}

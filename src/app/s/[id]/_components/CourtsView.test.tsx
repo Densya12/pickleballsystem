@@ -56,10 +56,10 @@ describe("Courts tab", () => {
     expect(chips(court("Court 3"))).toHaveLength(0);
   });
 
-  it("shows format and minutes, Done on playing courts, and the not-ready swap", async () => {
+  it("shows the game number and minutes, Done on playing courts, and the not-ready swap", async () => {
     render(<CourtsView state={state(0)} rotation="fifo" rules={{ payFirst: false, fee: 0 }} />);
-    expect(within(court("Court 1")).getByText("Doubles · 7 min")).toBeInTheDocument();
-    expect(within(court("Court 2")).getByText("Singles · 7 min")).toBeInTheDocument();
+    expect(within(court("Court 1")).getByText("Game 1 · 7 min")).toBeInTheDocument();
+    expect(within(court("Court 2")).getByText("Game 2 · 7 min")).toBeInTheDocument();
     expect(within(court("Court 3")).getByText("Doubles · Empty")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Done on Court 2" })).toBeInTheDocument();
 
@@ -78,6 +78,21 @@ describe("Courts tab", () => {
     expect(needMore).toBeEnabled();
     await userEvent.click(needMore);
     expect(frame.showError).toHaveBeenCalled();
+  });
+
+  it("highlights a court only when a new game starts after the screen opened", () => {
+    const rules = { payFirst: false, fee: 0 };
+    const { rerender } = render(<CourtsView state={state(5)} rotation="fifo" rules={rules} />);
+    expect(document.querySelectorAll("[data-new-game]")).toHaveLength(0);
+
+    // Court 2's game ends and the same two players start game 3 (a new game id).
+    const again = { id: "g3", number: 3, format: "singles", startedAt: new Date().toISOString(), players: [p("e", "Ella Go"), p("f", "Fe Uy")] };
+    const next = { ...state(5), courts: COURTS.map((c) => (c.id === "c2" ? { ...c, game: again } : c)) };
+    rerender(<CourtsView state={next} rotation="fifo" rules={rules} />);
+    expect(court("Court 2")).toHaveAttribute("data-new-game");
+    expect(court("Court 2")).toHaveClass("court-new-game");
+    expect(within(court("Court 2")).getByText("Game 3 · 0 min")).toBeInTheDocument();
+    expect(court("Court 1")).not.toHaveAttribute("data-new-game");
   });
 
   it("winners stay: Done opens the winner picker (2 in doubles, 1 in singles)", async () => {

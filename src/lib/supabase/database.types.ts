@@ -364,6 +364,9 @@ isOneToOne: false
 "set_court_format":
 { Args: { "p_court_id": string,"p_format": string }; Returns: undefined
                            },
+"set_session_rotation":
+{ Args: { "p_rotation": string,"p_session_id": string }; Returns: undefined
+                           },
 "start_session":
 { Args: { "p_session_id": string }; Returns: undefined
                            },

@@ -75,7 +75,7 @@ export async function addWalkIn(page: Page, name: string, level = "Not sure", pa
 export function banner(page: Page) {
   return page
     .getByRole("status")
-    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on/ });
+    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on|play again on|After a game:/ });
 }
 
 export function court(page: Page, label: string) {

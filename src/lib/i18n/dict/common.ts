@@ -128,7 +128,7 @@ const levelsFil: typeof levelsEn = {
 const choicesEn = {
   doubles: "Doubles",
   singles: "Singles",
-  allOff: "Everyone off",
+  allOff: "All off",
   allOffDescription: "All four go to the back of the queue",
   winnersStay: "Winners stay",
   winnersStayDescription: "Up to 2 games in a row",

@@ -167,6 +167,22 @@
   color: var(--text-color-muted);
 }
 
+/* A new game started on a court: a short lime ring (1 s). None with reduced motion. */
+.court-new-game {
+  animation: court-new-game 1s ease-out;
+}
+@keyframes court-new-game {
+  from {
+    box-shadow: 0 0 0 3px var(--background-color-accent);
+    background-color: var(--background-color-accent-faint);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .court-new-game {
+    animation: none;
+  }
+}
+
 /* Printing (e.g. the QR pages): plain white paper, no app background. */
 @media print {
   body {
