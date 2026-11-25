@@ -80,6 +80,8 @@ const en = {
   /** QA-02: Remove/Pause/Resume refused because the player was called meanwhile. */
   playerPlaying: (name: string) => `${name} is on court now.`,
   playerPlayingGeneric: "That player is on court now.",
+  /** QA-09 (BR19): Swap only after the player taps "Not ready". */
+  notFlagged: "That player hasn't said they're not ready. Only swap players who tap Not ready.",
   invalidFormat: "Pick doubles or singles.",
   invalidRotation: "Pick what happens after a game.",
   /** QA-05 */
@@ -230,6 +232,7 @@ const fil: typeof en = {
   notOnCourt: "Wala na sa court ang player na iyon.",
   playerPlaying: (name: string) => `Nasa court na si ${name}.`,
   playerPlayingGeneric: "Nasa court na ang player na iyon.",
+  notFlagged: "Hindi pa sinabi ng player na hindi pa siya handa. I-swap lang ang mga pumindot ng Hindi pa handa.",
   invalidFormat: "Pumili ng Doubles o Singles.",
   invalidRotation: "Pumili kung ano ang mangyayari pagkatapos ng laro.",
   sessionFull: "Puno na ang session (200 player). Alisin muna ang mga umalis na.",

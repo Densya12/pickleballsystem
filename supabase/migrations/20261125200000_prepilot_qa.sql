@@ -475,3 +475,61 @@ $$;
 revoke execute on function private.clean_display_name(text), private.display_name_ok(text) from public, anon, authenticated;
 -- Trigger functions aren't called directly by clients.
 revoke execute on function public.session_players_before_write(), public.members_before_write() from public, anon, authenticated;
+
+-- ===========================================================================
+-- QA-09 (BR19): swap_not_ready only swaps a player who said "not ready".
+-- The UI only offers Swap for flagged players, but the API swapped anyone on
+-- court to the front of the queue. Same signature, grants and search_path;
+-- a new code player_not_flagged (old clients show their generic message).
+-- The order of checks is kept: not on court is still player_not_on_court
+-- (the outbox counts a repeated swap as done).
+-- ===========================================================================
+
+create or replace function public.swap_not_ready(p_court_id uuid, p_player_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_court public.courts%rowtype;
+  v_player_ids uuid[];
+  v_next uuid[];
+  v_front bigint;
+begin
+  perform private.assert_organizer_account();
+  v_court := private.lock_live_court(p_court_id);
+
+  select g.player_ids into v_player_ids from public.games g where g.id = v_court.current_game_id;
+  if v_court.current_game_id is null or not (p_player_id = any (v_player_ids)) then
+    raise exception 'player_not_on_court' using errcode = 'P0001';
+  end if;
+
+  -- BR19: the player flags "not ready" first (player_not_ready sets not_ready_at).
+  perform 1 from public.session_players p
+  where p.id = p_player_id and p.not_ready_at is not null
+  for update;
+  if not found then
+    raise exception 'player_not_flagged' using errcode = 'P0001';
+  end if;
+
+  v_next := private.next_eligible(v_court.session_id, 1);
+  if cardinality(v_next) < 1 then
+    raise exception 'not_enough_players' using errcode = 'P0001', detail = '1';
+  end if;
+
+  -- Lowest place among everyone waiting (queued or paused), before the newcomer leaves the queue.
+  select min(p.queue_pos) into v_front
+  from public.session_players p
+  where p.session_id = v_court.session_id and p.status in ('queued', 'paused');
+
+  update public.games set player_ids = array_replace(player_ids, p_player_id, v_next[1])
+  where id = v_court.current_game_id;
+  update public.session_players set status = 'playing', not_ready_at = null where id = v_next[1];
+  update public.session_players
+  set status = 'queued', not_ready_at = null, queue_pos = v_front - 1
+  where id = p_player_id;
+
+  return v_next[1];
+end;
+$$;

@@ -112,3 +112,12 @@ describe("queueErrorMessage", () => {
     expect(queueErrorMessage({ message: "session_not_found" }, en)).toBe(en.session.notFound);
   });
 });
+
+describe("QA-09: swap refused when the player didn't flag not ready", () => {
+  it("explains in both languages, and the outbox doesn't count it as done", async () => {
+    expect(queueErrorMessage({ message: "player_not_flagged" }, en)).toBe(en.live.notFlagged);
+    expect(queueErrorMessage({ message: "player_not_flagged" }, fil)).toBe(fil.live.notFlagged);
+    const { isAlreadyDone } = await import("@/lib/outbox/rules");
+    expect(isAlreadyDone("swap_not_ready", "player_not_flagged")).toBe(false);
+  });
+});
