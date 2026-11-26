@@ -28,9 +28,11 @@ import {
   SkeletonRegion,
 } from "@/components/ui";
 import { BellIcon, PlusIcon, QrIcon } from "@/components/ui/icons";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { Wordmark } from "@/components/brand/Wordmark";
 
 export const metadata: Metadata = {
-  title: "Design System · Open Play Queue",
+  title: "Design System",
 };
 
 /** Developer reference for the v5 "Clean 2026" components (D19). Not linked from the app. */
@@ -43,6 +45,27 @@ export default function DesignSystemPage() {
       footer={<Button fullWidth>Main button</Button>}
     >
       <div className="flex flex-col gap-6">
+        <Section id="brand" label="Brand">
+          {/* D21: the mark and the wordmark at 20, 30 and 40 px, on light and on ink. */}
+          <Card className="flex flex-col gap-4">
+            <div className="flex items-end gap-3">
+              <BrandMark size={96} label="Pilaball" />
+              <BrandMark size={32} />
+              <BrandMark size={20} />
+            </div>
+            <div className="flex flex-wrap items-end gap-4" data-testid="wordmarks-light">
+              <Wordmark size={20} />
+              <Wordmark size={30} />
+              <Wordmark size={40} />
+            </div>
+            <div className="flex flex-wrap items-end gap-4 rounded-control bg-primary p-4" data-testid="wordmarks-dark">
+              <Wordmark tone="dark" size={20} />
+              <Wordmark tone="dark" size={30} />
+              <Wordmark tone="dark" size={40} />
+            </div>
+          </Card>
+        </Section>
+
         <Section id="buttons" label="Buttons">
           <Card className="flex flex-wrap items-center gap-2">
             <Button size="pill">Ink pill</Button>

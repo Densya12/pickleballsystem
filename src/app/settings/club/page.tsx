@@ -8,7 +8,7 @@ import { getClubFormValues } from "../data";
 import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.settings.clubDetails} · ${en.common.appName}`,
+  title: en.settings.clubDetails,
 };
 
 export default function Page() {

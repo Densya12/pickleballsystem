@@ -1,11 +1,13 @@
 /** The printable organizer guide (moved under Settings). */
 
+import { APP_NAME } from "@/lib/brand";
+
 type GuideSection = { title: string; items: string[] };
 
 const en = {
   pageTitle: "Organizer guide",
   title: "Organizer guide",
-  subtitle: "Open Play Queue · one page",
+  subtitle: `${APP_NAME} · one page`,
   print: "Print the guide",
   sections: [
     {
@@ -64,7 +66,7 @@ const en = {
 const fil: typeof en = {
   pageTitle: "Gabay para sa organizer",
   title: "Gabay para sa organizer",
-  subtitle: "Open Play Queue · isang page lang",
+  subtitle: `${APP_NAME} · isang page lang`,
   print: "I-print ang gabay",
   sections: [
     {

@@ -11,7 +11,7 @@ import { PlayerView } from "./PlayerView";
 import { PlaceInLineSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.player.placePageTitle} · ${en.common.appName}`,
+  title: en.player.placePageTitle,
 };
 
 export default function PwestoPage({ params }: PageProps<"/j/[code]/me">) {

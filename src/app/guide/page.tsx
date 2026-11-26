@@ -7,7 +7,7 @@ import { PrintButton } from "./PrintButton";
 import { GuideSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.guide.pageTitle} · ${en.common.appName}`,
+  title: en.guide.pageTitle,
 };
 
 /** One printable page for the organizer, in the device's language (opened from Settings). */

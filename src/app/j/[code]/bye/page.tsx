@@ -6,7 +6,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: `${en.player.byeTitle} · ${en.common.appName}`,
+  title: en.player.byeTitle,
 };
 
 /** After leaving (BR18). Joining again puts the player at the end of the queue. */

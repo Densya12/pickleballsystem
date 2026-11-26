@@ -13,7 +13,7 @@ import { NewSessionForm } from "./NewSessionForm";
 import { NewSessionSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.session.newPageTitle} · ${en.common.appName}`,
+  title: en.session.newPageTitle,
 };
 
 export default function NewSessionPage({ searchParams }: PageProps<"/sessions/new">) {

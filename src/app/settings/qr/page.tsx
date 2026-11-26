@@ -11,7 +11,7 @@ import { ClubQrCard } from "../ClubQrCard";
 import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.settings.clubQr} · ${en.common.appName}`,
+  title: en.settings.clubQr,
 };
 
 export default function ClubQrPage() {

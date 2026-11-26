@@ -13,7 +13,7 @@ import { SessionFrame } from "../_components/SessionFrame";
 import { QueueSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.live.queueTitle} · ${en.common.appName}`,
+  title: en.live.queueTitle,
 };
 
 /** Queue tab (D19). */

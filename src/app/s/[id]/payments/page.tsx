@@ -15,7 +15,7 @@ import { SessionFrame } from "../_components/SessionFrame";
 import { PaymentsSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.payments.pageTitle} · ${en.common.appName}`,
+  title: en.payments.pageTitle,
 };
 
 /** Payments tab (D16, D19). Also open after the session ends, to settle the rest. */

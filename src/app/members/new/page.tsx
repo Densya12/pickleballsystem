@@ -8,7 +8,7 @@ import { MemberForm } from "../MemberForm";
 import { MemberFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.members.newTitle} · ${en.common.appName}`,
+  title: en.members.newTitle,
 };
 
 export default function NewMemberPage() {

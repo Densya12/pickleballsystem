@@ -17,7 +17,7 @@ import { ShareActions } from "./ShareActions";
 import { SessionQrSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.live.qrPageTitle} · ${en.common.appName}`,
+  title: en.live.qrPageTitle,
 };
 
 export default function QrPage({ params }: PageProps<"/s/[id]/qr">) {

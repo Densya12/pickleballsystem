@@ -1,5 +1,6 @@
 "use client";
 
+import { Wordmark } from "@/components/brand/Wordmark";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { MainTabBar } from "@/components/nav/MainTabBar";
 import {
@@ -30,6 +31,7 @@ export function HomeSkeleton() {
   const t = useT();
   return (
     <PageShell
+      top={<Wordmark className="text-xl" />}
       eyebrow={<SkeletonLine size="inherit" width={150} />}
       titleSkeleton="62%"
       titleSize="xl"
