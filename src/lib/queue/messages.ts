@@ -14,6 +14,10 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       const needed = Number(error.details);
       return Number.isInteger(needed) && needed > 0 ? t.live.needPlayers(needed) : t.live.notEnough;
     }
+    case "no_level_group": {
+      const [lo, hi] = (error.details ?? "").split("-").map(Number);
+      return Number.isInteger(lo) && Number.isInteger(hi) && lo > 0 ? t.live.noLevelGroup(lo, hi) : t.live.noLevelGroupAny;
+    }
     case "game_already_finished":
       return t.live.alreadyFinished;
     case "court_busy":

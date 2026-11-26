@@ -125,14 +125,14 @@ isOneToOne: false
                   ]
                 },"games": {
                   Row: {
-                    "court_id": string,"ended_at": string | null,"format": string,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"winner_ids": (string)[] | null
+                    "call_note": Json | null,"court_id": string,"ended_at": string | null,"format": string,"id": string,"number": number,"player_ids": (string)[],"session_id": string,"started_at": string,"stayed_ids": (string)[] | null,"winner_ids": (string)[] | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "court_id": string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number": number,"player_ids": (string)[],"session_id": string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                    "call_note"?: Json | null,"court_id": string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number": number,"player_ids": (string)[],"session_id": string,"started_at"?: string,"stayed_ids"?: (string)[] | null,"winner_ids"?: (string)[] | null
                   }
                   Update: {
-                    "court_id"?: string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number"?: number,"player_ids"?: (string)[],"session_id"?: string,"started_at"?: string,"winner_ids"?: (string)[] | null
+                    "call_note"?: Json | null,"court_id"?: string,"ended_at"?: string | null,"format"?: string,"id"?: string,"number"?: number,"player_ids"?: (string)[],"session_id"?: string,"started_at"?: string,"stayed_ids"?: (string)[] | null,"winner_ids"?: (string)[] | null
                   }
                   Relationships: [
                     {
@@ -197,14 +197,14 @@ isOneToOne: true
                   ]
                 },"session_players": {
                   Row: {
-                    "client_id": string | null,"created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"not_ready_at": string | null,"payment_status": string,"queue_pos": number,"session_id": string,"skill": number | null,"status": string,"user_id": string | null
+                    "client_id": string | null,"created_at": string,"device_id": string | null,"display_name": string,"games_played": number,"id": string,"is_walk_in": boolean,"level": string,"member_id": string | null,"not_ready_at": string | null,"payment_status": string,"queue_pos": number,"session_id": string,"skill": number | null,"skip_count": number,"status": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "client_id"?: string | null,"created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id": string,"skill"?: number | null,"status"?: string,"user_id"?: string | null
+                    "client_id"?: string | null,"created_at"?: string,"device_id"?: string | null,"display_name": string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id": string,"skill"?: number | null,"skip_count"?: number,"status"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "client_id"?: string | null,"created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id"?: string,"skill"?: number | null,"status"?: string,"user_id"?: string | null
+                    "client_id"?: string | null,"created_at"?: string,"device_id"?: string | null,"display_name"?: string,"games_played"?: number,"id"?: string,"is_walk_in"?: boolean,"level"?: string,"member_id"?: string | null,"not_ready_at"?: string | null,"payment_status"?: string,"queue_pos"?: number,"session_id"?: string,"skill"?: number | null,"skip_count"?: number,"status"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -252,6 +252,9 @@ isOneToOne: false
                            },
 "add_walk_in":
 { Args: { "p_client_id"?: string,"p_display_name": string,"p_level": string,"p_member_id"?: string,"p_payment"?: string,"p_reference"?: string,"p_session_id": string }; Returns: string
+                           },
+"call_mixed":
+{ Args: { "p_court_id": string }; Returns: string
                            },
 "call_next":
 { Args: { "p_court_id": string }; Returns: string

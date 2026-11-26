@@ -1,5 +1,6 @@
 import type { OutboxItem } from "@/lib/outbox/rules";
 import {
+  callMixedAction,
   callNextAction,
   finishGameAction,
   pausePlayerAction,
@@ -28,6 +29,8 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
   switch (item.kind) {
     case "call_next":
       return callNextAction(sessionId, str(args.courtId));
+    case "call_mixed":
+      return callMixedAction(sessionId, str(args.courtId));
     case "finish_game":
       return finishGameAction(sessionId, str(args.courtId), str(args.gameId), Array.isArray(args.winnerIds) ? args.winnerIds : null);
     case "swap_not_ready":

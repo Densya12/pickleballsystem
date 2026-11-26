@@ -139,3 +139,14 @@ describe("QA-10: payment choice and fee cap from the database", () => {
     expect(sessionErrorMessage({ code: "23514", message: "sessions_fee_min" }, en)).toBe(en.club.invalidInput);
   });
 });
+
+describe("D25: no level group", () => {
+  it("names the band and offers Call mixed", () => {
+    expect(queueErrorMessage({ message: "no_level_group", details: "2-4" }, en)).toBe(
+      "No level 2–4 group yet. Tap Call mixed to play anyway.",
+    );
+    expect(queueErrorMessage({ message: "no_level_group", details: "3-3" }, en)).toBe("No level 3 group yet. Tap Call mixed to play anyway.");
+    expect(queueErrorMessage({ message: "no_level_group", details: "" }, en)).toBe(en.live.noLevelGroupAny);
+    expect(queueErrorMessage({ message: "no_level_group", details: "2-4" }, fil)).toContain("Tawagin kahit halo");
+  });
+});

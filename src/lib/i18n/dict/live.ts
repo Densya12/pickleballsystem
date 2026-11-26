@@ -71,6 +71,13 @@ const en = {
   // Errors
   needPlayers: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call.`,
   notEnough: "Not enough players waiting to call.",
+  /** D25: no group fits the level rule; Call mixed plays anyway. */
+  noLevelGroup: (lo: number, hi: number) =>
+    `No ${lo === hi ? `level ${lo}` : `level ${lo}–${hi}`} group yet. Tap Call mixed to play anyway.`,
+  noLevelGroupAny: "No group fits the levels yet. Tap Call mixed to play anyway.",
+  callMixed: "Call mixed",
+  callMixedOn: (court: string) => `Call mixed on ${court}`,
+  outboxCallMixed: (court: string) => `Call mixed: ${court}`,
   alreadyFinished: "That game is already done. Check the court for the new one.",
   courtBusy: "That court is still playing.",
   invalidWinners: "Pick the winners from the players on court.",
@@ -229,6 +236,12 @@ const fil: typeof en = {
   matchmakingChanged: (preset: string) => `Sino ang magkakasama: ${preset}. Simula sa susunod na tawag.`,
   needPlayers: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notEnough: "Kulang pa ang nakapila para makatawag.",
+  noLevelGroup: (lo: number, hi: number) =>
+    `Wala pang grupong ${lo === hi ? `level ${lo}` : `level ${lo}–${hi}`}. Pindutin ang Tawagin kahit halo para makalaro pa rin.`,
+  noLevelGroupAny: "Wala pang grupong bagay ang level. Pindutin ang Tawagin kahit halo para makalaro pa rin.",
+  callMixed: "Tawagin kahit halo",
+  callMixedOn: (court: string) => `Tawagin kahit halo sa ${court}`,
+  outboxCallMixed: (court: string) => `Tawagin kahit halo: ${court}`,
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
   courtBusy: "May naglalaro pa sa court na ito.",
   invalidWinners: "Pumili ng nanalo mula sa mga naglaro.",

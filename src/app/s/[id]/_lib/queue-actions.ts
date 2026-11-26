@@ -37,6 +37,20 @@ export async function callNextAction(sessionId: string, courtId: string): Promis
   return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
 }
 
+/** D25 (f): no group fits the levels; the organizer plays the next in queue order once (logged). */
+export async function callMixedAction(sessionId: string, courtId: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { data: gameId, error } = await supabase.rpc("call_mixed", { p_court_id: courtId });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  const game = await getGame(gameId);
+  refresh();
+  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
+}
+
 export async function finishGameAction(
   sessionId: string,
   courtId: string,
