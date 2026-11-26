@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in · Pilaball</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.si-i{position:relative;display:inline-block}
+.si-i svg{position:absolute;left:50%;transform:translateX(-50%)}
+.si-chip{position:absolute;transform:translate(-50%,-50%);background:#FFFFFF;color:#111412;font-size:12px;font-weight:600;border-radius:999px;padding:4px 9px}
+.si-btn{width:100%;height:54px;border:0;border-radius:16px;background:#111412;color:#FFFFFF;font-family:inherit;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}
+.si-text{width:100%;height:44px;margin-top:6px;border:0;background:transparent;font-family:inherit;font-size:15px;font-weight:500;color:#111412}
+.si-legal{margin:10px 0 0;font-size:12px;line-height:1.45;color:#6B716D;text-align:center}
+.si-legal a{color:#111412;text-decoration:underline}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#C9F26B"/><g fill="#1E2A06" fill-opacity=".42"><circle cx="8.2" cy="8" r="1.6"/><circle cx="14.6" cy="6.8" r="1.6"/><circle cx="11.6" cy="12.4" r="1.6"/><circle cx="6.6" cy="14.6" r="1.6"/><circle cx="16.6" cy="13.6" r="1.6"/><circle cx="12" cy="18.2" r="1.6"/></g></symbol>
+</defs></svg>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #111412; font-family: Inter, system-ui, sans-serif; color: #FFFFFF; position: relative; overflow: hidden">
+  <div style="padding: 60px 24px 0">
+    <span aria-label="Pilaball" style="font-family:'Space Grotesk',Inter,sans-serif;font-weight:600;font-size:30px;letter-spacing:-0.03em;line-height:1">p<span class="si-i">ı<svg width="11" height="11" style="top:-3px"><use href="#ball"/></svg></span>laball</span>
+
+    <div style="position: relative; margin-top: 34px; width: 342px; height: 156px; transform: rotate(-4deg)">
+      <svg width="342" height="156" viewBox="0 0 440 200" aria-hidden="true" style="display: block; border-radius: 14px">
+        <rect width="440" height="200" fill="#24583D"/><rect x="150" width="140" height="200" fill="#2E6B4A"/>
+        <g fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="3"><rect x="6" y="6" width="428" height="188"/><path d="M150 6V194M290 6V194M6 100H150M290 100H434"/></g>
+        <path d="M220 0V200" stroke="#FFFFFF" stroke-width="5"/>
+        <use href="#ball" x="248" y="60" width="20" height="20"/>
+      </svg>
+      <span class="si-chip" style="left:58px;top:39px">Ana</span>
+      <span class="si-chip" style="left:58px;top:117px">Ben</span>
+      <span class="si-chip" style="left:284px;top:39px">Jojo</span>
+      <span class="si-chip" style="left:284px;top:117px;background:#C9F26B;color:#1E2A06">You</span>
+    </div>
+    <h1 style="margin: 38px 0 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 32px; line-height: 1.1; font-weight: 600; letter-spacing: -0.8px">Open play,<br><span style="color: #C9F26B">one fair line.</span></h1>
+    <p style="margin: 12px 0 0; font-size: 15px; line-height: 1.45; color: #A3A9A5; max-width: 300px">Calls the next game, keeps the queue fair and shows who has paid.</p>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F4F1; color: #111412; border-radius: 28px 28px 0 0; padding: 24px 20px 30px">
+    <p style="margin: 0; font-size: 15px; font-weight: 600">Sign in to run your club</p>
+    <p style="margin: 4px 0 16px; font-size: 13px; color: #6B716D">For organizers. Players just scan the QR at the court.</p>
+    <button class="si-btn"><span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#4285F4">G</span>Continue with Google</button>
+    <button class="si-text">Use email instead</button>
+    <p class="si-legal">By continuing you agree to the <a>Terms</a> and <a>Privacy Policy</a>.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
