@@ -29,15 +29,22 @@ export function courtsLineup(
   courtFormats: readonly string[],
   rules: CallRules,
   afterLimit = AFTER_SHOWN,
+  /**
+   * D25: the group the server says is called next (queue_preview), or [] when
+   * no group fits the levels. Without it: the next 4 (or 2) eligible.
+   */
+  predicted?: readonly string[] | null,
 ): Lineup {
   const waiting = players
     .filter((p) => p.status === "queued" || p.status === "paused")
     .sort((a, b) => a.queuePos - b.queuePos);
   const eligible = waiting.filter((p) => isCallable(p, rules)).map(({ id, name }) => ({ id, name }));
   const size = callSizeFor(courtFormats);
+  const ready = predicted ? eligible.filter((p) => predicted.includes(p.id)) : eligible.slice(0, size);
+  const rest = eligible.filter((p) => !ready.includes(p));
   return {
-    ready: eligible.slice(0, size),
-    after: eligible.slice(size, size + afterLimit),
+    ready,
+    after: rest.slice(0, afterLimit),
     notCallable: waiting.flatMap((p): WaitingNote[] => {
       if (p.status === "paused") return [{ id: p.id, name: p.name, reason: "resting" }];
       if (isHeld(p, rules)) return [{ id: p.id, name: p.name, reason: "unpaid" }];

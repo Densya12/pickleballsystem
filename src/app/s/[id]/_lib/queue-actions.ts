@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
 import { matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
+import { explainCall, type CallNote } from "@/lib/queue/preview";
 import { levelLabel, levelNumber } from "@/lib/queue/players";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
@@ -18,10 +19,12 @@ export type QueueActionResult = {
   undo?: { banner: string };
 };
 
-async function nextGamePlayers(gameId: string | null): Promise<{ playerIds: string[]; names: string[] } | null> {
+async function nextGamePlayers(
+  gameId: string | null,
+): Promise<{ playerIds: string[]; names: string[]; note: CallNote | null } | null> {
   if (!gameId) return null;
   const game = await getGame(gameId);
-  return game ? { playerIds: game.playerIds, names: await playerNames(game.playerIds) } : null;
+  return game ? { playerIds: game.playerIds, names: await playerNames(game.playerIds), note: game.note } : null;
 }
 
 export async function callNextAction(sessionId: string, courtId: string): Promise<QueueActionResult> {
@@ -34,7 +37,7 @@ export async function callNextAction(sessionId: string, courtId: string): Promis
 
   const game = await getGame(gameId);
   refresh();
-  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
+  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) + explainCall(t, game.note) : undefined };
 }
 
 /** D25 (f): no group fits the levels; the organizer plays the next in queue order once (logged). */
@@ -48,7 +51,7 @@ export async function callMixedAction(sessionId: string, courtId: string): Promi
 
   const game = await getGame(gameId);
   refresh();
-  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
+  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) + explainCall(t, game.note) : undefined };
 }
 
 /** D25: the organizer moves a player to the other side (swaps them with a player there). Not undoable. */

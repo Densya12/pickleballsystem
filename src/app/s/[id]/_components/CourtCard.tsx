@@ -9,6 +9,7 @@ import type { LiveCourt } from "@/lib/queue/data";
 import { sideOf } from "@/lib/queue/winners";
 import { minutesSince } from "@/lib/session/time";
 import { courtFormatLabel, courtSize } from "@/lib/session/validation";
+import { noGroupText, type FormatPreview } from "@/lib/queue/preview";
 import { WinnerPicker } from "./WinnerPicker";
 
 type Format = "doubles" | "singles";
@@ -24,6 +25,9 @@ type Props = {
   onCall: (courtId: string) => void;
   /** "Need N more": the button stays tappable and explains. */
   onNeedMore: (needed: number) => void;
+  /** D25: the server's preview for this court's format (no level group: "Call mixed"). */
+  preview?: FormatPreview | null;
+  onCallMixed?: (courtId: string) => void;
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
   /** BR19: replace a player who said they aren't ready. */
   onSwap: (courtId: string, playerId: string) => void;
@@ -39,7 +43,7 @@ type Props = {
  * One court (D19): a mini court with the players' names in their service
  * boxes, the minutes since the game started, and the court's actions.
  */
-export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, onFinish, onSwap, onSwapSides, onSetFormat, fresh = false }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, preview, onCallMixed, onFinish, onSwap, onSwapSides, onSetFormat, fresh = false }: Props) {
   const t = useT();
   // The card is keyed by game, so this runs once per new game (cleared when the 1 s highlight ends).
   const [highlight, setHighlight] = useState(fresh);
@@ -183,7 +187,17 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
           <Button variant="ghost" size="sm" className="-ml-2 font-medium" disabled={busy} onClick={() => setConfirmFormat(true)}>
             {t.live.makeFormat(otherLabel)}
           </Button>
-          {eligibleCount >= size ? (
+          {eligibleCount >= size && preview?.status === "no_group" && onCallMixed ? (
+            // D25 (f): no group fits the levels; the organizer can play queue order once.
+            <div className="flex flex-col items-end gap-1">
+              <p className="text-sm text-warn" data-no-level-group="">
+                {noGroupText(t, preview)}
+              </p>
+              <Button variant="lime" size="pill" disabled={busy} aria-label={t.live.callMixedOn(court.label)} onClick={() => onCallMixed(court.id)}>
+                {t.live.callMixed}
+              </Button>
+            </div>
+          ) : eligibleCount >= size ? (
             <Button variant="lime" size="pill" disabled={busy} onClick={() => onCall(court.id)}>
               {t.live.callNext(size)}
             </Button>

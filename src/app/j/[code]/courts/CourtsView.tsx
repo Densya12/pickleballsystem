@@ -9,6 +9,7 @@ import { useT } from "@/lib/i18n/client";
 import { courtCards, courtsLineup, type LineupPlayer } from "@/lib/player/courts";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
+import { predictedIds } from "@/lib/queue/preview";
 import { useCalledAlert } from "@/lib/player/useCalledAlert";
 import { useScreenWakeLock } from "@/lib/player/useScreenWakeLock";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
@@ -26,6 +27,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
     games: view.games,
     callSize: callSizeFor(view.courtFormats),
     rules: view.rules,
+    predicted: predictedIds(view.preview, view.courtFormats),
   });
 
   // Called while looking at the courts: the same alert as on My place.
@@ -33,7 +35,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
   const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing");
 
   const cards = courtCards(view.courts, view.courtGames, view.players);
-  const lineup = courtsLineup(view.players, view.courtFormats, view.rules);
+  const lineup = courtsLineup(view.players, view.courtFormats, view.rules, undefined, predictedIds(view.preview, view.courtFormats));
 
   return (
     <PageShell

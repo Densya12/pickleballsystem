@@ -66,6 +66,8 @@ export function queueInfo(
   meId: string,
   callSize = CALL_SIZE,
   rules: CallRules = NO_PAYMENT_RULES,
+  /** D25: the group the server will call next (queue_preview); null: the next 4 (or 2) eligible. */
+  predicted: readonly string[] | null = null,
 ): QueueInfo | null {
   const waiting = players
     .filter((p) => p.status === "queued" || p.status === "paused")
@@ -77,7 +79,9 @@ export function queueInfo(
   const me = waiting[index];
   return {
     position: index + 1,
-    nextUp: isCallable(me, rules) && before.filter((p) => isCallable(p, rules)).length < callSize,
+    nextUp: predicted
+      ? predicted.includes(me.id)
+      : isCallable(me, rules) && before.filter((p) => isCallable(p, rules)).length < callSize,
     ahead: before.slice(-AHEAD_SHOWN).map((p) => p.name),
   };
 }
@@ -108,8 +112,10 @@ export function pickPwestoState(input: {
   /** From callSizeFor(court formats); defaults to doubles (4). */
   callSize?: number;
   rules?: CallRules;
+  /** D25: the server's next group (queue_preview), when known. */
+  predicted?: readonly string[] | null;
 }): PwestoState {
-  const { sessionStatus, me, players, games, callSize = CALL_SIZE, rules = NO_PAYMENT_RULES } = input;
+  const { sessionStatus, me, players, games, callSize = CALL_SIZE, rules = NO_PAYMENT_RULES, predicted = null } = input;
   if (sessionStatus === "ended") return { kind: "ended" };
   if (!me || me.status === "left") return { kind: "left" };
 
@@ -131,7 +137,7 @@ export function pickPwestoState(input: {
     }
   }
 
-  const info = queueInfo(players, me.id, callSize, rules);
+  const info = queueInfo(players, me.id, callSize, rules, predicted);
   if (me.status === "paused") return { kind: "paused", position: info?.position ?? 0 };
   return { kind: "queued", ...(info ?? { position: 0, nextUp: false, ahead: [] }) };
 }

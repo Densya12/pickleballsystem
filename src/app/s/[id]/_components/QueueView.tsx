@@ -12,6 +12,7 @@ import type { LiveState, QueueEntry } from "@/lib/queue/data";
 import { LevelBadge } from "@/components/level/LevelBadge";
 import { LevelPicker } from "@/components/level/LevelPicker";
 import { isNewCheckIn, levelLabel, type Level } from "@/lib/queue/players";
+import { nextPreview } from "@/lib/queue/preview";
 import { useNow } from "@/lib/useNow";
 import { useSessionFrame } from "./SessionFrame";
 
@@ -26,11 +27,14 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
   const [openId, setOpenId] = useState<string | null>(null);
   const byId = new Map(state.queue.map((p) => [p.id, p]));
   const open = openId ? (byId.get(openId) ?? null) : null;
+  const next = nextPreview(state.preview, state.courts.map((c) => c.format));
   const lineup = courtsLineup(
     state.queue.map((p) => ({ id: p.id, name: p.name, status: p.status, queuePos: p.position, paymentStatus: p.paymentStatus })),
     state.courts.map((c) => c.format),
     rules,
     Infinity,
+    // D25: "Up next" is the group the server will call; no group: everyone is in "After that".
+    next ? (next.status === "ok" ? next.group.map((p) => p.id) : []) : null,
   );
 
   if (state.queue.length === 0) return <EmptyState>{t.live.queueEmpty}</EmptyState>;

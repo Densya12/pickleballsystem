@@ -61,6 +61,14 @@ const en = {
   yourTurn: (name: string) => `Your turn, ${name}!`,
   headTo: "Head to",
   highlighted: (format: string) => `${format} · you're highlighted`,
+  /** D25: the level group the player waits for, and their place. */
+  upWhenBand: (band: string, place: string) => `You're up when a ${band} group forms. You're ${place} in line.`,
+  upWhenAnyGroup: (place: string) => `You're up when a group forms. You're ${place} in line.`,
+  ordinal: (n: number) => {
+    const tens = n % 100;
+    const suffix = tens >= 11 && tens <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";
+    return `${n}${suffix}`;
+  },
   /** D25: the player's side and partner. */
   yourSide: (side: 0 | 1, partner: string | null) =>
     `${side === 0 ? "Left side" : "Right side"}${partner ? ` · with ${partner}` : ""}`,
@@ -160,6 +168,9 @@ const fil: typeof en = {
   yourTurn: (name: string) => `Ikaw na, ${name}!`,
   headTo: "Pumunta sa",
   highlighted: (format: string) => `${format} · naka-highlight ka`,
+  upWhenBand: (band: string, place: string) => `Ikaw na kapag may grupong ${band}. ${place} ka sa pila.`,
+  upWhenAnyGroup: (place: string) => `Ikaw na kapag may nabuong grupo. ${place} ka sa pila.`,
+  ordinal: (n: number) => `Pang-${n}`,
   yourSide: (side: 0 | 1, partner: string | null) =>
     `${side === 0 ? "Kaliwang panig" : "Kanang panig"}${partner ? ` · kasama si ${partner}` : ""}`,
   onMyWay: "Papunta na ako",

@@ -351,6 +351,9 @@ isOneToOne: false
 "player_submit_reference":
 { Args: { "p_player_id": string,"p_reference": string }; Returns: undefined
                            },
+"queue_preview":
+{ Args: { "p_session_id": string }; Returns: Json
+                           },
 "regenerate_entry_code":
 { Args: { "p_club_id": string }; Returns: string
                            },

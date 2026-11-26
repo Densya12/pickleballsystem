@@ -44,6 +44,7 @@ function state(eligibleCount: number): LiveState {
     queue: [],
     playingCount: 6,
     eligibleCount,
+    preview: null,
     payments: { paid: 0, total: 0, toCheck: 0, unpaid: 0 },
   };
 }
@@ -146,5 +147,34 @@ describe("Courts tab", () => {
     expect(frame.act).not.toHaveBeenCalledWith("swap_sides", expect.anything(), expect.anything());
     // Singles courts have no team swap.
     expect(within(court("Court 2")).queryByRole("button", { name: /Tap to swap sides/ })).not.toBeInTheDocument();
+  });
+  it("D25: an empty court with no level group says so and offers Call mixed; Up next says why", async () => {
+    const noGroup = {
+      ...state(5),
+      preview: { preset: "mixed", formats: { doubles: { status: "no_group" as const, group: [], lo: 2, hi: 4 } } },
+    };
+    render(<CourtsView state={noGroup} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    const c3 = court("Court 3");
+    expect(within(c3).getByText("No level 2–4 group yet")).toBeInTheDocument();
+    expect(within(c3).queryByRole("button", { name: "Call next 4" })).not.toBeInTheDocument();
+    await userEvent.click(within(c3).getByRole("button", { name: "Call mixed on Court 3" }));
+    expect(frame.act).toHaveBeenCalledWith("call_mixed", { courtId: "c3" }, expect.any(String));
+    expect(screen.getAllByText("No level 2–4 group yet")).toHaveLength(2);
+  });
+
+  it("D25: Up next is the server's group, with its level range", () => {
+    const ok = {
+      ...state(5),
+      queue: ["a", "c", "d", "f", "b"].map((id, i) => ({
+        id, name: `P${id}`, level: "3", status: "queued" as const, gamesPlayed: 0, notReady: false, paymentStatus: "unpaid",
+        memberId: null, joinedAt: STARTED, isWalkIn: true, position: i + 1,
+      })),
+      preview: {
+        preset: "mixed",
+        formats: { doubles: { status: "ok" as const, group: ["a", "c", "d", "f"].map((id) => ({ id, name: `P${id}`, skill: 3 })), lo: 2, hi: 3 } },
+      },
+    };
+    render(<CourtsView state={ok} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    expect(screen.getByText("Pa, Pc, Pd, Pf · levels 2–3")).toBeInTheDocument();
   });
 });

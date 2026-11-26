@@ -1,4 +1,5 @@
 import { levelFromSkill } from "@/lib/queue/players";
+import { parsePreview, type QueuePreview } from "@/lib/queue/preview";
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { CourtGame, CourtInfo } from "./courts";
@@ -69,6 +70,10 @@ export type PlayerSessionView = {
   gcash: { name: string | null; number: string | null };
   /** The caller's own payment (NF14: only their own row is readable). */
   payment: { status: string; method: string | null; referenceDigits: string | null };
+  /** D25: who plays together, the player's level, and the server's next group. */
+  matchmaking: string;
+  mySkill: number | null;
+  preview: QueuePreview | null;
 };
 
 /** The session behind a join code, if the caller may read it (player or staff). */
@@ -79,22 +84,23 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
 
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, name, status, starts_at, ends_at, fee, pay_first, gcash_name, gcash_number")
+    .select("id, name, status, starts_at, ends_at, fee, pay_first, gcash_name, gcash_number, matchmaking")
     .eq("join_code", code)
     .maybeSingle();
   if (error) throw new Error(`Could not load session: ${error.message}`);
   if (!session) return null;
 
-  const [me, players, courts, games] = await Promise.all([
+  const [me, players, courts, games, preview] = await Promise.all([
     supabase.rpc("my_player", { p_session_id: session.id }).maybeSingle(),
     supabase
       .from("session_players")
-      .select("id, display_name, status, queue_pos, payment_status")
+      .select("id, display_name, status, queue_pos, payment_status, skill")
       .eq("session_id", session.id)
       .neq("status", "left")
       .order("queue_pos"),
     supabase.from("courts").select("id, label, format").eq("session_id", session.id).order("number"),
     supabase.from("games").select("id, number, court_id, format, player_ids").eq("session_id", session.id).is("ended_at", null),
+    supabase.rpc("queue_preview", { p_session_id: session.id }),
   ]);
   for (const result of [me, players, courts, games]) {
     if (result.error) throw new Error(`Could not load your place in line: ${result.error.message}`);
@@ -140,5 +146,9 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       method: myPayment?.method ?? null,
       referenceDigits: myPayment?.reference_digits ?? null,
     },
+    matchmaking: session.matchmaking,
+    mySkill: myRow?.skill ?? null,
+    // A preview failure must not break My place: the screen falls back to queue order.
+    preview: preview.error ? null : parsePreview(preview.data),
   };
 }

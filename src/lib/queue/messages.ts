@@ -1,6 +1,7 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { paymentErrorMessage } from "@/lib/payments/messages";
 import { sessionErrorMessage } from "@/lib/session/messages";
+import { explainCall, type CallNote } from "./preview";
 
 /** Errors from the queue RPCs, in the device's language. Banners are in t.live. */
 
@@ -81,16 +82,18 @@ export function finishedBanner(
     gameNumber: number;
     finishedPlayerIds: readonly string[];
     winners?: readonly string[] | null;
-    next: { playerIds: readonly string[]; names: readonly string[] } | null;
+    next: { playerIds: readonly string[]; names: readonly string[]; note?: CallNote | null } | null;
   },
 ): string {
   if (input.next && samePlayers(input.finishedPlayerIds, input.next.playerIds)) {
     return t.live.playAgain(input.next.names, input.courtLabel);
   }
-  return t.live.finished({
-    courtLabel: input.courtLabel,
-    gameNumber: input.gameNumber,
-    winners: input.winners,
-    next: input.next ? input.next.names : null,
-  });
+  return (
+    t.live.finished({
+      courtLabel: input.courtLabel,
+      gameNumber: input.gameNumber,
+      winners: input.winners,
+      next: input.next ? input.next.names : null,
+    }) + (input.next ? explainCall(t, input.next.note) : "")
+  );
 }

@@ -1160,3 +1160,53 @@ revoke execute on function
 from public, anon, authenticated;
 revoke execute on function public.swap_sides(uuid, uuid, uuid) from public, anon, authenticated;
 grant execute on function public.swap_sides(uuid, uuid, uuid) to authenticated;
+
+-- ===========================================================================
+-- 5. WHAT PEOPLE SEE: the server's preview of the next call
+-- For each court format in the session: who would be called next, the level
+-- range, or why nobody can be called ("No level 2-4 group yet"). Read-only
+-- (the same selection, nothing is written). Staff of the session's club and
+-- players in this session only; names and levels only, no payment data.
+-- ===========================================================================
+
+create or replace function public.queue_preview(p_session_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_session public.sessions%rowtype;
+  v_result jsonb := '{}'::jsonb;
+  v_format text;
+  v_res jsonb;
+begin
+  if p_session_id is null or not (public.is_session_staff(p_session_id) or public.is_session_player(p_session_id)) then
+    raise exception 'session_not_found' using errcode = 'P0001';
+  end if;
+  select * into v_session from public.sessions s where s.id = p_session_id;
+  if v_session.status <> 'live' then
+    return jsonb_build_object('preset', v_session.matchmaking, 'formats', '{}'::jsonb);
+  end if;
+
+  for v_format in select distinct c.format from public.courts c where c.session_id = p_session_id order by 1 loop
+    v_res := private.select_group(p_session_id, v_format, '{}');
+    v_result := v_result || jsonb_build_object(v_format, jsonb_strip_nulls(jsonb_build_object(
+      'status', v_res ->> 'status',
+      'lo', v_res -> 'lo',
+      'hi', v_res -> 'hi',
+      'repeats', v_res -> 'repeats',
+      'missing', v_res -> 'missing',
+      'group', (select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.display_name, 'skill', p.skill) order by g.ord), '[]'::jsonb)
+                from unnest(private.uuids_of(v_res -> 'group')) with ordinality g(id, ord)
+                join public.session_players p on p.id = g.id)
+    )));
+  end loop;
+
+  return jsonb_build_object('preset', v_session.matchmaking, 'formats', v_result);
+end;
+$$;
+
+revoke execute on function public.queue_preview(uuid) from public, anon, authenticated;
+grant execute on function public.queue_preview(uuid) to authenticated;

@@ -124,6 +124,8 @@ const levelsEn = {
   hint: "Same as your stars in your club app.",
   /** Level ranges in banners and previews: "level 3", "levels 2–4". */
   band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `levels ${lo}–${hi}`),
+  /** Before "group": "a level 2–4 group". */
+  groupBand: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
   change: "Level",
   changeTitle: (name: string) => `${name}'s level`,
   save: "Save level",
@@ -135,6 +137,7 @@ const levelsFil: typeof levelsEn = {
   notSet: "Wala pang level",
   hint: "Kapareho ng stars mo sa club app mo.",
   band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
+  groupBand: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
   change: "Level",
   changeTitle: (name: string) => `Level ni ${name}`,
   save: "I-save ang level",
