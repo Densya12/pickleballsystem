@@ -60,6 +60,7 @@ async function NewSessionContent({ searchParams }: Pick<PageProps<"/sessions/new
                 // BR2: new-session defaults come from the club.
                 points_to: String(club.default_points),
                 rotation: club.default_rotation,
+                matchmaking: club.default_matchmaking,
                 pay_first: "",
                 fee: String(club.default_fee),
                 court_formats: "",

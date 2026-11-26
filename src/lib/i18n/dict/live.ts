@@ -67,6 +67,7 @@ const en = {
   /** After Done, when the new game has exactly the same players. */
   playAgain: (names: readonly string[], court: string) => `Nobody else is waiting, so ${list(names, "and")} play again on ${court}.`,
   rotationChanged: (rotation: string) => `After a game: ${rotation}. It applies from the next Done.`,
+  matchmakingChanged: (preset: string) => `Who plays together: ${preset}. It applies from the next call.`,
   // Errors
   needPlayers: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call.`,
   notEnough: "Not enough players waiting to call.",
@@ -150,6 +151,7 @@ const en = {
   outboxFormat: (format: string, court: string) => `Make ${court} ${format.toLowerCase()}`,
   outboxRotation: (rotation: string) => `After a game: ${rotation}`,
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
+  outboxMatchmaking: (preset: string) => `Who plays together: ${preset}`,
   outboxPause: (name: string) => `Pause ${name}`,
   outboxResume: (name: string) => `Resume ${name}`,
   outboxRemove: (name: string) => `Remove ${name}`,
@@ -161,6 +163,8 @@ const en = {
   // More › After a game (rotation while live)
   afterGame: "After a game",
   afterGameHint: "Takes effect at the next Done.",
+  matchmaking: "Who plays together",
+  matchmakingHint: "Takes effect at the next call.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "and")}.` : `${court}.`),
 };
 
@@ -222,6 +226,7 @@ const fil: typeof en = {
   playAgain: (names: readonly string[], court: string) =>
     `Walang ibang naghihintay, kaya ${list(names, "at")} ulit ang maglalaro sa ${court}.`,
   rotationChanged: (rotation: string) => `Pagkatapos ng laro: ${rotation}. Simula sa susunod na Tapos na.`,
+  matchmakingChanged: (preset: string) => `Sino ang magkakasama: ${preset}. Simula sa susunod na tawag.`,
   needPlayers: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notEnough: "Kulang pa ang nakapila para makatawag.",
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
@@ -296,6 +301,7 @@ const fil: typeof en = {
   outboxFormat: (format: string, court: string) => `Gawing ${format} ang ${court}`,
   outboxRotation: (rotation: string) => `Pagkatapos ng laro: ${rotation}`,
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
+  outboxMatchmaking: (preset: string) => `Sino ang magkakasama: ${preset}`,
   outboxPause: (name: string) => `I-pause si ${name}`,
   outboxResume: (name: string) => `Ituloy si ${name}`,
   outboxRemove: (name: string) => `Alisin si ${name} sa pila`,
@@ -305,6 +311,8 @@ const fil: typeof en = {
   readAloudDescription: "Sa phone na ito lang. I-off kung may ibang phone na nagbabasa.",
   afterGame: "Pagkatapos ng laro",
   afterGameHint: "Magsisimula sa susunod na Tapos na.",
+  matchmaking: "Sino ang magkakasama",
+  matchmakingHint: "Magsisimula sa susunod na tawag.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "at")}.` : `${court}.`),
 };
 

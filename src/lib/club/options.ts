@@ -1,5 +1,5 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
-import type { Points, Rotation } from "./validation";
+import type { Matchmaking, Points, Rotation } from "./validation";
 
 /** Choices shared by club defaults (Settings) and new sessions. */
 
@@ -33,4 +33,17 @@ export function rotationChoices(
 
 export function rotationLabel(rotation: string, t: Dictionary): string {
   return rotationChoices(t).find((choice) => choice.value === rotation)?.label ?? rotation;
+}
+
+/** D25: who plays together, with a one-line hint each (New session, Settings, More). */
+export function matchmakingChoices(t: Dictionary): { value: Matchmaking; label: string; description: string }[] {
+  return [
+    { value: "mixed", label: t.choices.mixed, description: t.choices.mixedDescription },
+    { value: "same_level", label: t.choices.sameLevel, description: t.choices.sameLevelDescription },
+    { value: "fair_line", label: t.choices.fairLine, description: t.choices.fairLineDescription },
+  ];
+}
+
+export function matchmakingLabel(matchmaking: string, t: Dictionary): string {
+  return matchmakingChoices(t).find((choice) => choice.value === matchmaking)?.label ?? matchmaking;
 }

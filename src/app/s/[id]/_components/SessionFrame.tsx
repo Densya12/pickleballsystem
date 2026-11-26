@@ -7,8 +7,8 @@ import { OfflineNavGuard } from "@/components/session/OfflineNavGuard";
 import { OutboxStatus } from "@/components/session/OutboxStatus";
 import { BackLink, BottomSheet, Button, ListGroup, ListRow, Notice, PageShell, RadioGroup, Toggle } from "@/components/ui";
 import { ChevronRightIcon } from "@/components/ui/icons";
-import { rotationChoices, rotationLabel } from "@/lib/club/options";
-import type { Rotation } from "@/lib/club/validation";
+import { matchmakingChoices, matchmakingLabel, rotationChoices, rotationLabel } from "@/lib/club/options";
+import type { Matchmaking, Rotation } from "@/lib/club/validation";
 import { useT } from "@/lib/i18n/client";
 import { isNetworkError, type OutboxItem, type OutboxKind } from "@/lib/outbox/rules";
 import { useOutbox } from "@/lib/outbox/useOutbox";
@@ -45,7 +45,7 @@ export function useSessionFrame(): SessionContextValue {
 }
 
 type Props = {
-  session: { id: string; fee: number; rotation: string };
+  session: { id: string; fee: number; rotation: string; matchmaking: string };
   tab: SessionTab;
   title: string;
   subtitle?: ReactNode;
@@ -238,6 +238,10 @@ export function SessionFrame({
         rotation={session.rotation}
         courtFormats={courts.map((c) => c.format)}
         onRotation={(rotation) => act("set_rotation", { rotation }, t.live.outboxRotation(rotationLabel(rotation, t)))}
+        matchmaking={session.matchmaking}
+        onMatchmaking={(matchmaking) =>
+          act("set_matchmaking", { matchmaking }, t.live.outboxMatchmaking(matchmakingLabel(matchmaking, t)))
+        }
         details={details}
         tagatawag={tagatawag}
       />
@@ -253,6 +257,8 @@ function MoreSheet({
   rotation,
   courtFormats,
   onRotation,
+  matchmaking,
+  onMatchmaking,
   details,
   tagatawag,
 }: {
@@ -264,6 +270,9 @@ function MoreSheet({
   courtFormats: readonly string[];
   /** Resolves true when changed (or saved to the outbox). */
   onRotation: (rotation: Rotation) => Promise<boolean>;
+  /** D25: who plays together, changeable while live (from the next call). */
+  matchmaking: string;
+  onMatchmaking: (matchmaking: Matchmaking) => Promise<boolean>;
   details: ReactNode;
   tagatawag: ReturnType<typeof useTagatawag>;
 }) {
@@ -271,6 +280,8 @@ function MoreSheet({
   // The choice shows at once; the server's value takes over once it has caught up.
   const [chosen, setChosen] = useState<Rotation | null>(null);
   if (chosen !== null && chosen === rotation) setChosen(null);
+  const [chosenPreset, setChosenPreset] = useState<Matchmaking | null>(null);
+  if (chosenPreset !== null && chosenPreset === matchmaking) setChosenPreset(null);
   const [showDetails, setShowDetails] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -318,6 +329,22 @@ function MoreSheet({
               setChosen(next);
               void onRotation(next).then((ok) => {
                 if (!ok) setChosen(null);
+              });
+            }}
+          />
+        </li>
+        <li className="px-4 py-3">
+          <RadioGroup
+            legend={t.live.matchmaking}
+            hint={t.live.matchmakingHint}
+            name="matchmaking"
+            look="list"
+            options={matchmakingChoices(t)}
+            value={chosenPreset ?? (matchmaking as Matchmaking)}
+            onValueChange={(next) => {
+              setChosenPreset(next);
+              void onMatchmaking(next).then((ok) => {
+                if (!ok) setChosenPreset(null);
               });
             }}
           />

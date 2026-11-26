@@ -17,6 +17,10 @@ export type Points = (typeof POINTS_OPTIONS)[number];
 export const ROTATION_OPTIONS = ["all_off", "winners_stay"] as const;
 export type Rotation = (typeof ROTATION_OPTIONS)[number];
 
+/** D25: who plays together. New clubs start on Mixed; existing ones were moved to Fair line. */
+export const MATCHMAKING_OPTIONS = ["mixed", "same_level", "fair_line"] as const;
+export type Matchmaking = (typeof MATCHMAKING_OPTIONS)[number];
+
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
 
@@ -72,6 +76,7 @@ export type ClubSettingsInput = {
   default_fee: number;
   default_points: Points;
   default_rotation: Rotation;
+  default_matchmaking: Matchmaking;
 };
 
 export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<ClubSettingsInput> {
@@ -82,6 +87,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
   const feeRaw = text(form, "default_fee");
   const pointsRaw = Number(text(form, "default_points"));
   const rotationRaw = text(form, "default_rotation");
+  const matchmakingRaw = text(form, "default_matchmaking");
 
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
 
@@ -94,6 +100,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
     default_fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
     default_points: (POINTS_OPTIONS as readonly number[]).includes(pointsRaw) ? undefined : t.club.pointsInvalid,
     default_rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotationRaw) ? undefined : t.club.rotationInvalid,
+    default_matchmaking: (MATCHMAKING_OPTIONS as readonly string[]).includes(matchmakingRaw) ? undefined : t.club.matchmakingInvalid,
   };
 
   return toParseResult(
@@ -105,6 +112,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
       default_fee: fee,
       default_points: pointsRaw as Points,
       default_rotation: rotationRaw as Rotation,
+      default_matchmaking: matchmakingRaw as Matchmaking,
     },
     errors,
   );

@@ -235,3 +235,122 @@ revoke execute on function
 from public, anon, authenticated;
 revoke execute on function public.set_player_level(uuid, integer), public.my_last_profile_v2(text) from public, anon, authenticated;
 grant execute on function public.set_player_level(uuid, integer), public.my_last_profile_v2(text) to authenticated;
+
+-- ===========================================================================
+-- 2. PRESETS: mixed | same_level | fair_line (session setting, club default)
+-- Existing sessions and club defaults become fair_line (today's selection).
+-- The column default stays fair_line, so a club created by the deployed app
+-- keeps today's behavior; the new app sets "mixed" on new clubs.
+-- ===========================================================================
+
+alter table public.sessions add column if not exists matchmaking text not null default 'fair_line';
+alter table public.clubs add column if not exists default_matchmaking text not null default 'fair_line';
+alter table public.sessions drop constraint if exists sessions_matchmaking_allowed;
+alter table public.sessions add constraint sessions_matchmaking_allowed check (matchmaking in ('mixed', 'same_level', 'fair_line'));
+alter table public.clubs drop constraint if exists clubs_default_matchmaking_allowed;
+alter table public.clubs add constraint clubs_default_matchmaking_allowed check (default_matchmaking in ('mixed', 'same_level', 'fair_line'));
+
+grant select (matchmaking) on public.sessions to authenticated;
+grant select (default_matchmaking), update (default_matchmaking) on public.clubs to authenticated;
+
+-- Same signature; new sessions take the club's default matchmaking.
+create or replace function public.create_session(
+  p_club_id uuid,
+  p_name text,
+  p_starts_at timestamptz,
+  p_ends_at timestamptz,
+  p_courts_count integer,
+  p_points_to integer default null,
+  p_rotation text default null,
+  p_pay_first boolean default false,
+  p_fee integer default null,
+  p_start boolean default false,
+  p_court_formats text[] default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := private.assert_organizer_account();
+  v_club public.clubs%rowtype;
+  v_session_id uuid;
+  v_constraint text;
+  v_attempt integer := 0;
+begin
+  if p_club_id is null or not public.is_club_staff(p_club_id) then
+    raise exception 'not_staff' using errcode = '42501';
+  end if;
+
+  select * into v_club from public.clubs c where c.id = p_club_id;
+
+  -- Join codes come from a ~887M space; retry the rare collision.
+  loop
+    begin
+      insert into public.sessions (
+        club_id, name, starts_at, ends_at, courts_count, court_formats, points_to, rotation,
+        pay_first, fee, gcash_name, gcash_number, created_by, matchmaking
+      ) values (
+        p_club_id, p_name, p_starts_at, p_ends_at, p_courts_count, p_court_formats,
+        coalesce(p_points_to, v_club.default_points),
+        coalesce(p_rotation, v_club.default_rotation),
+        coalesce(p_pay_first, false),
+        coalesce(p_fee, v_club.default_fee),
+        v_club.gcash_name, v_club.gcash_number, v_uid,
+        v_club.default_matchmaking
+      )
+      returning id into v_session_id;
+      exit;
+    exception
+      when unique_violation then
+        get stacked diagnostics v_constraint = constraint_name;
+        v_attempt := v_attempt + 1;
+        if v_constraint not in ('sessions_join_code_key', 'sessions_display_token_key')
+           or v_attempt >= 5 then
+          raise;
+        end if;
+    end;
+  end loop;
+
+  if coalesce(p_start, false) then
+    perform private.session_go_live(v_session_id);
+  end if;
+
+  return v_session_id;
+end;
+$$;
+
+-- The New session form (draft or live) and More (while live): the preset.
+-- Organizer-only, logged, idempotent (safe to resend from the outbox), like
+-- set_session_rotation. Takes effect at the next call.
+create or replace function public.set_session_matchmaking(p_session_id uuid, p_matchmaking text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_session public.sessions%rowtype;
+begin
+  perform private.assert_organizer_account();
+  v_session := private.lock_staff_session(p_session_id);
+  if v_session.status not in ('draft', 'live') then
+    raise exception 'session_not_live' using errcode = 'P0001';
+  end if;
+  if p_matchmaking is null or p_matchmaking not in ('mixed', 'same_level', 'fair_line') then
+    raise exception 'invalid_matchmaking' using errcode = 'P0001';
+  end if;
+  if v_session.matchmaking = p_matchmaking then
+    return;
+  end if;
+
+  update public.sessions set matchmaking = p_matchmaking where id = p_session_id;
+  insert into public.events (session_id, actor, type, payload)
+  values (p_session_id, auth.uid(), 'matchmaking_changed',
+          jsonb_build_object('from', v_session.matchmaking, 'to', p_matchmaking));
+end;
+$$;
+
+revoke execute on function public.set_session_matchmaking(uuid, text) from public, anon, authenticated;
+grant execute on function public.set_session_matchmaking(uuid, text) to authenticated;

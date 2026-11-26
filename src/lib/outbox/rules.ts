@@ -17,6 +17,7 @@ export const QUEUEABLE_KINDS = [
   "set_court_format",
   "set_rotation",
   "set_player_level",
+  "set_matchmaking",
 ] as const;
 export type OutboxKind = (typeof QUEUEABLE_KINDS)[number];
 
@@ -47,6 +48,8 @@ const ALREADY_DONE: Record<OutboxKind, readonly string[]> = {
   set_rotation: [],
   // D25: setting the level a player already has changes nothing (set_player_level).
   set_player_level: [],
+  // Idempotent like set_rotation (set_session_matchmaking).
+  set_matchmaking: [],
 };
 
 export function isAlreadyDone(kind: OutboxKind, code: string | undefined): boolean {

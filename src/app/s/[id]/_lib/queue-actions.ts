@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
-import { rotationLabel } from "@/lib/club/options";
+import { matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
 import { levelLabel, levelNumber } from "@/lib/queue/players";
 import { courtFormatLabel } from "@/lib/session/validation";
@@ -118,6 +118,19 @@ export async function setRotationAction(sessionId: string, rotation: "all_off" |
 
   refresh();
   return { banner: t.live.rotationChanged(rotationLabel(rotation, t)) };
+}
+
+/** D25: More › Who plays together, while live. It applies from the next call. */
+export async function setMatchmakingAction(sessionId: string, matchmaking: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_session_matchmaking", { p_session_id: sessionId, p_matchmaking: matchmaking });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.live.matchmakingChanged(matchmakingLabel(matchmaking, t)) };
 }
 
 /** D25: the organizer changes a player's level (also on their member record). "unsure" clears it. */

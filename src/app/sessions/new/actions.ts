@@ -53,5 +53,12 @@ export async function createSessionAction(_prev: NewSessionState, formData: Form
   });
   if (error) return { error: sessionErrorMessage(error, t), values };
 
+  // D25: who plays together (create_session takes the club's default; same signature as before).
+  const { error: presetError } = await supabase.rpc("set_session_matchmaking", {
+    p_session_id: sessionId,
+    p_matchmaking: input.matchmaking,
+  });
+  if (presetError) return { error: sessionErrorMessage(presetError, t), values };
+
   redirect(start ? `/s/${sessionId}` : "/");
 }

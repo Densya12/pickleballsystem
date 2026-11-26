@@ -15,6 +15,7 @@ export async function getClubFormValues() {
       default_fee: String(club.default_fee),
       default_points: String(club.default_points),
       default_rotation: club.default_rotation,
+      default_matchmaking: club.default_matchmaking,
     },
   };
 }

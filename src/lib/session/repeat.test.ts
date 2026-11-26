@@ -65,6 +65,7 @@ describe("repeatDefaults", () => {
           court_formats: ["doubles", "singles", "doubles"],
           points_to: 15,
           rotation: "winners_stay",
+          matchmaking: "same_level",
           pay_first: true,
           fee: 200,
         },
@@ -78,6 +79,7 @@ describe("repeatDefaults", () => {
       court_formats: "doubles,singles,doubles",
       points_to: "15",
       rotation: "winners_stay",
+      matchmaking: "same_level",
       pay_first: "on",
       fee: "200",
     });
@@ -93,6 +95,7 @@ describe("repeatDefaults", () => {
         court_formats: ["doubles"],
         points_to: 11,
         rotation: "all_off",
+        matchmaking: "fair_line",
         pay_first: false,
         fee: 0,
       },

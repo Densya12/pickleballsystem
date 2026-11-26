@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
  * `select *` would be refused. join_code stays unread until check-in (Phase 4).
  */
 const COLUMNS =
-  "id, club_id, name, starts_at, ends_at, status, courts_count, court_formats, points_to, rotation, pay_first, fee, gcash_name, gcash_number, created_at, started_at, ended_at";
+  "id, club_id, name, starts_at, ends_at, status, courts_count, court_formats, points_to, rotation, matchmaking, pay_first, fee, gcash_name, gcash_number, created_at, started_at, ended_at";
 
 export type SessionStatus = "draft" | "live" | "ended";
 export type Session = Pick<
@@ -22,6 +22,7 @@ export type Session = Pick<
   | "court_formats"
   | "points_to"
   | "rotation"
+  | "matchmaking"
   | "pay_first"
   | "fee"
   | "gcash_name"

@@ -6,8 +6,10 @@
 import {
   FEE_MAX,
   POINTS_OPTIONS,
+  MATCHMAKING_OPTIONS,
   ROTATION_OPTIONS,
   toParseResult,
+  type Matchmaking,
   type ParseResult,
   type Points,
   type Rotation,
@@ -48,6 +50,7 @@ export const SESSION_FIELDS = [
   "courts_count",
   "points_to",
   "rotation",
+  "matchmaking",
   "pay_first",
   "fee",
   /** Comma-separated, one per court (form fields court_format_1..N). */
@@ -63,6 +66,7 @@ export type NewSessionInput = {
   courts_count: number;
   points_to: Points;
   rotation: Rotation;
+  matchmaking: Matchmaking;
   pay_first: boolean;
   fee: number;
   court_formats: CourtFormat[];
@@ -84,6 +88,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
   const courts = /^\d+$/.test(courtsRaw) ? Number(courtsRaw) : Number.NaN;
   const points = Number(text(form, "points_to"));
   const rotation = text(form, "rotation");
+  const matchmaking = text(form, "matchmaking");
   const feeRaw = text(form, "fee");
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
   // A checkbox sends "on" when checked and nothing when not.
@@ -115,6 +120,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
     rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotation)
       ? undefined
       : t.club.rotationInvalid,
+    matchmaking: (MATCHMAKING_OPTIONS as readonly string[]).includes(matchmaking) ? undefined : t.club.matchmakingInvalid,
     fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
     court_formats: courtFormats.every((f) => (COURT_FORMATS as readonly string[]).includes(f))
       ? undefined
@@ -129,6 +135,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
       courts_count: courts,
       points_to: points as Points,
       rotation: rotation as Rotation,
+      matchmaking: matchmaking as Matchmaking,
       pay_first: payFirst,
       fee,
       court_formats: courtFormats as CourtFormat[],
