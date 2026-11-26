@@ -34,10 +34,12 @@ export async function magicLinkFor(email: string): Promise<string> {
 /** Signs in a new organizer with an email magic link. Ends on /club/new. */
 export async function signInNewOrganizer(page: Page, email: string): Promise<void> {
   await page.goto("/login");
+  // D22: Google is the main action; email is one tap away.
+  await page.getByRole("button", { name: "Use email instead" }).click();
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByRole("button", { name: "Email me a sign-in link" }).click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
-  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByText(email, { exact: true })).toBeVisible();
 
   await page.goto(await magicLinkFor(email));
   await expect(page).toHaveURL(/\/club\/new$/);
