@@ -12,7 +12,7 @@ import { StaffSection, type InviteItem, type StaffItem } from "../StaffSection";
 import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.settings.coOrganizers} · ${en.common.appName}`,
+  title: en.settings.coOrganizers,
 };
 
 export default function OrganizersPage() {

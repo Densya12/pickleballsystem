@@ -38,7 +38,7 @@ import { UnpaidList } from "./_components/UnpaidList";
 import { CourtsSkeleton } from "./_components/SessionSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.nav.session} · ${en.common.appName}`,
+  title: en.nav.session,
 };
 
 /** A session: Courts while live (D19), the draft page, or the summary once ended. */

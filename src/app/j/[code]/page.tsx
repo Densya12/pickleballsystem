@@ -11,7 +11,7 @@ import { CheckInForm } from "./CheckInForm";
 import { CheckInSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.player.checkInPageTitle} · ${en.common.appName}`,
+  title: en.player.checkInPageTitle,
 };
 
 /**

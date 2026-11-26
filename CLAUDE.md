@@ -1,20 +1,33 @@
 @AGENTS.md
 
-# Open Play Queue: project rules
+# Pilaball: project rules
 
-Mobile-first PWA for running pickleball open play (organizer queue + rotation, payment tracking,
-guest check-in). UI copy is English by default with Taglish as the second language (D20); code is
-English.
+Pilaball (D21) is a mobile-first PWA for running pickleball open play (organizer queue + rotation,
+payment tracking, guest check-in). UI copy is English by default with Taglish as the second language
+(D20); code is English.
 
 ## Spec and phases
 
-- Source of truth: **"Pickleball Open Play Queue — Build Spec"**: decisions **D1–D20**, business
-  rules **BR1–BR21**, non-functional rules **NF1–NF14**. Cite the IDs when a change implements or
-  touches one.
+- Source of truth: the **Build Spec** (first titled "Pickleball Open Play Queue — Build Spec"):
+  decisions **D1–D24**, business rules **BR1–BR21**, non-functional rules **NF1–NF14**. Cite the IDs
+  when a change implements or touches one.
 - Build **one phase at a time**. Don't start the next phase's features, tables or screens early.
 - Phase 0 (Foundation): design system, base components, Supabase wiring, tests, CI.
 - Phase 1 (Organizers and clubs): Google + magic-link sign-in, clubs/club_staff/club_invites with
   RLS, settings, co-organizer invites.
+
+## Brand (D21)
+
+- Name: **Pilaball**, from `APP_NAME` in `src/lib/brand.ts`. Never type the name in UI or metadata;
+  page titles get " · Pilaball" from the layout's title template. The repo, the npm package and the
+  database keep their old names.
+- Mark: `src/components/brand/BrandMark.tsx` (option A, "the player": an ink #111412 rounded tile,
+  a white stem, a lime #C9F26B ball for a head). The favicon is `src/app/icon.svg`; the PNG icons
+  come from `node scripts/generate-icons.mjs`.
+- Wordmark: `src/components/brand/Wordmark.tsx`, lowercase "pilaball" in Space Grotesk 600 with a
+  dotless ı whose dot is the ball (outlined in ink on light backgrounds). Its accessible name is
+  "Pilaball". Space Grotesk loads the latin-ext subset for the ı.
+- Use ™, not ®, until the name is registered.
 
 ## Definition of done (every phase)
 

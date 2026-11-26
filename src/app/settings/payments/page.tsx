@@ -8,7 +8,7 @@ import { getClubFormValues } from "../data";
 import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.settings.gcashAndFee} · ${en.common.appName}`,
+  title: en.settings.gcashAndFee,
 };
 
 export default function Page() {

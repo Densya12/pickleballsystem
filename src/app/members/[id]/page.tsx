@@ -10,7 +10,7 @@ import { MemberForm } from "../MemberForm";
 import { MemberFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.members.editTitle} · ${en.common.appName}`,
+  title: en.members.editTitle,
 };
 
 export default function EditMemberPage({ params }: PageProps<"/members/[id]">) {

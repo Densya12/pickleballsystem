@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/brand/Wordmark";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -9,7 +10,7 @@ import { getT } from "@/lib/i18n/server";
 import { normalizeJoinCode } from "@/lib/queue/qr";
 
 export const metadata: Metadata = {
-  title: `${en.player.checkInPageTitle} · ${en.common.appName}`,
+  title: en.player.checkInPageTitle,
 };
 
 /**
@@ -39,7 +40,7 @@ async function ClubEntryContent({ params }: Pick<PageProps<"/c/[code]">, "params
         </>
       }
       eyebrow={t.system.clubEntryEyebrow}
-      title={entry.status === "none" ? entry.clubName : t.common.appName}
+      title={entry.status === "none" ? entry.clubName : <Wordmark className="text-3xl" />}
     >
       {entry.status === "none" ? (
         <Notice kind="info">{t.system.clubEntryNone}</Notice>

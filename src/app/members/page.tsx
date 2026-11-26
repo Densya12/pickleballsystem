@@ -11,7 +11,7 @@ import { MembersList } from "./MembersList";
 import { MembersSkeleton } from "@/components/skeletons/OrganizerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.members.pageTitle} · ${en.common.appName}`,
+  title: en.members.pageTitle,
 };
 
 export default function MembersPage({ searchParams }: PageProps<"/members">) {

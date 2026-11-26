@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { MainTabBar } from "@/components/nav/MainTabBar";
 import { Button, EmptyState, ListGroup, ListRow, PageShell, Section } from "@/components/ui";
 import { ArrowRightIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "@/components/ui/icons";
@@ -33,6 +34,7 @@ async function HomeContent() {
 
   return (
     <PageShell
+      top={<Wordmark className="text-xl" />}
       eyebrow={t.home.greetingName(t.home.greeting[dayPart(new Date())], firstName)}
       title={club.name}
       titleSize="xl"

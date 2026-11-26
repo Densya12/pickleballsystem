@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { JoinForm } from "./JoinForm";
 
 export const metadata: Metadata = {
-  title: `${en.club.invitePageTitle} · ${en.common.appName}`,
+  title: en.club.invitePageTitle,
 };
 
 export default function InvitePage({ params }: PageProps<"/invite/[token]">) {

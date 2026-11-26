@@ -8,7 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { CreateClubForm } from "./CreateClubForm";
 
 export const metadata: Metadata = {
-  title: `${en.club.newPageTitle} · ${en.common.appName}`,
+  title: en.club.newPageTitle,
 };
 
 export default function NewClubPage() {

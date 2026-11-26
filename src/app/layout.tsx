@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { LocaleRoot } from "@/components/i18n/LocaleRoot";
+import { APP_NAME } from "@/lib/brand";
 import { en } from "@/lib/i18n/dictionary";
 import { HTML_LANG_SCRIPT } from "@/lib/i18n/locale";
 import "./globals.css";
@@ -12,17 +13,19 @@ const inter = Inter({
   display: "swap",
 });
 
+// latin-ext as well: the Wordmark's dotless ı (U+0131) must never fall back to another font.
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["500", "600"],
   display: "swap",
 });
 
+// Pages set only their own title; the template adds " · Pilaball" (D21).
 export const metadata: Metadata = {
-  title: en.common.appName,
+  title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: en.common.appDescription,
-  applicationName: en.common.appName,
+  applicationName: APP_NAME,
 };
 
 export const viewport: Viewport = {

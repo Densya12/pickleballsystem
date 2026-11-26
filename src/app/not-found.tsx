@@ -5,7 +5,7 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: `${en.system.notFoundPageTitle} · ${en.common.appName}`,
+  title: en.system.notFoundPageTitle,
 };
 
 /** Unknown pages, and sessions or clubs the user isn't staff of. */

@@ -1,9 +1,11 @@
 /** Shared words, status names (one per state, D19), levels and choices. */
 
+import { APP_NAME } from "@/lib/brand";
+
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 const en = {
-  appName: "Open Play Queue",
+  appName: APP_NAME,
   appDescription: "Queue, rotation and payments for pickleball open play.",
   loading: "Loading…",
   back: "Back",
@@ -31,7 +33,7 @@ const en = {
 };
 
 const fil: typeof en = {
-  appName: "Open Play Queue",
+  appName: APP_NAME,
   appDescription: "Pila, rotation at bayad para sa pickleball open play.",
   loading: "Sandali lang…",
   back: "Bumalik",

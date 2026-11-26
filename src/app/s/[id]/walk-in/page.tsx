@@ -13,7 +13,7 @@ import { WalkInForm } from "./WalkInForm";
 import { WalkInSkeleton } from "../_components/SessionSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.live.walkInPageTitle} · ${en.common.appName}`,
+  title: en.live.walkInPageTitle,
 };
 
 export default function WalkInPage({ params }: PageProps<"/s/[id]/walk-in">) {

@@ -1,18 +1,24 @@
 import type { MetadataRoute } from "next";
+import { APP_NAME, BRAND_INK } from "@/lib/brand";
+import { en } from "@/lib/i18n/dictionary";
 
+/**
+ * PWA manifest (D21). Icons come from the Pilaball mark (src/app/icon.svg),
+ * rendered by scripts/generate-icons.mjs; the maskable one has safe padding.
+ */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Open Play Queue",
-    short_name: "Open Play",
-    description: "Pila, rotation at bayad para sa pickleball open play.",
+    name: APP_NAME,
+    short_name: APP_NAME,
+    description: en.common.appDescription,
     start_url: "/",
     display: "standalone",
-    theme_color: "#111412",
-    background_color: "#F6F6F3",
-    // Placeholder icons (lime ball on ink). Replace with final artwork later.
+    theme_color: BRAND_INK,
+    background_color: BRAND_INK,
     icons: [
-      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

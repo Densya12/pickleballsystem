@@ -8,7 +8,7 @@ import { CourtsView } from "./CourtsView";
 import { PlayerCourtsSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
-  title: `${en.player.courtsPageTitle} · ${en.common.appName}`,
+  title: en.player.courtsPageTitle,
 };
 
 /** Mga court (D14, BR21): who is playing and who is next, for players of this session. */
