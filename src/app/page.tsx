@@ -29,7 +29,7 @@ export default function Home() {
 async function HomeContent() {
   const [{ user, club }, t, locale] = await Promise.all([requireClub(), getT(), getLocale()]);
   const { live, drafts, ended, endedStats, lastRepeatable } = await getHomeSessions(club.id);
-  const liveState = live ? await getLiveState(live.id) : null;
+  const liveState = live ? await getLiveState(live.id, { withPreview: false }) : null;
   const firstName = user.name?.split(/\s+/)[0];
 
   return (

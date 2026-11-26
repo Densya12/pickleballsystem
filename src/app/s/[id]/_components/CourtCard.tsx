@@ -101,9 +101,13 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
             : undefined
         }
       />
-      {game && game.format === "doubles" && (
-        <p className="text-xs text-muted" aria-live="polite">
-          {swapFrom ? t.live.swapWith(game.players.find((p) => p.id === swapFrom)?.name ?? "") : t.live.swapSidesHint}
+      {/* Shown while choosing, so the card keeps its height (and its skeleton's) otherwise. */}
+      <p className="sr-only" aria-live="polite">
+        {swapFrom && game ? t.live.swapWith(game.players.find((p) => p.id === swapFrom)?.name ?? "") : ""}
+      </p>
+      {swapFrom && game && (
+        <p className="text-xs text-muted" aria-hidden="true">
+          {t.live.swapWith(game.players.find((p) => p.id === swapFrom)?.name ?? "")}
         </p>
       )}
       {game ? (

@@ -76,6 +76,8 @@ test.describe("sessions (organizer)", () => {
       "Court 1: Doubles · Court 2: Doubles · Court 3: Doubles",
       "15 points",
       "Winners stay",
+      // D25: who plays together (new clubs default to Mixed).
+      "Mixed",
       "Yes",
       "₱200",
       "None",

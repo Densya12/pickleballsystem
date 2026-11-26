@@ -135,10 +135,9 @@ describe("Courts tab", () => {
   it("team swap: tap a player, then one on the other side (online only, not queued)", async () => {
     render(<CourtsView state={state(0)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
     const c1 = court("Court 1");
-    expect(within(c1).getByText("Tap a player to move them to the other side.")).toBeInTheDocument();
     await userEvent.click(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" }));
     expect(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" })).toHaveAttribute("aria-pressed", "true");
-    expect(within(c1).getByText("Now tap a player on the other side to swap with Ana Reyes.")).toBeInTheDocument();
+    expect(within(c1).getAllByText("Now tap a player on the other side to swap with Ana Reyes.")).toHaveLength(2); // visible + announced
     // Same side: the choice moves to Ben.
     await userEvent.click(within(c1).getByRole("button", { name: "Ben Cruz, Left side. Tap to swap sides" }));
     expect(swapSidesAction).not.toHaveBeenCalled();

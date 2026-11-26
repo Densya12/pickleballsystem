@@ -42,7 +42,7 @@ test("singles with 2 players: Done calls them again (Game 2, banner); then Winne
   await expect(liveLine).toHaveText("Live · Winners stay · 2 playing · 0 in queue");
 
   // The next Done asks who won: 1 winner on singles.
-  await finishGame(page, "Court 1");
+  await page.getByRole("button", { name: "Done on Court 1" }).click();
   const picker = court(page, "Court 1").getByRole("group", { name: "Who won?" });
   await expect(picker).toHaveAccessibleDescription("Tap the side that won.");
   await picker.getByRole("button", { name: /Ana won$/ }).click();

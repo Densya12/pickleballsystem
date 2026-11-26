@@ -65,9 +65,12 @@ export function noGroupText(t: Dictionary, preview: FormatPreview): string {
     : t.live.noGroupShort;
 }
 
-/** The ids the server will call next, [] when no group fits, or null when unknown. */
+/**
+ * The ids the server will call next; [] when no group fits the levels; null
+ * when unknown or there aren't enough players yet (then: queue order).
+ */
 export function predictedIds(preview: QueuePreview | null, courtFormats: readonly string[]): string[] | null {
   const next = nextPreview(preview, courtFormats);
-  if (!next) return null;
+  if (!next || next.status === "not_enough") return null;
   return next.status === "ok" ? next.group.map((p) => p.id) : [];
 }

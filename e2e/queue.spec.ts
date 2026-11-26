@@ -90,7 +90,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
 
     // "Done" asks who won: one tap on a side (D25). Ana + Ben are on the left.
-    await finishGame(page, "Court 1");
+    await page.getByRole("button", { name: "Done on Court 1" }).click();
     const picker = court(page, "Court 1").getByRole("group", { name: "Who won?" });
     await expect(picker).toBeVisible();
     // Winners stay needs a winner: no Skip.

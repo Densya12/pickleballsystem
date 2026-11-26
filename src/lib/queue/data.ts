@@ -52,7 +52,8 @@ export type LiveState = {
   payments: { paid: number; total: number; toCheck: number; unpaid: number };
 };
 
-export async function getLiveState(sessionId: string): Promise<LiveState> {
+/** `withPreview: false` skips the D25 preview (Home's live card doesn't show it). */
+export async function getLiveState(sessionId: string, { withPreview = true }: { withPreview?: boolean } = {}): Promise<LiveState> {
   const supabase = await createClient();
   const [courts, games, players, eligible, preview] = await Promise.all([
     supabase.from("courts").select("id, number, label, format, current_game_id").eq("session_id", sessionId).order("number"),
@@ -63,7 +64,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
       .eq("session_id", sessionId)
       .order("queue_pos"),
     supabase.rpc("session_eligible_count", { p_session_id: sessionId }),
-    supabase.rpc("queue_preview", { p_session_id: sessionId }),
+    withPreview ? supabase.rpc("queue_preview", { p_session_id: sessionId }) : Promise.resolve({ data: null, error: null }),
   ]);
   for (const result of [courts, games, players, eligible]) {
     if (result.error) throw new Error(`Could not load the live session: ${result.error.message}`);

@@ -3,7 +3,7 @@
 import { chipLabels } from "@/components/court/MiniCourt";
 import { useT } from "@/lib/i18n/client";
 import { courtsLineup } from "@/lib/player/courts";
-import { bandText, nextPreview, noGroupText, type FormatPreview } from "@/lib/queue/preview";
+import { bandText, nextPreview, noGroupText, predictedIds, type FormatPreview } from "@/lib/queue/preview";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { CallRules } from "@/lib/player/state";
 import type { LiveState } from "@/lib/queue/data";
@@ -30,7 +30,7 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
     state.courts.map((c) => c.format),
     rules,
     undefined,
-    next ? (next.status === "ok" ? next.group.map((p) => p.id) : []) : null,
+    predictedIds(state.preview, state.courts.map((c) => c.format)),
   );
   const noGroup = next?.status === "no_group" ? next : null;
 
