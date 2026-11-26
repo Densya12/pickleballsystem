@@ -38,6 +38,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.playerPlayingGeneric;
     case "payment_required":
       return t.live.choosePayment;
+    case "same_side":
+      return t.live.sameSide;
     case "invalid_matchmaking":
       return t.club.matchmakingInvalid;
     case "invalid_level":

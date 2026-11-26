@@ -8,6 +8,7 @@ import type { LiveState } from "@/lib/queue/data";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { useNow } from "@/lib/useNow";
 import { useState } from "react";
+import { swapSidesAction } from "../_lib/queue-actions";
 import { CourtCard } from "./CourtCard";
 import { useSessionFrame } from "./SessionFrame";
 
@@ -15,7 +16,7 @@ import { useSessionFrame } from "./SessionFrame";
 export function CourtsView({ state, rotation, rules }: { state: LiveState; rotation: string; rules: CallRules }) {
   const t = useT();
   const now = useNow();
-  const { act, busy, pending, showError } = useSessionFrame();
+  const { act, busy, pending, showError, runOnline, sessionId } = useSessionFrame();
   const courtById = new Map(state.courts.map((c) => [c.id, c]));
   const nameOf = (playerId: string) =>
     state.courts.flatMap((c) => c.game?.players ?? []).find((p) => p.id === playerId)?.name ?? "player";
@@ -48,6 +49,10 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
             void act("finish_game", { courtId, gameId, winnerIds: winners }, t.live.outboxFinish(court.game?.number ?? "?", court.label))
           }
           onSwap={(courtId, playerId) => void act("swap_not_ready", { courtId, playerId }, t.live.outboxSwap(nameOf(playerId), court.label))}
+          onSwapSides={(courtId, playerId, otherId) =>
+            // Not queued: a resend would swap them back. Needs signal (like Undo).
+            void runOnline(() => swapSidesAction(sessionId, courtId, playerId, otherId))
+          }
           onSetFormat={(courtId, format) =>
             void act("set_court_format", { courtId, format }, t.live.outboxFormat(courtFormatLabel(format, t), court.label))
           }

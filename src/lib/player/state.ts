@@ -1,3 +1,8 @@
+import { sideOf } from "@/lib/queue/winners";
+
+/** Doubles: 0<->1, 2<->3. */
+const partnerIndex = (index: number) => (index < 2 ? 1 - index : 5 - index);
+
 /**
  * The player's "Pwesto sa pila" screen: which state to show and where they are
  * in the queue. Pure functions, shared by the page and its tests.
@@ -89,6 +94,9 @@ export type PwestoState =
       /** singles: withNames is the 1 opponent; doubles: the other 3. */
       format: string;
       withNames: string[];
+      /** D25: the player's side (0 = left, team 1) and partner (doubles). */
+      side: 0 | 1;
+      partnerName: string | null;
       notReady: boolean;
     };
 
@@ -114,8 +122,10 @@ export function pickPwestoState(input: {
         gameId: game.id,
         courtLabel: game.courtLabel,
         format: game.format,
-        // The others, in call order. No teams in doubles: they pick partners on court (D11).
+        // The others, in position order (D25: two teams, 1-2 vs 3-4).
         withNames: game.playerIds.filter((id) => id !== me.id).map((id) => names.get(id) ?? "?"),
+        side: sideOf(game.playerIds.indexOf(me.id), game.format),
+        partnerName: game.format === "singles" ? null : (names.get(game.playerIds[partnerIndex(game.playerIds.indexOf(me.id))]) ?? null),
         notReady: me.notReady,
       };
     }

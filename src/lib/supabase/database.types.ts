@@ -387,6 +387,9 @@ isOneToOne: false
 "swap_not_ready":
 { Args: { "p_court_id": string,"p_player_id": string }; Returns: string
                            },
+"swap_sides":
+{ Args: { "p_court_id": string,"p_other_id": string,"p_player_id": string }; Returns: undefined
+                           },
 "undo_last":
 { Args: { "p_session_id": string }; Returns: string
                            },

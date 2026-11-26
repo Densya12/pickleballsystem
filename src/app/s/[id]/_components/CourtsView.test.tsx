@@ -3,8 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LiveCourt, LiveState } from "@/lib/queue/data";
 
-const frame = { act: vi.fn(), busy: false, pending: [] as unknown[], showError: vi.fn() };
+const frame = {
+  act: vi.fn(),
+  busy: false,
+  pending: [] as unknown[],
+  showError: vi.fn(),
+  runOnline: vi.fn(),
+  sessionId: "s1",
+};
 vi.mock("./SessionFrame", () => ({ useSessionFrame: () => frame }));
+const swapSidesAction = vi.fn();
+vi.mock("../_lib/queue-actions", () => ({ swapSidesAction: (...args: unknown[]) => swapSidesAction(...args) }));
 
 import { CourtsView } from "./CourtsView";
 
@@ -45,6 +54,11 @@ const chips = (el: HTMLElement) => [...el.querySelectorAll("[data-chip]")];
 beforeEach(() => {
   frame.act.mockReset().mockResolvedValue(true);
   frame.showError.mockReset();
+  frame.runOnline.mockReset().mockImplementation(async (run: () => Promise<unknown>) => {
+    await run();
+    return true;
+  });
+  swapSidesAction.mockReset().mockResolvedValue({ banner: "swapped" });
 });
 
 describe("Courts tab", () => {
@@ -95,13 +109,42 @@ describe("Courts tab", () => {
     expect(court("Court 1")).not.toHaveAttribute("data-new-game");
   });
 
-  it("winners stay: Done opens the winner picker (2 in doubles, 1 in singles)", async () => {
+  it("Done always asks who won, one tap on a side (D25); Skip outside Winners stay", async () => {
+    render(<CourtsView state={state(0)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Done on Court 1" }));
+    const picker = within(court("Court 1")).getByRole("group", { name: "Who won?" });
+    // Sides as drawn: Ana + Ben on the left, Carlo + Dina on the right.
+    await userEvent.click(within(picker).getByRole("button", { name: /Carlo \+ Dina won/ }));
+    expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c1", gameId: "g1", winnerIds: ["c", "d"] }, expect.any(String));
+
+    await userEvent.click(screen.getByRole("button", { name: "Done on Court 2" }));
+    await userEvent.click(within(court("Court 2")).getByRole("button", { name: "Skip (no winner)" }));
+    expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c2", gameId: "g2", winnerIds: null }, expect.any(String));
+  });
+
+  it("winners stay: a winner is required (no Skip); singles has one name per side", async () => {
     render(<CourtsView state={state(0)} rotation="winners_stay" rules={{ payFirst: false, fee: 0 }} />);
     await userEvent.click(screen.getByRole("button", { name: "Done on Court 2" }));
     const picker = within(court("Court 2")).getByRole("group", { name: "Who won?" });
-    expect(picker).toHaveAccessibleDescription("Pick 1 more.");
-    await userEvent.click(within(picker).getByRole("button", { name: "Fe Uy" }));
-    await userEvent.click(within(picker).getByRole("button", { name: "Confirm" }));
+    expect(within(picker).queryByRole("button", { name: "Skip (no winner)" })).not.toBeInTheDocument();
+    await userEvent.click(within(picker).getByRole("button", { name: /Fe won/ }));
     expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c2", gameId: "g2", winnerIds: ["f"] }, expect.any(String));
+  });
+
+  it("team swap: tap a player, then one on the other side (online only, not queued)", async () => {
+    render(<CourtsView state={state(0)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    const c1 = court("Court 1");
+    expect(within(c1).getByText("Tap a player to move them to the other side.")).toBeInTheDocument();
+    await userEvent.click(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" }));
+    expect(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(c1).getByText("Now tap a player on the other side to swap with Ana Reyes.")).toBeInTheDocument();
+    // Same side: the choice moves to Ben.
+    await userEvent.click(within(c1).getByRole("button", { name: "Ben Cruz, Left side. Tap to swap sides" }));
+    expect(swapSidesAction).not.toHaveBeenCalled();
+    await userEvent.click(within(c1).getByRole("button", { name: "Carlo Diaz, Right side. Tap to swap sides" }));
+    expect(swapSidesAction).toHaveBeenCalledWith("s1", "c1", "b", "c");
+    expect(frame.act).not.toHaveBeenCalledWith("swap_sides", expect.anything(), expect.anything());
+    // Singles courts have no team swap.
+    expect(within(court("Court 2")).queryByRole("button", { name: /Tap to swap sides/ })).not.toBeInTheDocument();
   });
 });

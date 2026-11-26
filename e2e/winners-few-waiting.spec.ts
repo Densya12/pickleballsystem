@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addWalkIn, banner, court, onCourt, openTab, queueRows, startSession } from "./support/live";
+import { addWalkIn, banner, court, onCourt, openTab, queueRows, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // QA-03 / D23: Winners stay with fewer than 2 waiting. Everyone goes off with the
@@ -15,24 +15,17 @@ test("winners stay, 5 players on doubles: the waiting player, both losers and on
   await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
 
   // Ana + Ben win; only Eli is waiting.
-  await page.getByRole("button", { name: "Done on Court 1" }).click();
-  const picker = court(page, "Court 1").getByRole("group", { name: "Who won?" });
-  await picker.getByRole("button", { name: "Ana" }).click();
-  await picker.getByRole("button", { name: "Ben" }).click();
-  await picker.getByRole("button", { name: "Confirm" }).click();
+  await finishGame(page, "Court 1", ["Ana", "Ben"]);
   await expect(banner(page)).toHaveText(/Won: Ana and Ben\. Called: Eli, Carlo, Dina, Ana/);
   await expect(onCourt(page, "Court 1")).toHaveText(["Eli", "Carlo", "Dina", "Ana"]);
   await openTab(page, "Queue");
   await expect(queueRows(page)).toHaveText([/Ben/]);
 
-  // Next game: Ana + Carlo win, Ben (who sat out) plays, and a winner sits out again.
+  // Next game: Dina + Ana (the right side) win, Ben (who sat out) plays, and a winner sits out again.
   await openTab(page, "Courts");
-  await page.getByRole("button", { name: "Done on Court 1" }).click();
-  await picker.getByRole("button", { name: "Carlo" }).click();
-  await picker.getByRole("button", { name: "Ana" }).click();
-  await picker.getByRole("button", { name: "Confirm" }).click();
+  await finishGame(page, "Court 1", ["Dina", "Ana"]);
   await expect(onCourt(page, "Court 1")).toContainText(["Ben"]);
   await openTab(page, "Queue");
   await expect(queueRows(page)).toHaveCount(1);
-  await expect(queueRows(page)).toHaveText([/Ana|Carlo/]);
+  await expect(queueRows(page)).toHaveText([/Ana|Dina/]);
 });

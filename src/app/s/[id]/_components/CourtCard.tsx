@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/client";
 import type { LiveCourt } from "@/lib/queue/data";
-import { winnersFor } from "@/lib/queue/winners";
+import { sideOf } from "@/lib/queue/winners";
 import { minutesSince } from "@/lib/session/time";
 import { courtFormatLabel, courtSize } from "@/lib/session/validation";
 import { WinnerPicker } from "./WinnerPicker";
@@ -27,6 +27,8 @@ type Props = {
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
   /** BR19: replace a player who said they aren't ready. */
   onSwap: (courtId: string, playerId: string) => void;
+  /** D25: move a player to the other side (swap with a player there). */
+  onSwapSides: (courtId: string, playerId: string, otherId: string) => void;
   /** Doubles <-> singles while the court is empty. */
   onSetFormat: (courtId: string, format: Format) => void;
   /** A game that started after the screen opened: highlight the card briefly. */
@@ -37,12 +39,14 @@ type Props = {
  * One court (D19): a mini court with the players' names in their service
  * boxes, the minutes since the game started, and the court's actions.
  */
-export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, onFinish, onSwap, onSetFormat, fresh = false }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, onFinish, onSwap, onSwapSides, onSetFormat, fresh = false }: Props) {
   const t = useT();
   // The card is keyed by game, so this runs once per new game (cleared when the 1 s highlight ends).
   const [highlight, setHighlight] = useState(fresh);
   const [picking, setPicking] = useState(false);
   const [confirmFormat, setConfirmFormat] = useState(false);
+  // D25 team swap: the first chip tapped; the next tap on the other side swaps them.
+  const [swapFrom, setSwapFrom] = useState<string | null>(null);
   const busy = actionBusy || waiting;
   const game = court.game;
   const headingId = `court-${court.id}`;
@@ -71,7 +75,33 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
       <MiniCourt
         format={court.format}
         players={(game?.players ?? []).map((p) => ({ id: p.id, name: p.name, notReady: p.notReady }))}
+        swap={
+          game && game.format === "doubles" && !busy && !picking
+            ? {
+                selectedId: swapFrom,
+                label: (name, index) => t.live.chipSwap(name, sideOf(index, game.format) === 0 ? t.live.leftSide : t.live.rightSide),
+                onTap: (playerId) => {
+                  const ids = game.players.map((p) => p.id);
+                  const from = swapFrom === null ? -1 : ids.indexOf(swapFrom);
+                  const to = ids.indexOf(playerId);
+                  if (from < 0 || from === to) {
+                    setSwapFrom(from === to ? null : playerId);
+                  } else if (sideOf(from, game.format) === sideOf(to, game.format)) {
+                    setSwapFrom(playerId);
+                  } else {
+                    setSwapFrom(null);
+                    onSwapSides(court.id, ids[from], playerId);
+                  }
+                },
+              }
+            : undefined
+        }
       />
+      {game && game.format === "doubles" && (
+        <p className="text-xs text-muted" aria-live="polite">
+          {swapFrom ? t.live.swapWith(game.players.find((p) => p.id === swapFrom)?.name ?? "") : t.live.swapSidesHint}
+        </p>
+      )}
       {game ? (
         <ul className="sr-only" aria-label={t.live.playingOn(court.label)}>
           {game.players.map((player) => (
@@ -88,9 +118,10 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
         picking ? (
           <WinnerPicker
             players={game.players}
-            needed={winnersFor(game.format)}
+            format={game.format}
+            allowSkip={rotation !== "winners_stay"}
             busy={busy}
-            onConfirm={(winners) => {
+            onPick={(winners) => {
               setPicking(false);
               onFinish(court.id, game.id, winners);
             }}
@@ -117,7 +148,11 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
               className="ml-auto px-[22px]"
               aria-label={t.live.doneOn(court.label)}
               disabled={busy}
-              onClick={() => (rotation === "winners_stay" ? setPicking(true) : onFinish(court.id, game.id, null))}
+              onClick={() => {
+                // D25: "Who won?" after every game (Skip outside Winners stay).
+                setSwapFrom(null);
+                setPicking(true);
+              }}
             >
               {t.live.done}
             </Button>

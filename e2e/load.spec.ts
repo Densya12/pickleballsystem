@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { court, openTab, queueRows, SESSION_URL } from "./support/live";
+import { court, finishGame, openTab, queueRows, SESSION_URL } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // Acceptance (Phase 6): 10 player phones in one session. Every player must
@@ -22,6 +22,8 @@ test("10 phones: every player sees 'You\'re up' within 5 seconds of the call", a
   await organizer.getByRole("link", { name: "New session" }).click();
   await organizer.getByLabel("Session name").fill("Load Night");
   await organizer.getByLabel("Fee per player (₱)").fill("0");
+  // D25: the queue order these checks expect (Fair line).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();
@@ -58,7 +60,7 @@ test("10 phones: every player sees 'You\'re up' within 5 seconds of the call", a
   await measure("Court 2: Call", () => court(organizer, "Court 2").getByRole("button", { name: "Call next 4" }).click(), PLAYERS.slice(4, 8));
   await measure(
     "Court 1: Done",
-    () => organizer.getByRole("button", { name: "Done on Court 1" }).click(),
+    () => finishGame(organizer, "Court 1"),
     PLAYERS.slice(8, 10),
   );
 

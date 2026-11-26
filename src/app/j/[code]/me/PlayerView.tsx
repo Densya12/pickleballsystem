@@ -128,6 +128,9 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
             <p className="font-display text-display-court leading-none font-semibold tracking-[-2px] text-accent">{state.courtLabel}</p>
           </div>
           <p className="mt-4 text-sm text-on-dark-muted">{t.player.highlighted(courtFormatLabel(state.format, t))}</p>
+          <p className="mt-1 text-body font-semibold" data-testid="my-side">
+            {t.player.yourSide(state.side, state.partnerName)}
+          </p>
           {game && (
             <MiniCourt
               className="mt-2.5"
@@ -236,7 +239,9 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
       <>
         {game && (
           <div className="flex flex-col gap-2 rounded-card bg-surface p-3.5">
-            <p className="text-xs text-muted">{courtFormatLabel(state.format, t)}</p>
+            <p className="text-xs text-muted">
+              {courtFormatLabel(state.format, t)} · {t.player.yourSide(state.side, state.partnerName)}
+            </p>
             <MiniCourt
               format={game.format}
               players={game.playerIds.map((id) => ({ id, name: view.players.find((p) => p.id === id)?.name ?? "?", highlight: id === view.me?.id }))}

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addWalkIn, court, onCourt, openMore, openTab, QUEUE_URL, SESSION_URL, sessionTabs, startSession } from "./support/live";
+import { addWalkIn, court, onCourt, openMore, openTab, QUEUE_URL, SESSION_URL, sessionTabs, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // QA-01 (NF10): without signal, in-session links stay on the current tab and
@@ -40,7 +40,7 @@ test("offline: tab bar, Home, Show QR, Walk-in and More links don't leave the ap
   await page.keyboard.press("Escape");
 
   // A Done made offline still waits in the outbox, and is sent once the signal is back.
-  await page.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(page, "Court 1");
   await expect(page.getByRole("region", { name: "Waiting for signal" })).toBeVisible();
 
   await context.setOffline(false);

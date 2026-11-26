@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { addWalkIn, banner, court, endSession, onCourt, openTab, queueRows, QUEUE_URL, sessionTabs, SESSION_URL, startSession } from "./support/live";
+import { addWalkIn, banner, court, endSession, onCourt, openTab, queueRows, QUEUE_URL, sessionTabs, SESSION_URL, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // Phase 5b (D18): fewer taps for a regular session.
@@ -96,6 +96,8 @@ test("Repeat last: the last session again in two taps", async ({ page: organizer
   await organizer.getByRole("radio", { name: /^Winners stay/ }).check();
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
   await organizer.getByLabel("Fee per player (₱)").fill("200");
+  // D25: a non-default preset too (the queue order the checks below expect).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   const startsAt = await organizer.getByLabel("Starts").inputValue();
   const endsAt = await organizer.getByLabel("Ends").inputValue();
   await organizer.getByRole("button", { name: "Save as draft" }).click();
@@ -114,6 +116,7 @@ test("Repeat last: the last session again in two taps", async ({ page: organizer
   await expect(organizer.getByRole("radio", { name: /^Winners stay/ })).toBeChecked();
   await expect(organizer.getByRole("switch", { name: "Pay before queueing" })).toBeChecked();
   await expect(organizer.getByLabel("Fee per player (₱)")).toHaveValue("200");
+  await expect(organizer.getByRole("radio", { name: /^Fair line/ })).toBeChecked();
 
   // Tap 2: Start session.
   await organizer.getByRole("button", { name: "Start session" }).click();
@@ -134,7 +137,7 @@ test("Undo: finishing a game by mistake is undone and the queue is back as befor
   await expect(onCourt(organizer, "Court 1")).toHaveText(["Aldo", "Bea", "Cris", "Dani"]);
   await expect(organizer.getByText("Up next:").filter({ visible: true }).locator("..")).toContainText("Ella, Fely");
 
-  await organizer.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(organizer, "Court 1");
   await expect(banner(organizer)).toContainText("Game #1 on Court 1 is done.");
   await expect(onCourt(organizer, "Court 1")).toHaveText(["Ella", "Fely", "Aldo", "Bea"]);
 
@@ -149,7 +152,7 @@ test("Undo: finishing a game by mistake is undone and the queue is back as befor
 
   // The game finishes normally afterwards.
   await openTab(organizer, "Courts");
-  await organizer.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(organizer, "Court 1");
   await expect(banner(organizer)).toContainText("Game #1 on Court 1 is done.");
 });
 

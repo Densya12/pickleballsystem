@@ -970,3 +970,193 @@ revoke execute on function
 from public, anon, authenticated;
 revoke execute on function public.call_mixed(uuid) from public, anon, authenticated;
 grant execute on function public.call_mixed(uuid) to authenticated;
+
+-- ===========================================================================
+-- 4. TEAMS AND WINNERS
+-- games.player_ids is two teams: positions 1-2 vs 3-4 (singles: 1 vs 2).
+-- The mini court draws team 1 on the left. Suggested teams are balanced:
+-- sorted by level, highest with lowest ("not set" counts as the group's
+-- average); on a tie, the pairing with fewer recent partners; then the
+-- order the players were called. Winners who stay keep their team (team 1);
+-- Fair line keeps today's order (the order players were called).
+-- The streak (BR11) compares the players who stayed on (stayed_ids, part 3).
+-- ===========================================================================
+
+-- Per player id: their partners (same side) in their last 2 finished doubles games.
+create or replace function private.recent_partners(p_session_id uuid, p_ids uuid[])
+returns jsonb
+language sql
+stable
+set search_path = ''
+as $$
+  select coalesce(jsonb_object_agg(x.id::text, x.partners), '{}'::jsonb)
+  from (
+    select pid as id,
+           coalesce((
+             select jsonb_agg(distinct
+                      (case array_position(last2.player_ids, pid)
+                         when 1 then last2.player_ids[2] when 2 then last2.player_ids[1]
+                         when 3 then last2.player_ids[4] else last2.player_ids[3] end)::text)
+             from (
+               select g.player_ids
+               from public.games g
+               where g.session_id = p_session_id and g.ended_at is not null and g.format = 'doubles'
+                 and cardinality(g.player_ids) = 4 and pid = any (g.player_ids)
+               order by g.ended_at desc, g.number desc
+               limit 2
+             ) last2
+           ), '[]'::jsonb) as partners
+    from unnest(p_ids) pid
+  ) x;
+$$;
+
+create or replace function private.order_teams(p_session_id uuid, p_players uuid[], p_stayed uuid[])
+returns uuid[]
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  v_preset text;
+  v_newcomers uuid[];
+  v_lv numeric[];
+  v_avg numeric;
+  v_o integer[];
+  v_partners jsonb;
+  v_best integer[];
+  v_best_key numeric[];
+  v_pairing integer[];
+  v_key numeric[];
+  v_t1 integer[];
+  v_t2 integer[];
+  v_team1 uuid[];
+  v_team2 uuid[];
+  k integer;
+begin
+  if cardinality(p_players) <> 4 then
+    return p_players;
+  end if;
+  select s.matchmaking into v_preset from public.sessions s where s.id = p_session_id;
+  if v_preset = 'fair_line' then
+    return p_players;
+  end if;
+  if cardinality(coalesce(p_stayed, '{}')) = 2 then
+    -- Winners stay together on the left; the newcomers are the other team.
+    v_newcomers := array(select p from unnest(p_players) with ordinality u(p, i) where not (p = any (p_stayed)) order by i);
+    return p_stayed || v_newcomers;
+  end if;
+
+  select avg(p.skill) into v_avg from public.session_players p where p.id = any (p_players);
+  v_lv := array(
+    select coalesce(p.skill::numeric, v_avg, 0)
+    from unnest(p_players) with ordinality u(id, i) join public.session_players p on p.id = u.id
+    order by u.i
+  );
+  -- Indexes 1..4 sorted by level (highest first), then call order.
+  v_o := array(select i from generate_series(1, 4) i order by v_lv[i] desc, i);
+  v_partners := private.recent_partners(p_session_id, p_players);
+
+  -- The three pairings: {o1,o4|o2,o3} (highest with lowest), {o1,o3|o2,o4}, {o1,o2|o3,o4}.
+  for k in 1..3 loop
+    v_pairing := case k
+      when 1 then array[v_o[1], v_o[4], v_o[2], v_o[3]]
+      when 2 then array[v_o[1], v_o[3], v_o[2], v_o[4]]
+      else array[v_o[1], v_o[2], v_o[3], v_o[4]] end;
+    v_key := array[
+      abs((v_lv[v_pairing[1]] + v_lv[v_pairing[2]]) - (v_lv[v_pairing[3]] + v_lv[v_pairing[4]])),
+      (case when (v_partners -> p_players[v_pairing[1]]::text) ? p_players[v_pairing[2]]::text then 1 else 0 end)
+        + (case when (v_partners -> p_players[v_pairing[3]]::text) ? p_players[v_pairing[4]]::text then 1 else 0 end),
+      k
+    ];
+    if v_best_key is null or v_key < v_best_key then
+      v_best_key := v_key;
+      v_best := v_pairing;
+    end if;
+  end loop;
+
+  -- The team with the first-called player (the anchor) on the left; call order within a team.
+  v_t1 := array(select x from unnest(v_best[1:2]) x order by x);
+  v_t2 := array(select x from unnest(v_best[3:4]) x order by x);
+  if v_t2[1] < v_t1[1] then
+    v_t1 := v_t1 || v_t2;
+    v_t2 := v_t1[1:2];
+    v_t1 := v_t1[3:4];
+  end if;
+  v_team1 := array[p_players[v_t1[1]], p_players[v_t1[2]]];
+  v_team2 := array[p_players[v_t2[1]], p_players[v_t2[2]]];
+  return v_team1 || v_team2;
+end;
+$$;
+
+create or replace function private.launch_game(p_court_id uuid, p_session_id uuid, p_newcomers uuid[], p_stayed uuid[], p_note jsonb)
+returns uuid
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_number integer;
+  v_game_id uuid;
+  v_players uuid[] := private.order_teams(p_session_id, coalesce(p_stayed, '{}') || coalesce(p_newcomers, '{}'), p_stayed);
+begin
+  select coalesce(max(g.number), 0) + 1 into v_number from public.games g where g.session_id = p_session_id;
+
+  insert into public.games (session_id, court_id, number, player_ids, format, stayed_ids, call_note)
+  select p_session_id, p_court_id, v_number, v_players, c.format, coalesce(p_stayed, '{}'), p_note
+  from public.courts c where c.id = p_court_id
+  returning id into v_game_id;
+
+  update public.session_players set status = 'playing', not_ready_at = null, skip_count = 0 where id = any (v_players);
+  update public.courts set current_game_id = v_game_id where id = p_court_id;
+  return v_game_id;
+end;
+$$;
+
+-- The organizer moves a player to the other side by swapping them with a
+-- player there (current game, live session). Not undoable; logged.
+create or replace function public.swap_sides(p_court_id uuid, p_player_id uuid, p_other_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_court public.courts%rowtype;
+  v_game public.games%rowtype;
+  v_a integer;
+  v_b integer;
+  v_ids uuid[];
+begin
+  perform private.assert_organizer_account();
+  v_court := private.lock_live_court(p_court_id);
+  select * into v_game from public.games g where g.id = v_court.current_game_id for update;
+  if not found then
+    raise exception 'player_not_on_court' using errcode = 'P0001';
+  end if;
+  if v_game.format <> 'doubles' then
+    raise exception 'invalid_format' using errcode = 'P0001';
+  end if;
+  v_a := array_position(v_game.player_ids, p_player_id);
+  v_b := array_position(v_game.player_ids, p_other_id);
+  if v_a is null or v_b is null then
+    raise exception 'player_not_on_court' using errcode = 'P0001';
+  end if;
+  if (v_a <= 2) = (v_b <= 2) then
+    raise exception 'same_side' using errcode = 'P0001';
+  end if;
+
+  v_ids := v_game.player_ids;
+  v_ids[v_a] := p_other_id;
+  v_ids[v_b] := p_player_id;
+  update public.games set player_ids = v_ids where id = v_game.id;
+  insert into public.events (session_id, actor, type, payload)
+  values (v_court.session_id, auth.uid(), 'sides_swapped',
+          jsonb_build_object('game_id', v_game.id, 'player_id', p_player_id, 'other_id', p_other_id));
+end;
+$$;
+
+revoke execute on function
+  private.recent_partners(uuid, uuid[]),
+  private.order_teams(uuid, uuid[], uuid[])
+from public, anon, authenticated;
+revoke execute on function public.swap_sides(uuid, uuid, uuid) from public, anon, authenticated;
+grant execute on function public.swap_sides(uuid, uuid, uuid) to authenticated;

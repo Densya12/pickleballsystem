@@ -1,26 +1,34 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId } from "react";
 import { Button } from "@/components/ui";
-import { CheckIcon } from "@/components/ui/icons";
-import { cn } from "@/lib/cn";
+import { chipLabels } from "@/components/court/MiniCourt";
 import { useT } from "@/lib/i18n/client";
-import { canConfirmWinners, toggleWinner, winnersHint } from "@/lib/queue/winners";
+import { teamsOf } from "@/lib/queue/winners";
 
 type Props = {
+  /** The game's players in position order: team 1 (left) first. */
   players: { id: string; name: string }[];
-  /** 2 in doubles, 1 in singles. */
-  needed: number;
+  format: string;
+  /** "Skip (no winner)": every rotation except Winners stay, where a winner is required. */
+  allowSkip: boolean;
   busy: boolean;
-  onConfirm: (winnerIds: string[]) => void;
+  /** The winning side's players, or null for Skip. */
+  onPick: (winnerIds: string[] | null) => void;
   onCancel: () => void;
 };
 
-/** Winners stay (BR11): tap the winners, then Confirm. */
-export function WinnerPicker({ players, needed, busy, onConfirm, onCancel }: Props) {
+/**
+ * "Who won?" (D25): one tap on a side ("Ana + Ben won"), in every preset and
+ * rotation. The sides match the mini court: team 1 on the left. The winners
+ * stored are that side's players.
+ */
+export function WinnerPicker({ players, format, allowSkip, busy, onPick, onCancel }: Props) {
   const t = useT();
-  const [picked, setPicked] = useState<string[]>([]);
   const id = useId();
+  const labels = chipLabels(players.map((p) => p.name));
+  const named = players.map((p, i) => ({ ...p, label: labels[i] }));
+  const [left, right] = teamsOf(named, format);
 
   return (
     <div role="group" aria-labelledby={`${id}-q`} aria-describedby={`${id}-hint`} className="flex flex-col gap-2.5 rounded-control bg-info p-3">
@@ -28,37 +36,34 @@ export function WinnerPicker({ players, needed, busy, onConfirm, onCancel }: Pro
         <p id={`${id}-q`} className="font-semibold">
           {t.live.whoWon}
         </p>
-        <p id={`${id}-hint`} className="text-sm text-muted" aria-live="polite">
-          {winnersHint(picked, needed, t)}
+        <p id={`${id}-hint`} className="text-sm text-muted">
+          {t.live.whoWonHint}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        {players.map((player) => {
-          const on = picked.includes(player.id);
-          return (
-            <button
-              key={player.id}
-              type="button"
-              aria-pressed={on}
-              onClick={() => setPicked((current) => toggleWinner(current, player.id, needed))}
-              className={cn(
-                "flex min-h-11 items-center gap-2 rounded-full border px-3 text-left text-sm font-medium",
-                on ? "border-ink bg-primary text-on-primary" : "border-quiet bg-surface text-ink",
-              )}
-            >
-              {on && <CheckIcon className="size-4 shrink-0" />}
-              <span className="min-w-0 [overflow-wrap:anywhere]">{player.name}</span>
-            </button>
-          );
-        })}
+        {[left, right].map((side, index) => (
+          <button
+            key={index}
+            type="button"
+            disabled={busy}
+            data-side={index === 0 ? "left" : "right"}
+            onClick={() => onPick(side.map((p) => p.id))}
+            className="flex min-h-12 flex-col items-start justify-center rounded-control border border-quiet bg-surface px-3 py-2 text-left hover:bg-accent-faint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+          >
+            <span className="text-xs text-muted">{index === 0 ? t.live.leftSide : t.live.rightSide}</span>
+            <span className="font-semibold [overflow-wrap:anywhere]">{t.live.sideWon(side.map((p) => p.label))}</span>
+          </button>
+        ))}
       </div>
       <div className="flex gap-2">
         <Button variant="ghost" size="pill" className="flex-1" disabled={busy} onClick={onCancel}>
           {t.common.cancel}
         </Button>
-        <Button size="pill" className="flex-1" disabled={busy || !canConfirmWinners(picked, needed)} onClick={() => onConfirm(picked)}>
-          {busy ? t.common.saving : t.live.confirm}
-        </Button>
+        {allowSkip && (
+          <Button variant="outline" size="pill" className="flex-1" disabled={busy} onClick={() => onPick(null)}>
+            {t.live.skipWinner}
+          </Button>
+        )}
       </div>
     </div>
   );

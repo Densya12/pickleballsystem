@@ -61,6 +61,9 @@ const en = {
   yourTurn: (name: string) => `Your turn, ${name}!`,
   headTo: "Head to",
   highlighted: (format: string) => `${format} · you're highlighted`,
+  /** D25: the player's side and partner. */
+  yourSide: (side: 0 | 1, partner: string | null) =>
+    `${side === 0 ? "Left side" : "Right side"}${partner ? ` · with ${partner}` : ""}`,
   onMyWay: "On my way",
   notReadyYet: "Not ready yet",
   notReadyQuestion: "Go back to the queue? Someone else takes your place, and you'll be first after that.",
@@ -157,6 +160,8 @@ const fil: typeof en = {
   yourTurn: (name: string) => `Ikaw na, ${name}!`,
   headTo: "Pumunta sa",
   highlighted: (format: string) => `${format} · naka-highlight ka`,
+  yourSide: (side: 0 | 1, partner: string | null) =>
+    `${side === 0 ? "Kaliwang panig" : "Kanang panig"}${partner ? ` · kasama si ${partner}` : ""}`,
   onMyWay: "Papunta na ako",
   notReadyYet: "Hindi pa ako handa",
   notReadyQuestion: "Ibalik ka sa pila? Papalitan ka ng susunod, at ikaw ang mauuna pagkatapos.",

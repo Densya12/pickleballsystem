@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { addWalkIn, court, onCourt, openMore, openPlayer, openTab, SESSION_URL, startSession } from "./support/live";
+import { addWalkIn, court, onCourt, openMore, openPlayer, openTab, SESSION_URL, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // Phase 6: the players' Courts view (D14, BR21) and Tagatawag (D17).
@@ -27,6 +27,8 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await organizer.getByLabel("Session name").fill("Courts Night");
   await organizer.getByRole("group", { name: "Court 2" }).getByRole("radio", { name: "Singles" }).check();
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
+  // D25: the queue order these checks expect (Fair line).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
 
@@ -153,7 +155,7 @@ test("Tagatawag reads each new call once, and stays silent when off (also after 
   await expect.poll(() => spoken(organizer)).toEqual(["Court 1: Ana, Ben, Carlo, and Dina.", "Court 2: Ella and Fely."]);
 
   // The automatic call after finish_game is read too, once.
-  await organizer.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(organizer, "Court 1");
   await expect.poll(() => spoken(organizer)).toHaveLength(3);
   expect((await spoken(organizer))[2]).toBe("Court 1: Gino, Hana, Ana, and Ben.");
   await organizer.waitForTimeout(1_500);
@@ -161,7 +163,7 @@ test("Tagatawag reads each new call once, and stays silent when off (also after 
 
   // Off: silent.
   await setReadAloud(organizer, false);
-  await organizer.getByRole("button", { name: "Done on Court 2" }).click();
+  await finishGame(organizer, "Court 2");
   await expect(onCourt(organizer, "Court 2")).toHaveText(["Carlo", "Dina"]);
   await organizer.waitForTimeout(1_000);
   expect(await spoken(organizer)).toHaveLength(3);
@@ -169,7 +171,7 @@ test("Tagatawag reads each new call once, and stays silent when off (also after 
   // Still off after a reload (remembered on this device), and the games on court aren't replayed.
   await organizer.reload();
   expect(await readAloudIsOn(organizer)).toBe(false);
-  await organizer.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(organizer, "Court 1");
   await expect(onCourt(organizer, "Court 1")).toHaveText(["Ella", "Fely", "Gino", "Hana"]);
   await organizer.waitForTimeout(1_000);
   expect(await spoken(organizer)).toEqual([]);
@@ -178,6 +180,6 @@ test("Tagatawag reads each new call once, and stays silent when off (also after 
   await setReadAloud(organizer, true);
   await organizer.waitForTimeout(500);
   expect(await spoken(organizer)).toEqual([]);
-  await organizer.getByRole("button", { name: "Done on Court 2" }).click();
+  await finishGame(organizer, "Court 2");
   await expect.poll(() => spoken(organizer)).toEqual(["Court 2: Ana and Ben."]);
 });

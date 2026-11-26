@@ -70,10 +70,8 @@ test("singles: a doubles court and a singles court in winners stay", async ({ pa
   await openTab(organizer, "Courts");
   await organizer.getByRole("button", { name: "Done on Court 2" }).click();
   const picker = court(organizer, "Court 2").getByRole("group", { name: "Who won?" });
-  await expect(picker.getByText("Pick 1 more.")).toBeVisible();
-  await expect(picker.getByRole("button", { name: "Confirm" })).toBeDisabled();
-  await picker.getByRole("button", { name: "Pia Cruz" }).click();
-  await picker.getByRole("button", { name: "Confirm" }).click();
+  await expect(picker.getByText("Tap the side that won.")).toBeVisible();
+  await picker.getByRole("button", { name: /Pia won$/ }).click();
   await expect(banner(organizer)).toHaveText(/Game #2 on Court 2 is done\. Won: Pia Cruz\. Called: Fe, Eli/);
   await expect(onCourt(organizer, "Court 2")).toHaveText(["Fe", "Eli"]);
   // Pia sits out this one, first in line.

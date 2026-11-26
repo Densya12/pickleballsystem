@@ -11,6 +11,7 @@ import {
   queueSection,
   sessionTabs,
   startSession,
+  finishGame,
 } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
@@ -42,7 +43,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await expect(liveLine(page)).toHaveText("Live · All off · 8 playing · 1 in queue");
 
     // BR10: all four re-join the end; Court 1 calls Ivy and the first three of them
-    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    await finishGame(page, "Court 1");
     await expect(banner(page)).toHaveText(/Game #1 on Court 1 is done\. Called: Ivy, Ana, Ben, Carlo/);
     await expect(onCourt(page, "Court 1")).toHaveText(["Ivy", "Ana", "Ben", "Carlo"]);
 
@@ -58,7 +59,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await expect(queueSection(page, "On hold").getByRole("listitem")).toContainText("Resting");
 
     await openTab(page, "Courts");
-    await page.getByRole("button", { name: "Done on Court 2" }).click();
+    await finishGame(page, "Court 2");
     // Dina is paused, so the same four are the only ones waiting: they play again, and the banner says so.
     await expect(banner(page)).toHaveText(/Nobody else is waiting, so Eli, Fe, Gil, and Hans play again on Court 2\./);
 
@@ -88,27 +89,23 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await court(page, "Court 1").getByRole("button", { name: "Call next 4" }).click();
     await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Carlo", "Dina"]);
 
-    // "Done" asks who won first
-    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    // "Done" asks who won: one tap on a side (D25). Ana + Ben are on the left.
+    await finishGame(page, "Court 1");
     const picker = court(page, "Court 1").getByRole("group", { name: "Who won?" });
     await expect(picker).toBeVisible();
-    await expect(picker.getByRole("button", { name: "Confirm" })).toBeDisabled();
-    await picker.getByRole("button", { name: "Carlo" }).click();
-    await picker.getByRole("button", { name: "Ana" }).click();
-    await picker.getByRole("button", { name: "Confirm" }).click();
-    await expect(banner(page)).toHaveText(/Game #1 on Court 1 is done\. Won: Carlo and Ana\. Called: Ana, Carlo, Eli, Fe/);
-    // The staying pair is listed first (on the left of the mini court).
-    await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Carlo", "Eli", "Fe"]);
+    // Winners stay needs a winner: no Skip.
+    await expect(picker.getByRole("button", { name: "Skip (no winner)" })).toHaveCount(0);
+    await picker.getByRole("button", { name: /Ana \+ Ben won$/ }).click();
+    await expect(banner(page)).toHaveText(/Game #1 on Court 1 is done\. Won: Ana and Ben\. Called: Ana, Ben, Eli, Fe/);
+    // The staying pair is the left team.
+    await expect(onCourt(page, "Court 1")).toHaveText(["Ana", "Ben", "Eli", "Fe"]);
     await openTab(page, "Queue");
-    await expect(queueRows(page)).toHaveText([/Ben/, /Dina/]);
+    await expect(queueRows(page)).toHaveText([/Carlo/, /Dina/]);
 
     // Second win in a row: all four go off (winners first) and the next 4 are called
     await openTab(page, "Courts");
-    await page.getByRole("button", { name: "Done on Court 1" }).click();
-    await picker.getByRole("button", { name: "Ana" }).click();
-    await picker.getByRole("button", { name: "Carlo" }).click();
-    await picker.getByRole("button", { name: "Confirm" }).click();
-    await expect(banner(page)).toHaveText(/Game #2 on Court 1 is done\. Won: Ana and Carlo\. Called: Ben, Dina, Ana, Carlo/);
+    await finishGame(page, "Court 1", ["Ana", "Ben"]);
+    await expect(banner(page)).toHaveText(/Game #2 on Court 1 is done\. Won: Ana and Ben\. Called: Carlo, Dina, Ana, Ben/);
     await openTab(page, "Queue");
     await expect(queueRows(page)).toHaveText([/Eli/, /Fe/]);
 

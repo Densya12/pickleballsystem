@@ -51,6 +51,20 @@ export async function callMixedAction(sessionId: string, courtId: string): Promi
   return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
 }
 
+/** D25: the organizer moves a player to the other side (swaps them with a player there). Not undoable. */
+export async function swapSidesAction(sessionId: string, courtId: string, playerId: string, otherId: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("swap_sides", { p_court_id: courtId, p_player_id: playerId, p_other_id: otherId });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  const [a, b] = await playerNames([playerId, otherId]);
+  refresh();
+  return { banner: t.live.sidesSwapped(a, b) };
+}
+
 export async function finishGameAction(
   sessionId: string,
   courtId: string,
