@@ -9,6 +9,7 @@ import { club } from "./dict/club";
 import { choices, common, levels, nav, status } from "./dict/common";
 import { guide } from "./dict/guide";
 import { home, time } from "./dict/home";
+import { legal } from "./dict/legal";
 import { live } from "./dict/live";
 import { members } from "./dict/members";
 import { payments } from "./dict/payments";
@@ -35,6 +36,7 @@ export const en = {
   settings: settings.en,
   player: player.en,
   guide: guide.en,
+  legal: legal.en,
   system: system.en,
 };
 
@@ -57,6 +59,7 @@ export const fil: Dictionary = {
   settings: settings.fil,
   player: player.fil,
   guide: guide.fil,
+  legal: legal.fil,
   system: system.fil,
 };
 
