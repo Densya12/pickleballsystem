@@ -12,8 +12,8 @@ describe("parseMember", () => {
     });
   });
   it("keeps notes, trimmed", () => {
-    const parsed = parseMember(form({ display_name: "Ben", level: "advanced", dues_status: "paid", notes: "  Tuwing Biyernes " }), en);
-    expect(parsed).toEqual({ ok: true, data: { display_name: "Ben", level: "advanced", dues_status: "paid", notes: "Tuwing Biyernes" } });
+    const parsed = parseMember(form({ display_name: "Ben", level: "4", dues_status: "paid", notes: "  Tuwing Biyernes " }), en);
+    expect(parsed).toEqual({ ok: true, data: { display_name: "Ben", level: "4", dues_status: "paid", notes: "Tuwing Biyernes" } });
   });
   it("refuses bad input with a message per field", () => {
     expect(parseMember(form({ display_name: "A", level: "pro", dues_status: "maybe", notes: "x".repeat(301) }), en)).toEqual({

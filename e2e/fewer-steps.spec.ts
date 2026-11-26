@@ -166,7 +166,7 @@ test("a returning player checks in with one tap: Join as …", async ({ page: or
   await player.goto(path);
   await expect(player.getByRole("heading", { level: 1, name: "Last Week" })).toBeVisible();
   await player.getByLabel("Name", { exact: true }).fill("Rina Reyes");
-  await player.getByRole("radio", { name: "Intermediate" }).check();
+  await player.getByRole("radio", { name: "Level 3" }).check();
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Rina" })).toBeVisible();
   await endSession(organizer);
@@ -176,14 +176,14 @@ test("a returning player checks in with one tap: Join as …", async ({ page: or
   await startSession(organizer, "This Week", { courts: 1 });
   await player.goto(path);
   await expect(player.getByRole("heading", { level: 1, name: "This Week" })).toBeVisible();
-  await expect(player.getByText("Intermediate")).toBeVisible();
+  await expect(player.getByText("Level 3")).toBeAttached();
   await expect(player.getByLabel("Name", { exact: true })).toHaveCount(0);
   await expect(player.getByRole("heading", { name: "Payment" })).toHaveCount(0);
   await expect(player.getByRole("button", { name: "Not Rina Reyes?" })).toBeVisible();
   await player.getByRole("button", { name: "Join as Rina Reyes" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Rina" })).toBeVisible();
   await openTab(organizer, "Queue");
-  await expect(queueRows(organizer).getByRole("button", { name: /Rina Reyes/ })).toContainText("Intermediate", { timeout: 5_000 });
+  await expect(queueRows(organizer).getByRole("button", { name: /Rina Reyes/ })).toContainText("Level 3", { timeout: 5_000 });
   await player.context().close();
 });
 

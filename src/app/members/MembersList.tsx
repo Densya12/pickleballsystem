@@ -5,7 +5,7 @@ import { EmptyState, Input, ListGroup, ListRow, RowText } from "@/components/ui"
 import { SearchIcon } from "@/components/ui/icons";
 import { useT } from "@/lib/i18n/client";
 import { duesLabel, matchesMember, type Member } from "@/lib/members/members";
-import { levelLabel } from "@/lib/queue/players";
+import { LevelBadge } from "@/components/level/LevelBadge";
 
 /** The club's members by name, with a search box. Tap a member to edit. */
 export function MembersList({ members }: { members: Member[] }) {
@@ -28,7 +28,16 @@ export function MembersList({ members }: { members: Member[] }) {
         <ListGroup aria-label={t.members.listLabel}>
           {shown.map((member) => (
             <ListRow key={member.id} href={`/members/${member.id}`}>
-              <RowText title={member.name} detail={`${levelLabel(member.level, t)} · ${duesLabel(member.duesStatus, t)}`} />
+              <RowText
+                title={member.name}
+                detail={
+                  <span className="inline-flex flex-wrap items-center gap-1">
+                    <LevelBadge level={member.level} className="text-muted" />
+                    <span aria-hidden="true">·</span>
+                    {duesLabel(member.duesStatus, t)}
+                  </span>
+                }
+              />
             </ListRow>
           ))}
         </ListGroup>

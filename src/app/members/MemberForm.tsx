@@ -4,7 +4,8 @@ import { useActionState } from "react";
 import { Button, Card, Input, Notice, RadioGroup } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
 import { duesChoices, NOTES_MAX, type DuesStatus, type Member } from "@/lib/members/members";
-import { levelChoices, PLAYER_NAME_MAX, type Level } from "@/lib/queue/players";
+import { LevelPicker } from "@/components/level/LevelPicker";
+import { PLAYER_NAME_MAX, type Level } from "@/lib/queue/players";
 import { saveMemberAction, type MemberFormState } from "./actions";
 
 /** Add or edit a member: name, level, dues, notes; one main button. */
@@ -27,11 +28,9 @@ export function MemberForm({ member }: { member: Member | null }) {
           defaultValue={value("display_name", member?.name ?? "")}
           error={errors.display_name}
         />
-        <RadioGroup
+        <LevelPicker
           legend={t.members.level}
           name="level"
-          look="chips"
-          options={levelChoices(t)}
           defaultValue={value("level", member?.level ?? "unsure") as Level}
           error={errors.level}
         />

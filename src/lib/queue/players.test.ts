@@ -15,9 +15,9 @@ function form(values: Record<string, string>) {
 
 describe("walk-in input", () => {
   it("accepts a name and level, tidying spaces", () => {
-    expect(parseWalkIn(form({ display_name: "  Tito   Boy ", level: "beginner" }), en)).toEqual({
+    expect(parseWalkIn(form({ display_name: "  Tito   Boy ", level: "2" }), en)).toEqual({
       ok: true,
-      data: { display_name: "Tito Boy", level: "beginner" },
+      data: { display_name: "Tito Boy", level: "2" },
     });
     expect(tidyName(" a  b ")).toBe("a b");
   });
@@ -33,14 +33,17 @@ describe("walk-in input", () => {
   });
 
   it("allows exactly 2 and 40 characters", () => {
-    expect(parseWalkIn(form({ display_name: "Al", level: "advanced" }), en).ok).toBe(true);
-    expect(parseWalkIn(form({ display_name: "n".repeat(40), level: "advanced" }), en).ok).toBe(true);
+    expect(parseWalkIn(form({ display_name: "Al", level: "4" }), en).ok).toBe(true);
+    expect(parseWalkIn(form({ display_name: "n".repeat(40), level: "4" }), en).ok).toBe(true);
   });
 
   it("labels levels in the device's language", () => {
-    expect(levelLabel("unsure", en)).toBe("Not sure");
-    expect(levelLabel("unsure", fil)).toBe("Hindi sigurado");
-    expect(levelLabel("intermediate", en)).toBe("Intermediate");
+    // D25: level 1-5, or not set.
+    expect(levelLabel("unsure", en)).toBe("Not set");
+    expect(levelLabel("unsure", fil)).toBe("Wala pang level");
+    expect(levelLabel("3", en)).toBe("Level 3");
+    expect(levelLabel("5", fil)).toBe("Level 5");
+    expect(levelLabel("beginner", en)).toBe("Not set");
   });
 });
 

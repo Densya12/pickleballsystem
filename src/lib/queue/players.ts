@@ -10,18 +10,26 @@ import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments
 export const PLAYER_NAME_MIN = 2;
 export const PLAYER_NAME_MAX = 40;
 
-export const LEVEL_VALUES = ["beginner", "intermediate", "advanced", "unsure"] as const;
+/** D25: level 1-5, or "unsure" (not set). Sent as text; the database maps it to skill 1-5. */
+export const LEVEL_VALUES = ["1", "2", "3", "4", "5", "unsure"] as const;
 export type Level = (typeof LEVEL_VALUES)[number];
+export const LEVEL_NUMBERS = [1, 2, 3, 4, 5] as const;
 
-/** All four levels (organizer forms), or the three the player can pick ("unsure" when none). */
-export function levelChoices(t: Dictionary, { withUnsure = true }: { withUnsure?: boolean } = {}): { value: Level; label: string }[] {
-  return LEVEL_VALUES.filter((v) => withUnsure || v !== "unsure").map((value) => ({ value, label: t.levels[value] }));
+/** A database skill (1-5 or null) as a form value. */
+export function levelFromSkill(skill: number | null | undefined): Level {
+  return skill && skill >= 1 && skill <= 5 ? (String(skill) as Level) : "unsure";
 }
 
+/** The level as a number, or null when not set. */
+export function levelNumber(level: string | null | undefined): number | null {
+  return level && /^[1-5]$/.test(level) ? Number(level) : null;
+}
+
+/** "Level 3", or "Not set". */
 export function levelLabel(level: string, t: Dictionary): string {
-  return (LEVEL_VALUES as readonly string[]).includes(level) ? t.levels[level as Level] : level;
+  const n = levelNumber(level);
+  return n === null ? t.levels.notSet : t.levels.level(n);
 }
-
 
 export type WalkInInput = { display_name: string; level: Level };
 

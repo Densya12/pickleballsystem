@@ -1,4 +1,5 @@
 import "server-only";
+import { levelFromSkill } from "@/lib/queue/players";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 export type LivePlayer = {
   id: string;
   name: string;
+  /** D25: "1".."5", or "unsure" (not set). */
   level: string;
   status: "queued" | "playing" | "paused";
   gamesPlayed: number;
@@ -54,7 +56,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
     supabase.from("games").select("id, court_id, number, format, player_ids, started_at").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
-      .select("id, display_name, level, status, games_played, queue_pos, not_ready_at, payment_status, member_id, created_at, is_walk_in")
+      .select("id, display_name, skill, status, games_played, queue_pos, not_ready_at, payment_status, member_id, created_at, is_walk_in")
       .eq("session_id", sessionId)
       .order("queue_pos"),
     supabase.rpc("session_eligible_count", { p_session_id: sessionId }),
@@ -73,7 +75,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
       {
         id: p.id,
         name: p.display_name,
-        level: p.level,
+        level: levelFromSkill(p.skill),
         status: p.status as LivePlayer["status"],
         gamesPlayed: p.games_played,
         notReady: p.not_ready_at !== null,

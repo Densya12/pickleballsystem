@@ -67,10 +67,10 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   const courtsUrl = organizer.url();
 
   // Walk-ins with each payment choice (one GCash walk-in reuses Ana's reference).
-  await addWalkIn(organizer, "Cash Walk", "Beginner", { choice: "Paid cash" });
-  await addWalkIn(organizer, "GCash Walk", "Beginner", { choice: "GCash", reference: "1234-5678-90" });
-  await addWalkIn(organizer, "Later Walk", "Beginner", { choice: "Pay later" });
-  await addWalkIn(organizer, "Cash Two", "Beginner", { choice: "Paid cash" });
+  await addWalkIn(organizer, "Cash Walk", "Level 2", { choice: "Paid cash" });
+  await addWalkIn(organizer, "GCash Walk", "Level 2", { choice: "GCash", reference: "1234-5678-90" });
+  await addWalkIn(organizer, "Later Walk", "Level 2", { choice: "Pay later" });
+  await addWalkIn(organizer, "Cash Two", "Level 2", { choice: "Paid cash" });
 
   await organizer.getByRole("link", { name: "Show QR" }).click();
   const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;

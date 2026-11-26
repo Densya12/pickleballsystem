@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
 import { rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
+import { levelLabel, levelNumber } from "@/lib/queue/players";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeSession } from "./authorize";
@@ -117,6 +118,21 @@ export async function setRotationAction(sessionId: string, rotation: "all_off" |
 
   refresh();
   return { banner: t.live.rotationChanged(rotationLabel(rotation, t)) };
+}
+
+/** D25: the organizer changes a player's level (also on their member record). "unsure" clears it. */
+export async function setPlayerLevelAction(sessionId: string, playerId: string, level: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const n = levelNumber(level);
+  const [name] = await playerNames([playerId]);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_player_level", { p_player_id: playerId, p_skill: n as number });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.levels.changed(name, levelLabel(level, t)) };
 }
 
 type PlayerRpc = "pause_player" | "resume_player" | "remove_player";

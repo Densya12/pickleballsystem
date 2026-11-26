@@ -51,7 +51,7 @@ test.describe("queue engine, Courts and Queue tabs", () => {
     await expect(queueRows(page)).toHaveCount(1);
     await expect(queueRows(page)).toContainText("Dina");
     let sheet = await openPlayer(page, "Dina");
-    await expect(sheet.getByText("#1 in queue · Not sure")).toBeVisible();
+    await expect(sheet.getByText("#1 in queue · Not set")).toBeVisible();
     await sheet.getByRole("button", { name: "Pause" }).click();
     await expect(banner(page)).toHaveText(/Dina is paused/);
     await expect(sheet).toBeHidden();

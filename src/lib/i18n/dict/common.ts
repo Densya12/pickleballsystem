@@ -114,17 +114,31 @@ const statusFil: typeof statusEn = {
   ended: "Tapos na",
 };
 
+/** Level 1-5 (D25): a pickleball rating like the stars in other club apps, or not set. */
 const levelsEn = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
+  level: (n: number) => `Level ${n}`,
+  /** The "Not sure" choice in the picker. */
   unsure: "Not sure",
+  /** A player with no level, on rows and badges. */
+  notSet: "Not set",
+  hint: "Same as your stars in your club app.",
+  /** Level ranges in banners and previews: "level 3", "levels 2–4". */
+  band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `levels ${lo}–${hi}`),
+  change: "Level",
+  changeTitle: (name: string) => `${name}'s level`,
+  save: "Save level",
+  changed: (name: string, level: string) => `${name} is now ${level}.`,
 };
 const levelsFil: typeof levelsEn = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
+  level: (n: number) => `Level ${n}`,
   unsure: "Hindi sigurado",
+  notSet: "Wala pang level",
+  hint: "Kapareho ng stars mo sa club app mo.",
+  band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
+  change: "Level",
+  changeTitle: (name: string) => `Level ni ${name}`,
+  save: "I-save ang level",
+  changed: (name: string, level: string) => `${level} na si ${name}.`,
 };
 
 const choicesEn = {

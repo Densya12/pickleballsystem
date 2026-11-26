@@ -31,9 +31,9 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await expect(organizer).toHaveURL(SESSION_URL);
 
   for (const name of ["Paid One", "Paid Two", "Paid Three", "Paid Four"]) {
-    await addWalkIn(organizer, name, "Beginner", { choice: "Paid cash" });
+    await addWalkIn(organizer, name, "Level 2", { choice: "Paid cash" });
   }
-  await addWalkIn(organizer, "Unpaid Uno", "Beginner", { choice: "Pay later" });
+  await addWalkIn(organizer, "Unpaid Uno", "Level 2", { choice: "Pay later" });
   const path = await joinPath(organizer);
 
   // Mia checks in, sends a GCash reference on My place (to check counts as paid, BR14;

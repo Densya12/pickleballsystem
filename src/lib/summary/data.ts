@@ -1,3 +1,4 @@
+import { levelFromSkill } from "@/lib/queue/players";
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentStatus } from "@/lib/payments/summary";
@@ -9,7 +10,7 @@ export async function getSummaryData(sessionId: string): Promise<{ players: Summ
   const [players, payments, games] = await Promise.all([
     supabase
       .from("session_players")
-      .select("id, display_name, level, status, is_walk_in, games_played, payment_status, member_id, created_at")
+      .select("id, display_name, skill, status, is_walk_in, games_played, payment_status, member_id, created_at")
       .eq("session_id", sessionId)
       .order("created_at"),
     supabase.from("payments").select("session_player_id, method, reference_digits, amount").eq("session_id", sessionId),
@@ -28,7 +29,7 @@ export async function getSummaryData(sessionId: string): Promise<{ players: Summ
         id: p.id,
         name: p.display_name,
         status: p.status,
-        level: p.level,
+        level: levelFromSkill(p.skill),
         isWalkIn: p.is_walk_in,
         gamesPlayed: p.games_played,
         checkedInAt: p.created_at,

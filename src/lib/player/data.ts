@@ -1,3 +1,4 @@
+import { levelFromSkill } from "@/lib/queue/players";
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { CourtGame, CourtInfo } from "./courts";
@@ -48,9 +49,9 @@ export async function getLastProfile(code: string): Promise<{ name: string; leve
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims?.sub) return null;
-  const { data, error } = await supabase.rpc("my_last_profile", { p_join_code: code }).maybeSingle();
+  const { data, error } = await supabase.rpc("my_last_profile_v2", { p_join_code: code }).maybeSingle();
   if (error) throw new Error(`Could not load your last check-in: ${error.message}`);
-  return data ? { name: data.display_name, level: data.level } : null;
+  return data ? { name: data.display_name, level: levelFromSkill(data.skill) } : null;
 }
 
 export type PlayerSessionView = {

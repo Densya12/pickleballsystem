@@ -13,8 +13,8 @@ import { loadOutbox } from "@/lib/outbox/store";
 import { WalkInForm } from "./WalkInForm";
 
 const MEMBERS = [
-  { id: "m1", name: "Ana Reyes", level: "advanced", duesStatus: "paid", notes: null },
-  { id: "m2", name: "Ben Cruz", level: "beginner", duesStatus: "none", notes: null },
+  { id: "m1", name: "Ana Reyes", level: "4", duesStatus: "paid", notes: null },
+  { id: "m2", name: "Ben Cruz", level: "2", duesStatus: "none", notes: null },
 ];
 
 function setOnline(value: boolean) {
@@ -81,9 +81,9 @@ describe("WalkInForm", () => {
     await userEvent.click(screen.getByRole("button", { name: /Ana Reyes/ }));
     expect(screen.getByText("Member")).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toHaveValue("Ana Reyes");
-    expect(screen.getByRole("radio", { name: "Advanced" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Level 4" })).toBeChecked();
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
-    expect(addWalkIn.mock.calls[0][1]).toMatchObject({ display_name: "Ana Reyes", level: "advanced", memberId: "m1" });
+    expect(addWalkIn.mock.calls[0][1]).toMatchObject({ display_name: "Ana Reyes", level: "4", memberId: "m1" });
   });
 
   it("shows the server's field errors", async () => {

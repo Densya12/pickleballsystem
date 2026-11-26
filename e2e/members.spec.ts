@@ -12,19 +12,16 @@ test("members: add, search, edit; a walk-in from members; save a player as a mem
   await expect(page.getByRole("heading", { level: 1, name: "Members" })).toBeVisible();
   await expect(page.getByText("No members yet.", { exact: false })).toBeVisible();
 
-  await addMember(page, "Ana Reyes", { level: "Advanced", dues: "Dues paid", notes: "Fridays" });
-  await addMember(page, "Niño Santos", { level: "Beginner" });
+  await addMember(page, "Ana Reyes", { level: "Level 4", dues: "Dues paid", notes: "Fridays" });
+  await addMember(page, "Niño Santos", { level: "Level 2" });
   await addMember(page, "Ben Cruz");
   const list = page.getByRole("list", { name: "Members" }).getByRole("listitem");
-  await expect(list).toHaveText([
-    "Ana ReyesAdvanced · Dues paid",
-    "Ben CruzNot sure · No dues",
-    "Niño SantosBeginner · No dues",
-  ]);
+  // D25: a level badge (ball + number, read as "Level N") or "Not set".
+  await expect(list).toHaveText([/^Ana Reyes\s*Level 4.*Dues paid$/, /^Ben Cruz\s*Not set.*No dues$/, /^Niño Santos\s*Level 2.*No dues$/]);
 
   // Search ignores accents; tap to edit.
   await page.getByLabel("Search").fill("nino");
-  await expect(list).toHaveText(["Niño SantosBeginner · No dues"]);
+  await expect(list).toHaveText([/^Niño Santos\s*Level 2.*No dues$/]);
   await page.getByLabel("Search").fill("zzz");
   await expect(page.getByText('No member named "zzz".', { exact: false })).toBeVisible();
   await page.getByLabel("Search").fill("");
@@ -32,15 +29,15 @@ test("members: add, search, edit; a walk-in from members; save a player as a mem
   await expect(page.getByRole("heading", { level: 1, name: "Edit member" })).toBeVisible();
   await page.getByRole("radio", { name: "Dues unpaid", exact: true }).check();
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(list.filter({ hasText: "Ben Cruz" })).toHaveText("Ben CruzNot sure · Dues unpaid");
+  await expect(list.filter({ hasText: "Ben Cruz" })).toHaveText(/^Ben Cruz\s*Not set.*Dues unpaid$/);
 
   // A session: Niño from members (one tap + payment), and two plain walk-ins.
   await page.goto("/");
   await startSession(page, "Member Night", { courts: 1 });
   await addMemberWalkIn(page, "Niño Santos");
-  await expect(queueRows(page).getByRole("button", { name: /Niño Santos/ })).toContainText("Beginner");
-  await addWalkIn(page, "Ana Reyes", "Intermediate");
-  await addWalkIn(page, "Carlo Diaz", "Advanced");
+  await expect(queueRows(page).getByRole("button", { name: /Niño Santos/ })).toContainText("Level 2");
+  await addWalkIn(page, "Ana Reyes", "Level 3");
+  await addWalkIn(page, "Carlo Diaz", "Level 4");
 
   // Niño is already a member.
   let sheet = await openPlayer(page, "Niño Santos");
@@ -63,9 +60,9 @@ test("members: add, search, edit; a walk-in from members; save a player as a mem
 
   await page.goto("/members");
   await expect(list).toHaveText([
-    "Ana ReyesAdvanced · Dues paid",
-    "Ben CruzNot sure · Dues unpaid",
-    "Carlo DiazAdvanced · No dues",
-    "Niño SantosBeginner · No dues",
+    /^Ana Reyes\s*Level 4.*Dues paid$/,
+    /^Ben Cruz\s*Not set.*Dues unpaid$/,
+    /^Carlo Diaz\s*Level 4.*No dues$/,
+    /^Niño Santos\s*Level 2.*No dues$/,
   ]);
 });
