@@ -59,17 +59,26 @@ test.describe("signed-out visitor", () => {
     await expect(page.getByLabel("Email", { exact: true })).toHaveValue(email);
   });
 
-  for (const code of ["link", "auth"]) {
-    test(`/login?error=${code} shows the amber alert, then Send a new email link opens email`, async ({ page }) => {
-      await page.goto(`/login?error=${code}`);
-      const alert = page.getByRole("alert").filter({ hasText: "That sign-in link didn't work" });
-      await expect(alert).toBeVisible();
-      await expect(alert).toContainText("It expired or was already used. Get a new one, or sign in with Google.");
-      await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
-      await page.getByRole("button", { name: "Send a new email link" }).click();
-      await expect(page.getByLabel("Email", { exact: true })).toBeFocused();
-    });
-  }
+  test("/login?error=link shows the link alert, then Send a new email link opens email", async ({ page }) => {
+    await page.goto("/login?error=link");
+    const alert = page.getByRole("alert").filter({ hasText: "That sign-in link didn't work" });
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText("It expired or was already used. Get a new one, or sign in with Google.");
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+    await page.getByRole("button", { name: "Send a new email link" }).click();
+    await expect(page.getByLabel("Email", { exact: true })).toBeFocused();
+  });
+
+  test("/login?error=auth (Google didn't finish) shows a general message, not the link one", async ({ page }) => {
+    await page.goto("/login?error=auth");
+    const alert = page.getByRole("alert").filter({ hasText: "Sign-in didn't finish" });
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText("Please try again.");
+    await expect(page.getByText("That sign-in link didn't work")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Use email instead" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send a new email link" })).toHaveCount(0);
+  });
 
   for (const size of [
     { width: 360, height: 640 },

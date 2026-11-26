@@ -38,4 +38,6 @@ test("Taglish: the sign-in headline and Terms/Privacy", async ({ page, context }
   await page.goto("/login");
   await expect(page.getByRole("heading", { level: 1, name: "Open play, isang patas na pila." })).toBeVisible();
   await expect(page.getByRole("button", { name: "Mag-sign in gamit ang Google" })).toBeVisible();
+  await page.goto("/login?error=auth");
+  await expect(page.getByRole("alert").filter({ hasText: "Hindi natuloy ang pag-sign in" })).toContainText("Pakisubukan ulit.");
 });

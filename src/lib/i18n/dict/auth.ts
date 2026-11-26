@@ -37,10 +37,13 @@ const en = {
   resendIn: (time: string) => `Resend link in ${time}`,
   resend: "Resend link",
   otherEmail: "Use a different email",
-  // The sheet: link failed (?error=link from /auth/confirm, ?error=auth from /auth/callback)
+  // The sheet: the email link failed (?error=link from /auth/confirm)
   linkFailedTitle: "That sign-in link didn't work",
   linkFailedBody: "It expired or was already used. Get a new one, or sign in with Google.",
   newLink: "Send a new email link",
+  // The sheet: Google sign-in didn't finish (?error=auth from /auth/callback)
+  authFailedTitle: "Sign-in didn't finish",
+  authFailedBody: "Please try again.",
   // Errors (unchanged)
   emailRequired: "Enter your email.",
   emailInvalid: "That email doesn't look right. E.g. juan@gmail.com",
@@ -87,6 +90,8 @@ const fil: typeof en = {
   linkFailedTitle: "Hindi gumana ang login link",
   linkFailedBody: "Expired na o nagamit na. Humingi ng bago, o mag-sign in gamit ang Google.",
   newLink: "Magpadala ng bagong email link",
+  authFailedTitle: "Hindi natuloy ang pag-sign in",
+  authFailedBody: "Pakisubukan ulit.",
   emailRequired: "Pakilagay ang email mo.",
   emailInvalid: "Mukhang mali ang email. Hal. juan@gmail.com",
   emailRefused: "Hindi maipadala ang login link ngayon. Subukan ang Google sign-in.",

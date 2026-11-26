@@ -24,22 +24,26 @@ type Props = {
   next: string;
   /** A sign-in error to show (other than a failed link). */
   initialError?: string;
-  /** ?error=link (from /auth/confirm) or ?error=auth (from /auth/callback): the amber "link didn't work" state. */
-  linkFailed?: boolean;
+  /**
+   * The amber alert on the start state: "link" (?error=link from /auth/confirm: the email
+   * link expired or was used) or "auth" (?error=auth from /auth/callback: Google sign-in
+   * didn't finish).
+   */
+  failure?: "link" | "auth";
 };
 
 /**
  * Sign in (D22): the sheet at the bottom of the ink screen. Four states on
- * one route: start (Google, or "Use email instead"), email, sent, and link
- * failed (start with the amber alert). The auth calls are unchanged: Google
+ * one route: start (Google, or "Use email instead"), email, sent, and a
+ * failed sign-in (start with the amber alert: the email link, or Google). The auth calls are unchanged: Google
  * OAuth and the email magic link, both returning to window.location.origin
  * with ?next=.
  */
-export function LoginForm({ next, initialError, linkFailed = false }: Props) {
+export function LoginForm({ next, initialError, failure }: Props) {
   const t = useT();
   const emailId = useId();
   const [mode, setMode] = useState<Mode>("start");
-  const [showLinkFailed, setShowLinkFailed] = useState(linkFailed);
+  const [shownFailure, setShownFailure] = useState(failure);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string>();
   const [error, setError] = useState(initialError);
@@ -87,7 +91,7 @@ export function LoginForm({ next, initialError, linkFailed = false }: Props) {
     setError(undefined);
     setEmailError(undefined);
     if (to === "email") focusEmail.current = true;
-    if (to !== "start") setShowLinkFailed(false);
+    if (to !== "start") setShownFailure(undefined);
     setMode(to);
   }
 
@@ -145,7 +149,7 @@ export function LoginForm({ next, initialError, linkFailed = false }: Props) {
   );
 
   return (
-    <div data-login-state={mode === "start" && showLinkFailed ? "link-failed" : mode}>
+    <div data-login-state={mode === "start" && shownFailure ? `${shownFailure}-failed` : mode}>
       {/* Polite announcement of the sent state (the sheet's content changes in place). */}
       <p className="sr-only" aria-live="polite">
         {mode === "sent" && sentTo ? t.auth.sentAnnounce(sentTo) : ""}
@@ -153,12 +157,12 @@ export function LoginForm({ next, initialError, linkFailed = false }: Props) {
 
       {mode === "start" && (
         <>
-          {showLinkFailed ? (
+          {shownFailure ? (
             <div role="alert" className="mb-4 flex gap-2.5 rounded-control bg-warn px-3.5 py-3 text-warn">
               <AlertIcon className="mt-0.5 size-5 shrink-0" />
               <div>
-                <p className="text-body font-semibold">{t.auth.linkFailedTitle}</p>
-                <p className="mt-0.5 text-sm">{t.auth.linkFailedBody}</p>
+                <p className="text-body font-semibold">{shownFailure === "link" ? t.auth.linkFailedTitle : t.auth.authFailedTitle}</p>
+                <p className="mt-0.5 text-sm">{shownFailure === "link" ? t.auth.linkFailedBody : t.auth.authFailedBody}</p>
               </div>
             </div>
           ) : (
@@ -175,7 +179,7 @@ export function LoginForm({ next, initialError, linkFailed = false }: Props) {
             {googleLoading ? t.auth.googleOpening : t.auth.google}
           </Button>
           <Button variant="ghost" size="md" fullWidth className="mt-1.5" onClick={() => go("email")}>
-            {showLinkFailed ? t.auth.newLink : t.auth.useEmail}
+            {shownFailure === "link" ? t.auth.newLink : t.auth.useEmail}
           </Button>
           <p className="mt-2.5 text-center text-xs text-muted">
             {t.auth.legalBefore}

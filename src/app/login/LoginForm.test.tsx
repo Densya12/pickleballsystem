@@ -138,14 +138,27 @@ describe("LoginForm (D22)", () => {
     });
   });
 
-  it("a failed link (?error=link or auth) shows the amber alert, Google, and Send a new email link → email", async () => {
-    render(<LoginForm next="/" linkFailed />);
+  it("a failed email link (?error=link) shows the link alert, Google, and Send a new email link → email", async () => {
+    render(<LoginForm next="/" failure="link" />);
     const alert = screen.getByRole("alert");
     expect(alert).toHaveTextContent("That sign-in link didn't work");
     expect(alert).toHaveTextContent("It expired or was already used. Get a new one, or sign in with Google.");
     expect(screen.getByRole("button", { name: /Continue with Google/ })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Use email instead" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Send a new email link" }));
+    expect(screen.getByLabelText("Email")).toHaveFocus();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("a failed Google sign-in (?error=auth) shows a general message, not the link one", async () => {
+    render(<LoginForm next="/" failure="auth" />);
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Sign-in didn't finish");
+    expect(alert).toHaveTextContent("Please try again.");
+    expect(alert).not.toHaveTextContent(/link/i);
+    expect(screen.getByRole("button", { name: /Continue with Google/ })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Send a new email link" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Use email instead" }));
     expect(screen.getByLabelText("Email")).toHaveFocus();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });

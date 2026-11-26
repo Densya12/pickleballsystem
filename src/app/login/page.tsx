@@ -43,8 +43,8 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchP
   const [params, t] = await Promise.all([searchParams, getT()]);
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   const code = first(params.error);
-  // /auth/confirm sends ?error=link, /auth/callback ?error=auth.
-  const linkFailed = code === "link" || code === "auth";
+  // /auth/confirm sends ?error=link (the email link), /auth/callback ?error=auth (Google).
+  const failure = code === "link" || code === "auth" ? code : undefined;
   return (
     <LoginShell
       hero={
@@ -60,8 +60,8 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchP
       sheet={
         <LoginForm
           next={safeNextPath(first(params.next))}
-          linkFailed={linkFailed}
-          initialError={linkFailed ? undefined : loginErrorMessage(code, t)}
+          failure={failure}
+          initialError={failure ? undefined : loginErrorMessage(code, t)}
         />
       }
     />
