@@ -79,7 +79,10 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
               )}
               {entry && isNewCheckIn(entry, now) && (
                 // QA-05: phone check-ins from the last 10 minutes, so a flood is easy to spot.
-                <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.live.newPlayer}</span>
+                // "Next" is the only filled lime pill; "New" is a neutral outline (D26 follow-up).
+                <span className="rounded-full border border-field px-2 py-px text-xs font-semibold text-secondary" data-testid="new-tag">
+                  {t.live.newPlayer}
+                </span>
               )}
             </span>
             {place?.passedOver && (
