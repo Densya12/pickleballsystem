@@ -159,6 +159,8 @@ const choicesEn = {
   mixedDescription: "Levels within 1 of each other, with new partners",
   sameLevel: "Same level",
   sameLevelDescription: "Everyone at the same level, with new partners",
+  /** Under Same level (New session, Settings, More): it can stall courts. */
+  sameLevelNote: "Courts may wait for a same-level group. Mixed works best for most sessions.",
   fairLine: "Fair line",
   fairLineDescription: "Strict queue order; levels aren't used",
   points: (n: number) => `${n} points`,
@@ -179,6 +181,7 @@ const choicesFil: typeof choicesEn = {
   mixedDescription: "Magkakalapit ang level (±1), iba-ibang kasama",
   sameLevel: "Parehong level",
   sameLevelDescription: "Pare-pareho ang level, iba-ibang kasama",
+  sameLevelNote: "Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session.",
   fairLine: "Sunod sa pila",
   fairLineDescription: "Sunod lang sa pila; hindi ginagamit ang level",
   points: (n: number) => `${n} points`,

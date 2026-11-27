@@ -36,10 +36,11 @@ export function rotationLabel(rotation: string, t: Dictionary): string {
 }
 
 /** D25: who plays together, with a one-line hint each (New session, Settings, More). */
-export function matchmakingChoices(t: Dictionary): { value: Matchmaking; label: string; description: string }[] {
+export function matchmakingChoices(t: Dictionary): { value: Matchmaking; label: string; description: string; note?: string }[] {
   return [
     { value: "mixed", label: t.choices.mixed, description: t.choices.mixedDescription },
-    { value: "same_level", label: t.choices.sameLevel, description: t.choices.sameLevelDescription },
+    // Same level can leave courts waiting (the simulation): say so where it's picked.
+    { value: "same_level", label: t.choices.sameLevel, description: t.choices.sameLevelDescription, note: t.choices.sameLevelNote },
     { value: "fair_line", label: t.choices.fairLine, description: t.choices.fairLineDescription },
   ];
 }

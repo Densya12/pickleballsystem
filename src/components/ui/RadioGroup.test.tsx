@@ -40,4 +40,20 @@ describe("RadioGroup", () => {
     );
     expect(screen.getByText("Babalik sila sa dulo ng pila")).toBeInTheDocument();
   });
+
+  it("shows an option's note under its description", () => {
+    render(
+      <RadioGroup
+        legend="Who plays together"
+        name="m"
+        options={[
+          { value: "mixed", label: "Mixed", description: "Levels within 1" },
+          { value: "same_level", label: "Same level", description: "Same level only", note: "Courts may wait." },
+        ]}
+      />,
+    );
+    expect(screen.getByText("Courts may wait.")).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /^Same level.*Courts may wait\.$/ })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /^Mixed/ })).not.toHaveAccessibleName(/Courts may wait/);
+  });
 });

@@ -7,6 +7,7 @@ import { signInWithNewClub } from "./support/organizer";
 // Call mixed. Screenshots at 390x844 go to docs/qa/img/phase9-*.png.
 
 const SIZE = { width: 390, height: 844 };
+const SAME_LEVEL_NOTE = "Courts may wait for a same-level group. Mixed works best for most sessions.";
 const shot = (page: Page, name: string) => page.screenshot({ path: `docs/qa/img/phase9-${name}.png` });
 
 async function phone(browser: Browser) {
@@ -22,6 +23,7 @@ async function newSession(page: Page, name: string, preset: "Mixed" | "Same leve
   // New clubs start on Mixed.
   await expect(presets.getByRole("radio", { name: /^Mixed/ })).toBeChecked();
   await expect(presets).toContainText("Levels within 1 of each other, with new partners");
+  await expect(presets.getByText(SAME_LEVEL_NOTE)).toBeVisible();
   await presets.getByRole("radio", { name: new RegExp(`^${preset}`) }).check();
   if (screenshot) {
     await presets.scrollIntoViewIfNeeded();
@@ -124,6 +126,7 @@ test("Mixed: levels, the next group and why, teams, Who won by side, team swap, 
   const more = await openMore(page);
   const presets = more.getByRole("group", { name: "Who plays together" });
   await expect(presets.getByRole("radio", { name: /^Mixed/ })).toBeChecked();
+  await expect(presets.getByText(SAME_LEVEL_NOTE)).toBeVisible();
   await presets.getByRole("radio", { name: /^Same level/ }).check();
   await expect(banner(page)).toHaveText(/Who plays together: Same level\. It applies from the next call\./);
   await expect(presets.getByRole("radio", { name: /^Same level/ })).toBeChecked();
@@ -150,4 +153,23 @@ test("Same level with no group: the court says so; Call mixed plays queue order 
   await expect(banner(page)).toHaveText(/Called to Court 1: Abe, Ben, Cid, Dan · mixed levels · levels 1–5/);
   await expect(onCourt(page, "Court 1")).toHaveText([/Abe|Ben|Cid|Dan/, /Abe|Ben|Cid|Dan/, /Abe|Ben|Cid|Dan/, /Abe|Ben|Cid|Dan/]);
   await shot(page, "call-mixed");
+});
+
+test("Settings › club defaults: Same level says courts may wait, in English and Taglish", async ({ page }) => {
+  await page.setViewportSize(SIZE);
+  await signInWithNewClub(page, "phase9-note", "Note Club");
+  await page.goto("/settings/club");
+  const presets = page.getByRole("group", { name: "Who plays together" });
+  await expect(presets.getByText(SAME_LEVEL_NOTE)).toBeVisible();
+
+  await page.goto("/settings");
+  await page.getByRole("radiogroup", { name: "Language" }).getByRole("radio", { name: "Taglish" }).click();
+  await expect(page.getByRole("radiogroup", { name: "Wika" })).toBeVisible();
+  await page.goto("/settings/club");
+  await expect(
+    page
+      .getByRole("group", { name: "Sino ang magkakasama" })
+      .getByText("Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session."),
+  ).toBeVisible();
+  await shot(page, "same-level-note");
 });
