@@ -21,6 +21,10 @@ export type Rotation = (typeof ROTATION_OPTIONS)[number];
 export const MATCHMAKING_OPTIONS = ["mixed", "same_level", "fair_line"] as const;
 export type Matchmaking = (typeof MATCHMAKING_OPTIONS)[number];
 
+/** D26: after Done, wait for the organizer's Call (new clubs) or call the next group at once (existing ones). */
+export const CALL_MODE_OPTIONS = ["wait", "auto_call"] as const;
+export type CallMode = (typeof CALL_MODE_OPTIONS)[number];
+
 
 type FormLike = { get(name: string): FormDataEntryValue | null };
 
@@ -77,6 +81,7 @@ export type ClubSettingsInput = {
   default_points: Points;
   default_rotation: Rotation;
   default_matchmaking: Matchmaking;
+  default_call_mode: CallMode;
 };
 
 export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<ClubSettingsInput> {
@@ -88,6 +93,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
   const pointsRaw = Number(text(form, "default_points"));
   const rotationRaw = text(form, "default_rotation");
   const matchmakingRaw = text(form, "default_matchmaking");
+  const callModeRaw = text(form, "default_call_mode");
 
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
 
@@ -101,6 +107,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
     default_points: (POINTS_OPTIONS as readonly number[]).includes(pointsRaw) ? undefined : t.club.pointsInvalid,
     default_rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotationRaw) ? undefined : t.club.rotationInvalid,
     default_matchmaking: (MATCHMAKING_OPTIONS as readonly string[]).includes(matchmakingRaw) ? undefined : t.club.matchmakingInvalid,
+    default_call_mode: (CALL_MODE_OPTIONS as readonly string[]).includes(callModeRaw) ? undefined : t.club.callModeInvalid,
   };
 
   return toParseResult(
@@ -113,6 +120,7 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
       default_points: pointsRaw as Points,
       default_rotation: rotationRaw as Rotation,
       default_matchmaking: matchmakingRaw as Matchmaking,
+      default_call_mode: callModeRaw as CallMode,
     },
     errors,
   );

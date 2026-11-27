@@ -24,7 +24,7 @@ const row = (id: string, name: string, level: string, position: number): QueueEn
 });
 
 const state: LiveState = {
-  courts: [{ id: "c1", number: 1, label: "Court 1", format: "doubles", game: null }],
+  courts: [{ id: "c1", number: 1, label: "Court 1", format: "doubles", game: null, staying: [], waitingSince: null }],
   queue: [row("a", "Ana", "3", 1), row("b", "Ben", "unsure", 2), row("c", "Cy", "5", 3), row("d", "Dee", "2", 4), row("e", "Eli", "3", 5)],
   playingCount: 0,
   eligibleCount: 5,
@@ -110,5 +110,17 @@ describe("Queue tab (D25)", () => {
     await userEvent.click(within(picker).getByRole("radio", { name: "Level 4" }));
     await userEvent.click(within(sheet).getByRole("button", { name: "Save level" }));
     expect(frame.act).toHaveBeenCalledWith("set_player_level", { playerId: "b", level: "4" }, "Ben: Level 4");
+  });
+
+  it("'Next' is the only filled lime pill; 'New' (a recent phone check-in) is a grey outline", () => {
+    const fresh: LiveState = { ...state, queue: state.queue.map((p, i) => (i === 0 ? { ...p, isWalkIn: false, joinedAt: new Date().toISOString() } : p)) };
+    render(<QueueView state={fresh} rules={{ payFirst: false, fee: 0 }} sessionId="s1" />);
+    const ana = screen.getByRole("button", { name: /Ana/ });
+    const next = within(ana).getByTestId("next-tag");
+    const fresh_ = within(ana).getByTestId("new-tag");
+    expect(next).toHaveClass("bg-accent");
+    expect(fresh_).toHaveTextContent("New");
+    expect(fresh_).toHaveClass("border", "border-field", "text-secondary");
+    expect(fresh_.className).not.toMatch(/\bbg-/);
   });
 });

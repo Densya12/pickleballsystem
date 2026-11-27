@@ -76,6 +76,8 @@ test.describe("sessions (organizer)", () => {
       "Court 1: Doubles · Court 2: Doubles · Court 3: Doubles",
       "15 points",
       "Winners stay",
+      // D26: the next game (new clubs default to Wait for me).
+      "Wait for me",
       // D25: who plays together (new clubs default to Mixed).
       "Mixed",
       "Yes",

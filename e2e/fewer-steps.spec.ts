@@ -119,6 +119,8 @@ test("Repeat last: the last session again in two taps", async ({ page: organizer
   await expect(organizer.getByRole("radio", { name: /^Fair line/ })).toBeChecked();
 
   // Tap 2: Start session.
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await organizer.getByRole("radio", { name: /^Call next automatically/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   await expect(organizer.getByRole("heading", { level: 1, name: "Friday Smash" })).toBeVisible();

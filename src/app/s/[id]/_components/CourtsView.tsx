@@ -3,7 +3,7 @@
 import { chipLabels } from "@/components/court/MiniCourt";
 import { useT } from "@/lib/i18n/client";
 import { courtsLineup } from "@/lib/player/courts";
-import { bandText, nextPreview, noGroupText, predictedIds, type FormatPreview } from "@/lib/queue/preview";
+import { bandText, courtPreview, type FormatPreview, nextPreview, noGroupText, predictedIds } from "@/lib/queue/preview";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { CallRules } from "@/lib/player/state";
 import type { LiveState } from "@/lib/queue/data";
@@ -51,7 +51,7 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
           now={now}
           busy={busy}
           waiting={waitingCourts.has(court.id)}
-          preview={state.preview?.formats[court.format] ?? null}
+          preview={courtPreview(state.preview, court)}
           onCall={(courtId) => void act("call_next", { courtId }, t.live.outboxCall(courtById.get(courtId)?.label ?? "court"))}
           onCallMixed={(courtId) => void act("call_mixed", { courtId }, t.live.outboxCallMixed(courtById.get(courtId)?.label ?? "court"))}
           onNeedMore={(needed) => showError(t.live.needMoreMessage(needed))}

@@ -36,7 +36,14 @@ export async function startSession(
   page: Page,
   name: string,
   /** preset (D25): "Fair line" by default, so the queue specs keep today's order. */
-  opts: { courts: number; winnersStay?: boolean; formats?: ("Doubles" | "Singles")[]; preset?: "Mixed" | "Same level" | "Fair line" },
+  /** callMode (D26): "Call next automatically" by default, so the queue specs keep today's flow. */
+  opts: {
+    courts: number;
+    winnersStay?: boolean;
+    formats?: ("Doubles" | "Singles")[];
+    preset?: "Mixed" | "Same level" | "Fair line";
+    callMode?: "Wait for me" | "Call next automatically";
+  },
 ) {
   await page.getByRole("link", { name: "New session" }).click();
   await page.getByLabel("Session name").fill(name);
@@ -47,6 +54,7 @@ export async function startSession(
   }
   if (opts.winnersStay) await page.getByRole("radio", { name: /^Winners stay/ }).check();
   await page.getByRole("radio", { name: new RegExp(`^${opts.preset ?? "Fair line"}`) }).check();
+  await page.getByRole("radio", { name: new RegExp(`^${opts.callMode ?? "Call next automatically"}`) }).check();
   await page.getByRole("button", { name: "Start session" }).click();
   await expect(page).toHaveURL(SESSION_URL);
 }
@@ -92,7 +100,7 @@ export async function finishGame(page: Page, label: string, winners?: string[]) 
 export function banner(page: Page) {
   return page
     .getByRole("status")
-    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on|play again on|After a game:|swapped sides|is now Level|Who plays together:/ });
+    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on|play again on|After a game:|swapped sides|is now Level|Who plays together:|Next game:/ });
 }
 
 export function court(page: Page, label: string) {

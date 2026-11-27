@@ -71,7 +71,7 @@ export function courtsLineup(
   };
 }
 
-export type CourtInfo = { id: string; label: string; format: string };
+export type CourtInfo = { id: string; label: string; format: string; /** D26: winners staying (no game yet). */ staying?: string[] };
 export type CourtGame = { id: string; number: number; courtId: string; playerIds: string[] };
 
 export type CourtCardData = {
@@ -80,6 +80,8 @@ export type CourtCardData = {
   format: string;
   /** null: "Bakante" */
   game: { number: number; players: LineupPlayer[] } | null;
+  /** D26: winners staying on the empty court until the organizer calls. */
+  staying: LineupPlayer[];
 };
 
 /** One card per court, in court order, with the names now playing (in call order). */
@@ -98,6 +100,7 @@ export function courtCards(
       game: game
         ? { number: game.number, players: game.playerIds.map((id) => ({ id, name: names.get(id) ?? "?" })) }
         : null,
+      staying: game ? [] : (court.staying ?? []).map((id) => ({ id, name: names.get(id) ?? "?" })),
     };
   });
 }

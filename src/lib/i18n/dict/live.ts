@@ -19,6 +19,17 @@ const en = {
   done: "Done",
   doneOn: (court: string) => `Done on ${court}`,
   callNext: (n: number) => `Call next ${n}`,
+  /** D26: Call next to the winners who stay ("Call 2"). */
+  callFill: (n: number) => `Call ${n}`,
+  /** D26: the group Call would add, on an empty court. */
+  nextOnCourt: (names: string) => `Next: ${names}`,
+  /** D26: a court waiting over 2 minutes with a group ready (no sound). */
+  readyToCall: "Ready to call",
+  waitingForCall: "Waiting for Call",
+  /** D26: winners staying on court (a word on their chip, not color alone). */
+  staying: "staying",
+  stayingOn: (names: string) => `${names} stay on`,
+  stayersOff: (names: string) => `${names} go back in line (no group fits them)`,
   needMore: (n: number) => `Need ${n} more`,
   needMoreMessage: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call this court.`,
   notReadySwap: (name: string) => `${name} isn't ready · Swap`,
@@ -60,11 +71,24 @@ const en = {
   removing: "Removing…",
   // Banners (NF8)
   called: (court: string, names: readonly string[]) => `Called to ${court}: ${names.join(", ")}`,
-  finished: (input: { courtLabel: string; gameNumber: number; winners?: readonly string[] | null; next: readonly string[] | null }) =>
+  finished: (input: {
+    courtLabel: string;
+    gameNumber: number;
+    winners?: readonly string[] | null;
+    next: readonly string[] | null;
+    /** D26 Wait for me: nothing was called; staying winners, if any. */
+    waiting?: { staying: readonly string[] } | null;
+  }) =>
     [
       `Game #${input.gameNumber} on ${input.courtLabel} is done.`,
       input.winners?.length ? `Won: ${input.winners.join(" and ")}.` : null,
-      input.next ? `Called: ${input.next.join(", ")}` : `${input.courtLabel} stays empty; not enough players waiting.`,
+      input.waiting
+        ? [input.waiting.staying.length ? `${input.waiting.staying.join(" and ")} stay on.` : null, `Tap Call on ${input.courtLabel} when you're ready.`]
+            .filter(Boolean)
+            .join(" ")
+        : input.next
+          ? `Called: ${input.next.join(", ")}`
+          : `${input.courtLabel} stays empty; not enough players waiting.`,
     ]
       .filter(Boolean)
       .join(" "),
@@ -80,6 +104,7 @@ const en = {
   playAgain: (names: readonly string[], court: string) => `Nobody else is waiting, so ${list(names, "and")} play again on ${court}.`,
   rotationChanged: (rotation: string) => `After a game: ${rotation}. It applies from the next Done.`,
   matchmakingChanged: (preset: string) => `Who plays together: ${preset}. It applies from the next call.`,
+  callModeChanged: (mode: string) => `Next game: ${mode}. It applies from the next Done.`,
   // Errors
   needPlayers: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call.`,
   notEnough: "Not enough players waiting to call.",
@@ -181,6 +206,7 @@ const en = {
   outboxRotation: (rotation: string) => `After a game: ${rotation}`,
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
   outboxMatchmaking: (preset: string) => `Who plays together: ${preset}`,
+  outboxCallMode: (mode: string) => `Next game: ${mode}`,
   outboxPause: (name: string) => `Pause ${name}`,
   outboxResume: (name: string) => `Resume ${name}`,
   outboxRemove: (name: string) => `Remove ${name}`,
@@ -194,6 +220,8 @@ const en = {
   afterGameHint: "Takes effect at the next Done.",
   matchmaking: "Who plays together",
   matchmakingHint: "Takes effect at the next call.",
+  callMode: "Next game",
+  callModeHint: "Takes effect at the next Done.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "and")}.` : `${court}.`),
 };
 
@@ -209,6 +237,13 @@ const fil: typeof en = {
   done: "Tapos na",
   doneOn: (court: string) => `Tapos na sa ${court}`,
   callNext: (n: number) => `Tawagin ang susunod na ${n}`,
+  callFill: (n: number) => `Tawagin ang ${n}`,
+  nextOnCourt: (names: string) => `Susunod: ${names}`,
+  readyToCall: "Handa nang tawagin",
+  waitingForCall: "Hinihintay ang Call",
+  staying: "mananatili",
+  stayingOn: (names: string) => `Mananatili sina ${names}`,
+  stayersOff: (names: string) => `Babalik sa pila sina ${names} (walang bagay na grupo)`,
   needMore: (n: number) => `Kulang pa ng ${n}`,
   needMoreMessage: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notReadySwap: (name: string) => `Hindi pa handa si ${name} · Palitan`,
@@ -245,11 +280,23 @@ const fil: typeof en = {
   yesRemove: "Oo, alisin",
   removing: "Inaalis…",
   called: (court: string, names: readonly string[]) => `Tinawag sa ${court}: ${names.join(", ")}`,
-  finished: (input: { courtLabel: string; gameNumber: number; winners?: readonly string[] | null; next: readonly string[] | null }) =>
+  finished: (input: {
+    courtLabel: string;
+    gameNumber: number;
+    winners?: readonly string[] | null;
+    next: readonly string[] | null;
+    waiting?: { staying: readonly string[] } | null;
+  }) =>
     [
       `Tapos ang Laro #${input.gameNumber} sa ${input.courtLabel}.`,
       input.winners?.length ? `Panalo: ${input.winners.join(" at ")}.` : null,
-      input.next ? `Tinawag: ${input.next.join(", ")}` : `Bakante muna ang ${input.courtLabel}; kulang pa ang nakapila.`,
+      input.waiting
+        ? [input.waiting.staying.length ? `Mananatili sina ${input.waiting.staying.join(" at ")}.` : null, `I-tap ang Call sa ${input.courtLabel} kapag handa na.`]
+            .filter(Boolean)
+            .join(" ")
+        : input.next
+          ? `Tinawag: ${input.next.join(", ")}`
+          : `Bakante muna ang ${input.courtLabel}; kulang pa ang nakapila.`,
     ]
       .filter(Boolean)
       .join(" "),
@@ -266,6 +313,7 @@ const fil: typeof en = {
     `Walang ibang naghihintay, kaya ${list(names, "at")} ulit ang maglalaro sa ${court}.`,
   rotationChanged: (rotation: string) => `Pagkatapos ng laro: ${rotation}. Simula sa susunod na Tapos na.`,
   matchmakingChanged: (preset: string) => `Sino ang magkakasama: ${preset}. Simula sa susunod na tawag.`,
+  callModeChanged: (mode: string) => `Susunod na laro: ${mode}. Simula sa susunod na Done.`,
   needPlayers: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notEnough: "Kulang pa ang nakapila para makatawag.",
   noLevelGroup: (lo: number, hi: number) =>
@@ -355,6 +403,7 @@ const fil: typeof en = {
   outboxRotation: (rotation: string) => `Pagkatapos ng laro: ${rotation}`,
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
   outboxMatchmaking: (preset: string) => `Sino ang magkakasama: ${preset}`,
+  outboxCallMode: (mode: string) => `Susunod na laro: ${mode}`,
   outboxPause: (name: string) => `I-pause si ${name}`,
   outboxResume: (name: string) => `Ituloy si ${name}`,
   outboxRemove: (name: string) => `Alisin si ${name} sa pila`,
@@ -366,6 +415,8 @@ const fil: typeof en = {
   afterGameHint: "Magsisimula sa susunod na Tapos na.",
   matchmaking: "Sino ang magkakasama",
   matchmakingHint: "Magsisimula sa susunod na tawag.",
+  callMode: "Susunod na laro",
+  callModeHint: "Magsisimula sa susunod na Done.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "at")}.` : `${court}.`),
 };
 

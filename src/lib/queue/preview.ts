@@ -13,8 +13,15 @@ export type FormatPreview = {
   hi?: number;
   repeats?: number;
   missing?: number;
+  /** D26 (a court with staying winners): they go back in line at Call (D23, D25 g); the group is a fresh one. */
+  release?: boolean;
 };
-export type QueuePreview = { preset: string; formats: Partial<Record<string, FormatPreview>> };
+export type QueuePreview = {
+  preset: string;
+  formats: Partial<Record<string, FormatPreview>>;
+  /** D26: per court with staying winners, who Call would add next to them. */
+  courts?: Partial<Record<string, FormatPreview>>;
+};
 
 /** The note stored on a game when it was called. */
 export type CallNote = { preset?: string; lo?: number; hi?: number; repeats?: number; mixed_call?: boolean; stayed?: boolean };
@@ -22,7 +29,7 @@ export type CallNote = { preset?: string; lo?: number; hi?: number; repeats?: nu
 export function parsePreview(raw: unknown): QueuePreview | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as QueuePreview;
-  return typeof value.preset === "string" ? { preset: value.preset, formats: value.formats ?? {} } : null;
+  return typeof value.preset === "string" ? { preset: value.preset, formats: value.formats ?? {}, courts: value.courts ?? {} } : null;
 }
 
 /** The preview for the next court: doubles when any court is doubles, else singles. */
@@ -73,4 +80,20 @@ export function predictedIds(preview: QueuePreview | null, courtFormats: readonl
   const next = nextPreview(preview, courtFormats);
   if (!next || next.status === "not_enough") return null;
   return next.status === "ok" ? next.group.map((p) => p.id) : [];
+}
+
+/** The preview for one court: its own (staying winners, D26) or its format's. */
+export function courtPreview(preview: QueuePreview | null, court: { id: string; format: string; staying?: readonly unknown[] }): FormatPreview | null {
+  if (!preview) return null;
+  if (court.staying && court.staying.length > 0) return preview.courts?.[court.id] ?? null;
+  return preview.formats[court.format] ?? null;
+}
+
+/** D26: an empty court that has waited this long with a group ready shows "Ready to call". */
+export const READY_TO_CALL_MS = 2 * 60_000;
+
+/** D26: "Ready to call": waiting (after a Done under Wait for me) over 2 minutes, and Call would start a game. */
+export function readyToCall(waitingSince: string | null, preview: FormatPreview | null, now: number): boolean {
+  if (!waitingSince || preview?.status !== "ok") return false;
+  return now - new Date(waitingSince).getTime() >= READY_TO_CALL_MS;
 }

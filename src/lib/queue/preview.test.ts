@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { en, fil } from "@/lib/i18n/dictionary";
 import { courtsLineup } from "@/lib/player/courts";
 import { queueInfo } from "@/lib/player/state";
-import { bandText, explainCall, nextPreview, noGroupText, parsePreview, playerBand, predictedIds, type QueuePreview } from "./preview";
+import { bandText, courtPreview, explainCall, nextPreview, noGroupText, parsePreview, playerBand, predictedIds, readyToCall, type QueuePreview } from "./preview";
 
 const preview: QueuePreview = {
   preset: "mixed",
@@ -83,7 +83,20 @@ describe("D25 previews and call notes (presentation only)", () => {
       ["c", true, false],
       ["d", true, false],
     ]);
-    expect(parsePreview({ preset: "mixed" })).toEqual({ preset: "mixed", formats: {} });
+    expect(parsePreview({ preset: "mixed" })).toEqual({ preset: "mixed", formats: {}, courts: {} });
     expect(parsePreview(null)).toBeNull();
+  });
+
+  it("D26: a court with staying winners uses its own preview; Ready to call after 2 minutes with a group", () => {
+    const withCourt: QueuePreview = { ...preview, courts: { c9: { status: "ok", group: [{ id: "x", name: "X", skill: 3 }, { id: "y", name: "Y", skill: 3 }] } } };
+    expect(courtPreview(withCourt, { id: "c9", format: "doubles", staying: ["a", "b"] })?.group).toHaveLength(2);
+    expect(courtPreview(withCourt, { id: "c9", format: "doubles", staying: [] })?.group).toHaveLength(4);
+    expect(courtPreview(null, { id: "c9", format: "doubles" })).toBeNull();
+    const now = Date.parse("2026-11-27T10:00:00Z");
+    const ok = withCourt.formats.doubles!;
+    expect(readyToCall("2026-11-27T09:57:59Z", ok, now)).toBe(true);
+    expect(readyToCall("2026-11-27T09:58:30Z", ok, now)).toBe(false);
+    expect(readyToCall(null, ok, now)).toBe(false);
+    expect(readyToCall("2026-11-27T09:50:00Z", withCourt.formats.singles!, now)).toBe(false);
   });
 });

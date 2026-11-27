@@ -58,6 +58,9 @@ const en = {
   ready: "I'm ready to play",
   // You're up
   youreUp: "You're up",
+  /** D26: winners staying on court until the organizer calls the next game. */
+  stayingTitle: (court: string) => `You won! Stay on ${court}`,
+  stayingBody: "The organizer will call your next opponents.",
   yourTurn: (name: string) => `Your turn, ${name}!`,
   headTo: "Head to",
   highlighted: (format: string) => `${format} · you're highlighted`,
@@ -167,6 +170,8 @@ const fil: typeof en = {
   restingBody: (n: number) => `Naka-hold ang pwesto mo (#${n}). Hindi ka muna tatawagin hangga't hindi ka bumabalik.`,
   ready: "Handa na ulit akong maglaro",
   youreUp: "Ikaw na",
+  stayingTitle: (court: string) => `Panalo! Manatili sa ${court}`,
+  stayingBody: "Tatawagin ng organizer ang susunod ninyong kalaban.",
   yourTurn: (name: string) => `Ikaw na, ${name}!`,
   headTo: "Pumunta sa",
   highlighted: (format: string) => `${format} · naka-highlight ka`,

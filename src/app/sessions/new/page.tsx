@@ -61,6 +61,7 @@ async function NewSessionContent({ searchParams }: Pick<PageProps<"/sessions/new
                 points_to: String(club.default_points),
                 rotation: club.default_rotation,
                 matchmaking: club.default_matchmaking,
+                call_mode: club.default_call_mode,
                 pay_first: "",
                 fee: String(club.default_fee),
                 court_formats: "",

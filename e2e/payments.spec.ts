@@ -64,6 +64,8 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
   // D25: the queue order these checks expect (Fair line).
   await organizer.getByRole("radio", { name: /^Fair line/ }).check();
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await organizer.getByRole("radio", { name: /^Call next automatically/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();
@@ -171,6 +173,8 @@ test("a free session has no payment step", async ({ page: organizer, browser }) 
   await organizer.getByLabel("Fee per player (₱)").fill("0");
   // D25: the queue order these checks expect (Fair line).
   await organizer.getByRole("radio", { name: /^Fair line/ }).check();
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await organizer.getByRole("radio", { name: /^Call next automatically/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   // No Payments tab for a free session.

@@ -33,7 +33,17 @@ export type LiveGame = {
   startedAt: string;
   players: { id: string; name: string; notReady: boolean }[];
 };
-export type LiveCourt = { id: string; number: number; label: string; format: string; game: LiveGame | null };
+export type LiveCourt = {
+  id: string;
+  number: number;
+  label: string;
+  format: string;
+  game: LiveGame | null;
+  /** D26 Wait for me: winners staying on this empty court until Call (team 1, in order). */
+  staying: { id: string; name: string }[];
+  /** D26: when the court started waiting for Call (ISO), or null. */
+  waitingSince: string | null;
+};
 export type QueueEntry = LivePlayer & { position: number };
 
 export type LiveState = {
@@ -56,7 +66,7 @@ export type LiveState = {
 export async function getLiveState(sessionId: string, { withPreview = true }: { withPreview?: boolean } = {}): Promise<LiveState> {
   const supabase = await createClient();
   const [courts, games, players, eligible, preview] = await Promise.all([
-    supabase.from("courts").select("id, number, label, format, current_game_id").eq("session_id", sessionId).order("number"),
+    supabase.from("courts").select("id, number, label, format, current_game_id, staying_ids, waiting_since").eq("session_id", sessionId).order("number"),
     supabase.from("games").select("id, court_id, number, format, player_ids, started_at").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
@@ -109,6 +119,8 @@ export async function getLiveState(sessionId: string, { withPreview = true }: { 
             players: game.player_ids.map((id) => ({ id, name: byId.get(id)?.name ?? "?", notReady: byId.get(id)?.notReady ?? false })),
           }
         : null,
+      staying: game ? [] : (c.staying_ids ?? []).map((id) => ({ id, name: byId.get(id)?.name ?? "?" })),
+      waitingSince: game ? null : c.waiting_since,
     };
   });
 

@@ -7,6 +7,8 @@ export type CourtChip = {
   highlight?: boolean;
   /** Said "not ready": orange chip with a dot. */
   notReady?: boolean;
+  /** A word after the name, e.g. "staying" (D26 winners staying on court). */
+  tag?: string;
 };
 
 /**
@@ -85,11 +87,17 @@ export function MiniCourt({
           <>
             {player.notReady && <span className="size-1.5 shrink-0 rounded-full bg-warn-dot" />}
             <span className="truncate">{labels[index]}</span>
+            {player.tag && <span className="shrink-0 font-medium opacity-80">· {player.tag}</span>}
           </>
         );
         if (!swap) {
           return (
-            <span key={player.id} data-chip={player.highlight ? "me" : player.notReady ? "not-ready" : "player"} style={spots[index]} className={chipClass}>
+            <span
+              key={player.id}
+              data-chip={player.highlight ? "me" : player.notReady ? "not-ready" : player.tag ? "staying" : "player"}
+              style={spots[index]}
+              className={chipClass}
+            >
               {content}
             </span>
           );

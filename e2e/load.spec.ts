@@ -24,6 +24,8 @@ test("10 phones: every player sees 'You\'re up' within 5 seconds of the call", a
   await organizer.getByLabel("Fee per player (₱)").fill("0");
   // D25: the queue order these checks expect (Fair line).
   await organizer.getByRole("radio", { name: /^Fair line/ }).check();
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await organizer.getByRole("radio", { name: /^Call next automatically/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();

@@ -1,5 +1,5 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
-import type { Matchmaking, Points, Rotation } from "./validation";
+import type { CallMode, Matchmaking, Points, Rotation } from "./validation";
 
 /** Choices shared by club defaults (Settings) and new sessions. */
 
@@ -47,4 +47,16 @@ export function matchmakingChoices(t: Dictionary): { value: Matchmaking; label: 
 
 export function matchmakingLabel(matchmaking: string, t: Dictionary): string {
   return matchmakingChoices(t).find((choice) => choice.value === matchmaking)?.label ?? matchmaking;
+}
+
+/** D26: what Done does next (New session, Settings, More). */
+export function callModeChoices(t: Dictionary): { value: CallMode; label: string; description: string }[] {
+  return [
+    { value: "wait", label: t.choices.waitForMe, description: t.choices.waitForMeDescription },
+    { value: "auto_call", label: t.choices.autoCall, description: t.choices.autoCallDescription },
+  ];
+}
+
+export function callModeLabel(callMode: string, t: Dictionary): string {
+  return callModeChoices(t).find((choice) => choice.value === callMode)?.label ?? callMode;
 }
