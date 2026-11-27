@@ -11,6 +11,7 @@ import {
   setCallModeAction,
   setPlayerLevelAction,
   setRotationAction,
+  sitOutAction,
   swapNotReadyAction,
   type QueueActionResult,
 } from "./queue-actions";
@@ -44,6 +45,8 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
       return setMatchmakingAction(sessionId, str(args.matchmaking));
     case "set_call_mode":
       return setCallModeAction(sessionId, str(args.callMode));
+    case "sit_out":
+      return sitOutAction(sessionId, str(args.playerId));
     case "set_player_level":
       return setPlayerLevelAction(sessionId, str(args.playerId), str(args.level));
     case "pause_player":

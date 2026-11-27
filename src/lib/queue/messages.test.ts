@@ -74,6 +74,20 @@ describe("finishedBanner (after Done)", () => {
     );
   });
 
+  it("one staying winner (singles): stays / si", () => {
+    expect(finishedBanner(en, { ...base, winners: ["Ana"], next: null, waiting: { staying: ["Ana"] } })).toContain("Ana stays on.");
+    expect(finishedBanner(fil, { ...base, winners: ["Ana"], next: null, waiting: { staying: ["Ana"] } })).toContain("Mananatili si Ana.");
+    expect(en.live.stayingOn(["Ana"])).toBe("Ana stays on");
+    expect(en.live.stayingOn(["Ana", "Ben"])).toBe("Ana + Ben stay on");
+    expect(fil.live.stayingOn(["Ana"])).toBe("Mananatili si Ana");
+  });
+
+  it("sit out: who is back in line and how many spots Call fills (English and Taglish)", () => {
+    expect(en.live.satOut("Ana", 3)).toBe("Ana is back in line. Call will fill 3 spots.");
+    expect(en.live.satOut("Ana", 1)).toBe("Ana is back in line. Call will fill 1 spot.");
+    expect(fil.live.satOut("Ana", 3)).toBe("Nasa pila na ulit si Ana. Pupunuin ng Call ang 3 na puwesto.");
+  });
+
   it("samePlayers ignores order but not size", () => {
     expect(samePlayers(["a", "b"], ["b", "a"])).toBe(true);
     expect(samePlayers(["a", "b"], ["a", "b", "c"])).toBe(false);
@@ -112,6 +126,7 @@ describe("queueErrorMessage", () => {
     ["session_not_live", en.live.notLive],
     ["invalid_format", en.live.invalidFormat],
     ["player_not_on_court", en.live.notOnCourt],
+    ["player_not_staying", en.live.notStaying],
     ["undo_not_available", en.live.undoNotAvailable],
     ["court_not_found", en.live.notFound],
     ["already_paid", en.payments.alreadyPaid],

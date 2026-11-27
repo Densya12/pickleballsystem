@@ -4,9 +4,9 @@ import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
 import { callModeLabel, matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
-import { explainCall, type CallNote } from "@/lib/queue/preview";
+import { explainCall, parsePreview, type CallNote } from "@/lib/queue/preview";
 import { levelLabel, levelNumber } from "@/lib/queue/players";
-import { courtFormatLabel } from "@/lib/session/validation";
+import { courtFormatLabel, courtSize } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeSession } from "./authorize";
 
@@ -66,6 +66,31 @@ export async function swapSidesAction(sessionId: string, courtId: string, player
   const [a, b] = await playerNames([playerId, otherId]);
   refresh();
   return { banner: t.live.sidesSwapped(a, b) };
+}
+
+/**
+ * D26 follow-up: a staying winner sits out the next game (staff send them to
+ * the line). They go to the back; the pair is broken. Not undoable; idempotent.
+ */
+export async function sitOutAction(sessionId: string, playerId: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { data: courtId, error } = await supabase.rpc("sit_out", { p_player_id: playerId });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  const [[name], courtRow, preview] = await Promise.all([
+    playerNames([playerId]),
+    supabase.from("courts").select("format, staying_ids").eq("id", courtId).maybeSingle().then((r) => r.data),
+    supabase.rpc("queue_preview", { p_session_id: sessionId }).then((r) => parsePreview(r.data)),
+  ]);
+  const size = courtSize(courtRow?.format ?? "doubles");
+  const staying = courtRow?.staying_ids.length ?? 0;
+  // As Call will do it: the spots next to anyone still staying, or a full group when they go off too (D23, D25 g).
+  const spots = staying > 0 && preview?.courts?.[courtId]?.release ? size : size - staying;
+  refresh();
+  return { banner: t.live.satOut(name ?? "", spots) };
 }
 
 export async function finishGameAction(

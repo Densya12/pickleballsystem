@@ -34,11 +34,14 @@ export function chipLabels(names: readonly string[]): string[] {
   return first.map((f, i) => (first.filter((x) => x.toLowerCase() === f.toLowerCase()).length > 1 ? names[i] : f));
 }
 
-/** The organizer's team swap (D25): chips become buttons; tap one, then one on the other side. */
+/**
+ * Tappable chips: the organizer's team swap (D25: tap one, then one on the
+ * other side), or a staying winner to send to the line (D26 follow-up).
+ */
 export type ChipSwap = {
   selectedId: string | null;
   onTap: (playerId: string) => void;
-  /** Accessible name for a chip, e.g. "Ana, Left side. Tap to swap sides". */
+  /** Accessible name for a chip, e.g. "Ana, Left side. Tap to swap sides" or "Ana, staying. Tap to send to the line". */
   label: (name: string, index: number) => string;
 };
 
@@ -107,7 +110,7 @@ export function MiniCourt({
           <button
             key={player.id}
             type="button"
-            data-chip={player.notReady ? "not-ready" : "player"}
+            data-chip={player.notReady ? "not-ready" : player.tag ? "staying" : "player"}
             aria-pressed={selected}
             aria-label={swap.label(player.name, index)}
             onClick={() => swap.onTap(player.id)}

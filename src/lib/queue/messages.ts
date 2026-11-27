@@ -35,6 +35,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.invalidRotation;
     case "player_not_on_court":
       return t.live.notOnCourt;
+    case "player_not_staying":
+      return t.live.notStaying;
     case "player_playing":
       return t.live.playerPlayingGeneric;
     case "payment_required":

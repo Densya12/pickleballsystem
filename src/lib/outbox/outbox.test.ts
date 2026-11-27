@@ -35,6 +35,9 @@ describe("already done", () => {
     expect(isAlreadyDone("finish_game", "court_busy")).toBe(false);
     expect(isAlreadyDone("set_court_format", "court_busy")).toBe(false);
     expect(isAlreadyDone("add_walk_in", "session_not_live")).toBe(false);
+    // sit_out is idempotent itself; a winner called meanwhile is not "done" (Discard).
+    expect(isQueueable("sit_out")).toBe(true);
+    expect(isAlreadyDone("sit_out", "player_not_staying")).toBe(false);
     expect(isAlreadyDone("finish_game", undefined)).toBe(false);
   });
 });
