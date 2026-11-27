@@ -12,6 +12,8 @@ vi.mock("../_lib/walk-in-actions", () => ({ addWalkInAction: (...args: unknown[]
 import { loadOutbox } from "@/lib/outbox/store";
 import { WalkInForm } from "./WalkInForm";
 
+const GCASH = { method: "gcash" as const, otherName: null, accountName: "Juan", accountNumber: "09171234567", cashAccepted: true };
+
 const MEMBERS = [
   { id: "m1", name: "Ana Reyes", level: "4", duesStatus: "paid", notes: null },
   { id: "m2", name: "Ben Cruz", level: "2", duesStatus: "none", notes: null },
@@ -33,7 +35,7 @@ afterEach(() => setOnline(true));
 
 describe("WalkInForm", () => {
   it("has no payment choice picked when there is a fee", () => {
-    render(<WalkInForm sessionId="s1" fee={150} />);
+    render(<WalkInForm sessionId="s1" fee={150} payTo={GCASH} />);
     expect(screen.getByRole("group", { name: "Payment · ₱150" })).toBeInTheDocument();
     for (const name of ["Paid cash", "GCash", "Pay later"]) {
       expect(screen.getByRole("radio", { name: new RegExp(`^${name}`) })).not.toBeChecked();
@@ -41,7 +43,7 @@ describe("WalkInForm", () => {
   });
 
   it("won't add the walk-in until a payment choice is picked", async () => {
-    render(<WalkInForm sessionId="s1" fee={150} />);
+    render(<WalkInForm sessionId="s1" fee={150} payTo={GCASH} />);
     await userEvent.type(screen.getByLabelText("Name"), "Tito Boy");
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
 
@@ -59,7 +61,7 @@ describe("WalkInForm", () => {
   });
 
   it("GCash needs a valid reference before submitting", async () => {
-    render(<WalkInForm sessionId="s1" fee={150} />);
+    render(<WalkInForm sessionId="s1" fee={150} payTo={GCASH} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ana");
     await userEvent.click(screen.getByRole("radio", { name: /^GCash/ }));
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
@@ -67,8 +69,16 @@ describe("WalkInForm", () => {
     expect(addWalkIn).not.toHaveBeenCalled();
   });
 
+  it("Maya without cash: the choice says Maya, there is no cash choice, and nothing says GCash", () => {
+    const { container } = render(<WalkInForm sessionId="s1" fee={150} payTo={{ ...GCASH, method: "maya", cashAccepted: false }} />);
+    expect(screen.getByRole("radio", { name: /^Maya/ })).toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: /^Paid cash/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /^Pay later/ })).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/gcash/i);
+  });
+
   it("a free session has no payment step", async () => {
-    render(<WalkInForm sessionId="s1" fee={0} />);
+    render(<WalkInForm sessionId="s1" fee={0} payTo={GCASH} />);
     expect(screen.queryByRole("group", { name: /Payment/ })).not.toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Name"), "Libre Lito");
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
@@ -76,7 +86,7 @@ describe("WalkInForm", () => {
   });
 
   it("From members: fills name and level, and links the member", async () => {
-    render(<WalkInForm sessionId="s1" fee={0} members={MEMBERS} />);
+    render(<WalkInForm sessionId="s1" fee={0} payTo={GCASH} members={MEMBERS} />);
     await userEvent.type(screen.getByLabelText("From members"), "rey");
     await userEvent.click(screen.getByRole("button", { name: /Ana Reyes/ }));
     expect(screen.getByText("Member")).toBeInTheDocument();
@@ -88,7 +98,7 @@ describe("WalkInForm", () => {
 
   it("shows the server's field errors", async () => {
     addWalkIn.mockResolvedValue({ fieldErrors: { display_name: "Too short." } });
-    render(<WalkInForm sessionId="s1" fee={0} />);
+    render(<WalkInForm sessionId="s1" fee={0} payTo={GCASH} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ab");
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
     expect(await screen.findByText("Too short.")).toBeInTheDocument();
@@ -97,7 +107,7 @@ describe("WalkInForm", () => {
 
   it("offline: saves the walk-in to the outbox and goes back to the queue", async () => {
     setOnline(false);
-    render(<WalkInForm sessionId="s1" fee={150} />);
+    render(<WalkInForm sessionId="s1" fee={150} payTo={GCASH} />);
     expect(screen.getByText("Offline — will save when signal returns")).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Name"), "Tito Boy");
     await userEvent.click(screen.getByRole("radio", { name: "Pay later" }));
@@ -114,14 +124,14 @@ describe("WalkInForm", () => {
     addWalkIn.mockRejectedValue(new TypeError("Failed to fetch"));
     // The replay that follows can't reach the server either.
     send.mockRejectedValue(new TypeError("Failed to fetch"));
-    render(<WalkInForm sessionId="s1" fee={0} />);
+    render(<WalkInForm sessionId="s1" fee={0} payTo={GCASH} />);
     await userEvent.type(screen.getByLabelText("Name"), "Lito");
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
     expect(loadOutbox("s1")).toHaveLength(1);
   });
 
   it("QA-05: a name already in line is a warning the organizer can override", async () => {
-    render(<WalkInForm sessionId="s1" fee={0} inLine={["Mark Santos"]} />);
+    render(<WalkInForm sessionId="s1" fee={0} payTo={GCASH} inLine={["Mark Santos"]} />);
     await userEvent.type(screen.getByLabelText("Name"), "  mark  santos");
     await userEvent.click(screen.getByRole("button", { name: "Add to queue" }));
     expect(screen.getByText("mark santos is already in line. Add a last initial, or tap Add anyway.")).toBeInTheDocument();

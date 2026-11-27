@@ -9,6 +9,7 @@ import { getT } from "@/lib/i18n/server";
 import { getMembers } from "@/lib/members/data";
 import { getSession } from "@/lib/session/data";
 import { createClient } from "@/lib/supabase/server";
+import { payToFromRow } from "@/lib/payments/method";
 import { WalkInForm } from "./WalkInForm";
 import { WalkInSkeleton } from "../_components/SessionSkeletons";
 
@@ -53,6 +54,7 @@ async function WalkInContent({
         <WalkInForm
           sessionId={session.id}
           fee={session.fee}
+          payTo={payToFromRow(session)}
           members={members}
           inLine={(inLine.data ?? []).map((p) => p.display_name)}
         />

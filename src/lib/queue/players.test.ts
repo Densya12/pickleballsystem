@@ -4,6 +4,7 @@ import {
   levelLabel,
   parseWalkIn,
   parseWalkInPayment,
+  walkInPaymentChoices,
   tidyName,
 } from "./players";
 
@@ -57,6 +58,21 @@ describe("parseWalkInPayment (D18: no default with a fee)", () => {
     expect(parseWalkInPayment(150, "cash_received", "", en)).toEqual({ ok: true, payment: "cash_received" });
     expect(parseWalkInPayment(150, "later", "", en)).toEqual({ ok: true, payment: "later" });
     expect(parseWalkInPayment(150, "gcash", "1234 5678 90", en)).toEqual({ ok: true, payment: "gcash" });
+  });
+
+  it("a club that takes no cash refuses Paid cash (the choice is hidden; this guards the server)", () => {
+    const noCash = { method: "maya" as const, otherName: null, cashAccepted: false };
+    expect(parseWalkInPayment(150, "cash_received", "", en, noCash)).toEqual({
+      ok: false,
+      errors: { payment: "This club doesn't take cash. Pay by Maya." },
+    });
+    expect(parseWalkInPayment(150, "gcash", "1234 5678 90", en, noCash)).toEqual({ ok: true, payment: "gcash" });
+    expect(walkInPaymentChoices(en, noCash).map((c) => c.label)).toEqual(["Maya", "Pay later"]);
+    expect(walkInPaymentChoices(en, { method: "bank", otherName: null, cashAccepted: true }).map((c) => c.label)).toEqual([
+      "Paid cash",
+      "Bank transfer",
+      "Pay later",
+    ]);
   });
 
   it("GCash needs a valid reference", () => {

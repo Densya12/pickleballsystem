@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { BackLink, PageShell } from "@/components/ui";
 import { requireClub } from "@/lib/auth/dal";
 import { en } from "@/lib/i18n/dictionary";
+import { payToFromRow } from "@/lib/payments/method";
 import { getT } from "@/lib/i18n/server";
 import { getSession } from "@/lib/session/data";
 import { repeatDefaults } from "@/lib/session/repeat";
@@ -67,7 +68,7 @@ async function NewSessionContent({ searchParams }: Pick<PageProps<"/sessions/new
                 court_formats: "",
               }
         }
-        gcash={{ name: club.gcash_name, number: club.gcash_number }}
+        payTo={payToFromRow(club)}
         liveSession={liveSession}
       />
     </PageShell>

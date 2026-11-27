@@ -27,11 +27,11 @@ const privacySections: LegalSection[] = [
   {
     title: "What we collect",
     paragraphs: [
-      "From organizers: your email address and, if you sign in with Google, the name on your Google account. The club details you enter: the club's name, city (optional), the GCash name and number players should pay to, the default fee and game settings, and the co-organizers you invite.",
-      "From players, entered at check-in or by an organizer for a walk-in: a display name and a playing level. While a session runs we record your place in the line, the games you play, whether you are resting or not ready, and your payment status (unpaid, to check or paid) and method (GCash or cash). If you or the organizer enter a GCash reference number, we keep its digits so the organizer can find the payment in their GCash.",
+      "From organizers: your email address and, if you sign in with Google, the name on your Google account. The club details you enter: the club's name, city (optional), the payment method and the account name and number players should pay to, whether cash is accepted, the default fee and game settings, and the co-organizers you invite.",
+      "From players, entered at check-in or by an organizer for a walk-in: a display name and a playing level. While a session runs we record your place in the line, the games you play, whether you are resting or not ready, and your payment status (unpaid, to check or paid) and method (the club's payment method, such as an e-wallet or bank transfer, or cash). If you or the organizer enter a reference number, we keep its digits so the organizer can find the payment.",
       "Organizers can also keep a members list for regulars: a name, a level, whether club dues are paid, and short notes.",
       "To keep your place in the line, your phone gets an anonymous sign-in, with no name or email attached. We store your language choice in a cookie. Each session keeps an activity log of queue and payment actions (what happened, when, and which organizer did it), used for Undo and to sort out mix-ups.",
-      "We do not collect card numbers or bank details, and we have no access to anyone's GCash account. Money is paid in GCash or in cash, outside the app; the app only records what the player or organizer tells it.",
+      "We do not collect card numbers, we never ask players for their own bank or e-wallet details, and we have no access to anyone's accounts. The account name and number a club enters are shown to its players so they can pay. Money is paid directly to the club, outside the app; the app only records what the player or organizer tells it.",
     ],
   },
   {
@@ -88,7 +88,7 @@ const termsSections: LegalSection[] = [
     title: "Your players",
     paragraphs: [
       "Organizers are responsible for the players and members they add, and for what they enter about them. Use real first names or nicknames people are happy to see on screen, and let players know how the app is used (see the Privacy Policy).",
-      `${APP_NAME} doesn't handle money. Fees are paid to the club in GCash or cash, and any question about a payment is between the player and the club.`,
+      `${APP_NAME} doesn't handle money. Fees are paid directly to the club, by the method the club chooses, and any question about a payment is between the player and the club.`,
     ],
   },
   {

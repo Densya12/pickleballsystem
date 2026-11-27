@@ -181,9 +181,6 @@ export function SettingsSkeleton() {
             <ListRow href="/settings/club" trailing={value(110)}>
               {t.settings.clubDetails}
             </ListRow>
-            <ListRow href="/settings/payments" trailing={value(40)}>
-              {t.settings.gcashAndFee}
-            </ListRow>
             <ListRow href="/settings/qr">{t.settings.clubQr}</ListRow>
             <ListRow href="/settings/organizers" trailing={value(14)}>
               {t.settings.coOrganizers}
@@ -213,12 +210,12 @@ export function SettingsSkeleton() {
   );
 }
 
-/** A Settings sub-page (club details, GCash and fee, club QR, co-organizers): fields and Save. */
+/** A Settings sub-page (club details, club QR, co-organizers): fields and Save. */
 export function SettingsFormSkeleton({
   page,
   fields = 3,
 }: {
-  page: "clubDetails" | "gcashAndFee" | "clubQr" | "coOrganizers";
+  page: "clubDetails" | "clubQr" | "coOrganizers";
   fields?: number;
 }) {
   const t = useT();

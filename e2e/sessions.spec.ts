@@ -82,7 +82,9 @@ test.describe("sessions (organizer)", () => {
       "Mixed",
       "Yes",
       "₱200",
-      "None",
+      // Payment method (no account yet) and Cash accepted: a new club is GCash with cash, as before.
+      "GCash",
+      "Yes",
     ]);
     await expect(page.getByText("Friday, Nov 27 · 6:00 PM – 9:00 PM", { exact: true })).toBeVisible();
 

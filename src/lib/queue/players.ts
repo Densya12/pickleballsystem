@@ -5,6 +5,7 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { cleanDisplayName, hasLetterOrNumber } from "@/lib/names";
 import { toParseResult, type ParseResult } from "@/lib/club/validation";
+import { methodName, type PayTo } from "@/lib/payments/method";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 
 export const PLAYER_NAME_MIN = 2;
@@ -70,6 +71,7 @@ export function parseWalkIn(form: FormLike, t: Dictionary): ParseResult<WalkInIn
  * organizer picks one, so a walk-in is never held under pay_first by accident.
  */
 export const WALK_IN_PAYMENTS = ["cash_received", "gcash", "later"] as const;
+/** "gcash" means paid to the club's account, whatever its method (GCash, Maya, bank or other). */
 export type WalkInPayment = (typeof WALK_IN_PAYMENTS)[number];
 
 /**
@@ -85,10 +87,11 @@ export function isNewCheckIn(player: { isWalkIn: boolean; joinedAt: string }, no
   return !player.isWalkIn && now - Date.parse(player.joinedAt) < 10 * 60_000;
 }
 
-export function walkInPaymentChoices(t: Dictionary): { value: WalkInPayment; label: string }[] {
+/** The club's method by name; no cash choice when the club doesn't take cash. */
+export function walkInPaymentChoices(t: Dictionary, payTo: Pick<PayTo, "method" | "otherName" | "cashAccepted">): { value: WalkInPayment; label: string }[] {
   return [
-    { value: "cash_received", label: t.live.paidCash },
-    { value: "gcash", label: t.live.gcash },
+    ...(payTo.cashAccepted ? [{ value: "cash_received" as const, label: t.live.paidCash }] : []),
+    { value: "gcash", label: methodName(t, payTo) },
     { value: "later", label: t.live.payLater },
   ];
 }
@@ -98,10 +101,19 @@ export type WalkInPaymentResult =
   | { ok: false; errors: { payment?: string; reference?: string } };
 
 /** No payment step when the session is free (fee 0). */
-export function parseWalkInPayment(fee: number, payment: string, reference: string, t: Dictionary): WalkInPaymentResult {
+export function parseWalkInPayment(
+  fee: number,
+  payment: string,
+  reference: string,
+  t: Dictionary,
+  payTo?: Pick<PayTo, "method" | "otherName" | "cashAccepted">,
+): WalkInPaymentResult {
   if (fee <= 0) return { ok: true };
   const choice = WALK_IN_PAYMENTS.find((value) => value === payment);
   if (!choice) return { ok: false, errors: { payment: t.live.choosePayment } };
+  if (choice === "cash_received" && payTo && !payTo.cashAccepted) {
+    return { ok: false, errors: { payment: t.payments.cashNotAccepted(methodName(t, payTo)) } };
+  }
   if (choice === "gcash" && !normalizeReference(reference)) {
     return { ok: false, errors: { reference: t.payments.invalidReference(REFERENCE_MIN, REFERENCE_MAX) } };
   }

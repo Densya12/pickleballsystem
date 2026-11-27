@@ -1,5 +1,6 @@
 import { getAuthUser } from "@/lib/auth/dal";
 import { getT } from "@/lib/i18n/server";
+import { payToFromRow } from "@/lib/payments/method";
 import { getSession } from "@/lib/session/data";
 import { getSummaryData } from "@/lib/summary/data";
 import { summaryCsv, summaryFileName } from "@/lib/summary/summary";
@@ -17,7 +18,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/s/[id]/e
 
   const [{ players }, t] = await Promise.all([getSummaryData(session.id), getT()]);
   const fileName = summaryFileName(session.name, session.started_at ?? session.starts_at, t);
-  return new Response(summaryCsv(players, session.fee, t), {
+  return new Response(summaryCsv(players, session.fee, payToFromRow(session), t), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${fileName}"`,

@@ -132,8 +132,8 @@ export default function DesignSystemPage() {
               { value: "intermediate", label: "Intermediate" },
               { value: "advanced", label: "Advanced" },
             ]} />
-            <RadioGroup legend="Payment method" name="method" look="segmented" defaultValue="gcash" options={[
-              { value: "gcash", label: "GCash" },
+            <RadioGroup legend="Payment method" name="method" look="segmented" defaultValue="transfer" options={[
+              { value: "transfer", label: "Transfer" },
               { value: "cash", label: "Cash" },
             ]} />
             <RadioGroup legend="After each game" name="rotation" defaultValue="all_off" options={[

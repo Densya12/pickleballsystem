@@ -7,6 +7,7 @@ import { useRef, useState, useTransition, type FormEvent } from "react";
 import { Button, Card, Input, ListGroup, Notice, RadioGroup } from "@/components/ui";
 import { PlusIcon, SearchIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/format";
+import type { PayTo } from "@/lib/payments/method";
 import { useT } from "@/lib/i18n/client";
 import { matchesMember, type Member } from "@/lib/members/members";
 import { isNetworkError } from "@/lib/outbox/rules";
@@ -36,11 +37,14 @@ const FORM_ID = "walk-in";
 export function WalkInForm({
   sessionId,
   fee,
+  payTo,
   members = [],
   inLine = [],
 }: {
   sessionId: string;
   fee: number;
+  /** The session's payment method (and whether it takes cash). */
+  payTo: PayTo;
   members?: Member[];
   /** QA-05: names already in line (warn, but let the organizer add anyway). */
   inLine?: string[];
@@ -71,7 +75,7 @@ export function WalkInForm({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const parsed = parseWalkIn(form, t);
-    const paid = parseWalkInPayment(fee, String(form.get("payment") ?? ""), String(form.get("reference") ?? ""), t);
+    const paid = parseWalkInPayment(fee, String(form.get("payment") ?? ""), String(form.get("reference") ?? ""), t, payTo);
     if (!parsed.ok || !paid.ok) {
       setErrors({ ...(parsed.ok ? {} : parsed.errors), ...(paid.ok ? {} : paid.errors) });
       return;
@@ -200,7 +204,7 @@ export function WalkInForm({
             legend={t.live.payment(formatPeso(fee))}
             name="payment"
             look="list"
-            options={walkInPaymentChoices(t)}
+            options={walkInPaymentChoices(t, payTo)}
             value={payment}
             onValueChange={(value) => {
               setPayment(value);

@@ -1,14 +1,22 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
-import { formatGcashNumber, formatPeso } from "@/lib/format";
+import { formatPeso } from "@/lib/format";
+import { formatAccountNumber, methodName, type PayTo } from "./method";
 import { REFERENCE_MAX, REFERENCE_MIN } from "./reference";
 
 /** "Paalalahanan": the message the organizer shares or copies, in the device's language. */
 export function reminderMessage(
-  input: { name: string; session: string; fee: number; gcashName: string | null; gcashNumber: string | null },
+  input: { name: string; session: string; fee: number; payTo: PayTo },
   t: Dictionary,
 ): string {
-  const gcash = [input.gcashName, input.gcashNumber ? formatGcashNumber(input.gcashNumber) : null].filter(Boolean).join(" ");
-  return t.payments.reminder({ name: input.name, session: input.session, fee: formatPeso(input.fee), gcash: gcash || null });
+  return t.payments.reminder({
+    name: input.name,
+    session: input.session,
+    fee: formatPeso(input.fee),
+    method: methodName(t, input.payTo),
+    account: input.payTo.accountNumber
+      ? [input.payTo.accountName, formatAccountNumber(input.payTo.accountNumber)].filter(Boolean).join(" ")
+      : null,
+  });
 }
 
 /** Player-facing payment status line. */

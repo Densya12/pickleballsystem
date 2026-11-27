@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { queueErrorMessage } from "@/lib/queue/messages";
+import { payToFromRow } from "@/lib/payments/method";
 import { parseWalkIn, parseWalkInPayment, type WalkInInput } from "@/lib/queue/players";
 import { getSession } from "@/lib/session/data";
 import { createClient } from "@/lib/supabase/server";
@@ -40,7 +41,7 @@ export async function addWalkInAction(sessionId: string, input: WalkInRequest): 
 
   // BR13/BR20: with a fee, the organizer records how the walk-in pays (no default, D18).
   const parsed = parseWalkIn({ get: (name: string) => (name === "display_name" ? input.display_name : name === "level" ? input.level : null) }, t);
-  const paid = parseWalkInPayment(session.fee, input.payment, input.reference, t);
+  const paid = parseWalkInPayment(session.fee, input.payment, input.reference, t, payToFromRow(session));
   if (!parsed.ok || !paid.ok) {
     return { fieldErrors: { ...(parsed.ok ? {} : parsed.errors), ...(paid.ok ? {} : paid.errors) } };
   }

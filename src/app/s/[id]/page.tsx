@@ -36,6 +36,7 @@ import { SessionDetails } from "./_components/SessionDetails";
 import { SessionFrame } from "./_components/SessionFrame";
 import { UnpaidList } from "./_components/UnpaidList";
 import { CourtsSkeleton } from "./_components/SessionSkeletons";
+import { payToFromRow } from "@/lib/payments/method";
 
 export const metadata: Metadata = {
   title: en.nav.session,
@@ -227,7 +228,7 @@ async function Summary({ session }: { session: Session }) {
           <Section id="summary-unpaid" label={t.payments.unpaid}>
             <UnpaidList
               players={payments.unpaid.map((p) => ({ id: p.id, name: p.name }))}
-              session={{ name: session.name, fee: session.fee, gcashName: session.gcash_name, gcashNumber: session.gcash_number }}
+              session={{ name: session.name, fee: session.fee, payTo: payToFromRow(session) }}
             />
           </Section>
         )}

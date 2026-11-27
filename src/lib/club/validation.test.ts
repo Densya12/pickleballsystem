@@ -20,6 +20,9 @@ const validSettings = {
   gcash_name: "Juan Dela Cruz",
   gcash_number: "0917 123 4567",
   default_fee: "150",
+  payment_method: "gcash",
+  payment_method_other: "",
+  cash_accepted: "on",
   default_points: "11",
   default_rotation: "all_off",
   default_matchmaking: "same_level",
@@ -90,6 +93,9 @@ describe("parseClubSettings", () => {
         gcash_name: "Juan Dela Cruz",
         gcash_number: "09171234567",
         default_fee: 150,
+        payment_method: "gcash",
+        payment_method_other: null,
+        cash_accepted: true,
         default_points: 11,
         default_rotation: "all_off",
         default_matchmaking: "same_level",
@@ -104,9 +110,42 @@ describe("parseClubSettings", () => {
     expect(result.ok && result.data.gcash_name).toBeNull();
   });
 
-  it("explains a bad GCash number", () => {
+  it("explains a bad GCash or Maya number (a mobile number)", () => {
     const result = parseClubSettings(form({ ...validSettings, gcash_number: "0817 123 4567" }), en);
-    expect(result).toEqual({ ok: false, errors: { gcash_number: en.club.gcashNumberInvalid } });
+    expect(result).toEqual({ ok: false, errors: { gcash_number: en.club.mobileNumberInvalid } });
+    const maya = parseClubSettings(form({ ...validSettings, payment_method: "maya", gcash_number: "001234567890" }), en);
+    expect(maya).toEqual({ ok: false, errors: { gcash_number: en.club.mobileNumberInvalid } });
+  });
+
+  it("bank and other accounts: 4-30 digits (spaces and dashes are fine)", () => {
+    const bank = parseClubSettings(form({ ...validSettings, payment_method: "bank", gcash_number: "0012-3456 7890" }), en);
+    expect(bank.ok && bank.data).toMatchObject({ payment_method: "bank", gcash_number: "001234567890", payment_method_other: null });
+    const short = parseClubSettings(form({ ...validSettings, payment_method: "bank", gcash_number: "123" }), en);
+    expect(short).toEqual({ ok: false, errors: { gcash_number: en.club.accountNumberInvalid(4, 30) } });
+  });
+
+  it("Other needs its name, 2-30 characters; other methods drop it", () => {
+    const missing = parseClubSettings(form({ ...validSettings, payment_method: "other", payment_method_other: " " }), en);
+    expect(missing).toEqual({ ok: false, errors: { payment_method_other: en.club.otherNameInvalid(2, 30) } });
+    const long = parseClubSettings(form({ ...validSettings, payment_method: "other", payment_method_other: "x".repeat(31) }), en);
+    expect(long.ok).toBe(false);
+    const ok = parseClubSettings(form({ ...validSettings, payment_method: "other", payment_method_other: " ShopeePay " }), en);
+    expect(ok.ok && ok.data.payment_method_other).toBe("ShopeePay");
+    const dropped = parseClubSettings(form({ ...validSettings, payment_method: "maya", payment_method_other: "ShopeePay" }), en);
+    expect(dropped.ok && dropped.data.payment_method_other).toBeNull();
+  });
+
+  it("cash accepted: on or off; an unknown method is refused", () => {
+    const off = parseClubSettings(form({ ...validSettings, cash_accepted: "off" }), en);
+    expect(off.ok && off.data.cash_accepted).toBe(false);
+    expect(parseClubSettings(form({ ...validSettings, cash_accepted: "maybe" }), en)).toEqual({
+      ok: false,
+      errors: { cash_accepted: en.club.cashAcceptedInvalid },
+    });
+    expect(parseClubSettings(form({ ...validSettings, payment_method: "crypto" }), en)).toEqual({
+      ok: false,
+      errors: { payment_method: en.club.paymentMethodInvalid },
+    });
   });
 
   it.each(["-1", "1.5", "abc", "", "₱150"])("rejects fee %j", (fee) => {
@@ -133,7 +172,7 @@ describe("parseClubSettings", () => {
   });
 
   it("reports every invalid field at once", () => {
-    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay", default_matchmaking: "mixed", default_call_mode: "auto_call" }), en);
+    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay", default_matchmaking: "mixed", default_call_mode: "auto_call", payment_method: "gcash", cash_accepted: "on" }), en);
     expect(result.ok).toBe(false);
     expect(!result.ok && Object.keys(result.errors).sort()).toEqual(["default_fee", "name"]);
   });

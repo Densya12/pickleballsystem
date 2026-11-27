@@ -7,7 +7,11 @@ import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getLastProfile, getPlayerSessionView } from "@/lib/player/data";
 import { normalizeJoinCode } from "@/lib/queue/qr";
+import type { PayTo } from "@/lib/payments/method";
 import { CheckInForm } from "./CheckInForm";
+
+/** QA-06: no payment details before check-in (the payment step is on My place). */
+const NO_PAY_TO: PayTo = { method: "gcash", otherName: null, accountName: null, accountNumber: null, cashAccepted: true };
 import { CheckInSkeleton } from "@/components/skeletons/PlayerSkeletons";
 
 export const metadata: Metadata = {
@@ -62,7 +66,7 @@ async function CheckInContent({ params }: Pick<PageProps<"/j/[code]">, "params">
       <CheckInForm
         code={code}
         // QA-06: payment details aren't in the public preview; players see and pay on My place after joining.
-        payment={{ fee: 0, payFirst: false, gcashName: null, gcashNumber: null }}
+        payment={{ fee: 0, payFirst: false, payTo: NO_PAY_TO }}
         lastProfile={lastProfile}
       />
     </PageShell>

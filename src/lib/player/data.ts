@@ -1,3 +1,4 @@
+import { payToFromRow, type PayTo } from "@/lib/payments/method";
 import { levelFromSkill } from "@/lib/queue/players";
 import { parsePreview, type QueuePreview } from "@/lib/queue/preview";
 import "server-only";
@@ -20,8 +21,8 @@ export type CheckinPreview = {
   waiting: number | null;
   fee: number;
   payFirst: boolean;
-  gcashName: string | null;
-  gcashNumber: string | null;
+  accountName: string | null;
+  accountNumber: string | null;
 };
 
 export async function getCheckinPreview(code: string): Promise<CheckinPreview> {
@@ -37,8 +38,8 @@ export async function getCheckinPreview(code: string): Promise<CheckinPreview> {
     waiting: data?.waiting ?? null,
     fee: data?.fee ?? 0,
     payFirst: data?.pay_first ?? false,
-    gcashName: data?.gcash_name ?? null,
-    gcashNumber: data?.gcash_number ?? null,
+    accountName: data?.gcash_name ?? null,
+    accountNumber: data?.gcash_number ?? null,
   };
 }
 
@@ -67,7 +68,8 @@ export type PlayerSessionView = {
   courtGames: CourtGame[];
   /** The session's payment rule (BR6) and what to pay. */
   rules: CallRules;
-  gcash: { name: string | null; number: string | null };
+  /** Where to pay: the club's method and account, and whether cash is accepted. */
+  payTo: PayTo;
   /** The caller's own payment (NF14: only their own row is readable). */
   payment: { status: string; method: string | null; referenceDigits: string | null };
   /** D25: who plays together, the player's level, and the server's next group. */
@@ -84,7 +86,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
 
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, name, status, starts_at, ends_at, fee, pay_first, gcash_name, gcash_number, matchmaking")
+    .select("id, name, status, starts_at, ends_at, fee, pay_first, gcash_name, gcash_number, payment_method, payment_method_other, cash_accepted, matchmaking")
     .eq("join_code", code)
     .maybeSingle();
   if (error) throw new Error(`Could not load session: ${error.message}`);
@@ -140,7 +142,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
     courts: (courts.data ?? []).map((c) => ({ id: c.id, label: c.label, format: c.format, staying: c.staying_ids ?? [] })),
     courtGames: (games.data ?? []).map((g) => ({ id: g.id, number: g.number, courtId: g.court_id, playerIds: g.player_ids })),
     rules: { payFirst: session.pay_first, fee: session.fee },
-    gcash: { name: session.gcash_name, number: session.gcash_number },
+    payTo: payToFromRow(session),
     payment: {
       status: myRow?.payment_status ?? "unpaid",
       method: myPayment?.method ?? null,

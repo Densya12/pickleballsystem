@@ -6,6 +6,7 @@
  */
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { formatPeso } from "@/lib/format";
+import { paidWith, type PayTo } from "@/lib/payments/method";
 import { summarizePayments, type PayingPlayer, type PaymentSummary } from "@/lib/payments/summary";
 import { levelLabel } from "@/lib/queue/players";
 import { toManilaLocal } from "@/lib/session/time";
@@ -60,12 +61,6 @@ export function paymentStatusWords(status: string, fee: number, t: Dictionary): 
   return t.status.unpaid;
 }
 
-function methodWords(method: string | null, t: Dictionary): string {
-  if (method === "gcash") return t.player.gcash;
-  if (method === "cash") return t.player.cash;
-  return "";
-}
-
 // ---------------------------------------------------------------------------
 // CSV (Excel): UTF-8 with a BOM so "ñ" shows correctly; CRLF line ends.
 // ---------------------------------------------------------------------------
@@ -89,8 +84,8 @@ export function toCsv(rows: readonly (readonly (string | number | null | undefin
   return CSV_BOM + rows.map((row) => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
-/** One row per player (check-in order), then a totals row. */
-export function summaryCsv(players: readonly SummaryPlayer[], fee: number, t: Dictionary): string {
+/** One row per player (check-in order), then a totals row. The Method column names the club's payment method (or Cash). */
+export function summaryCsv(players: readonly SummaryPlayer[], fee: number, payTo: Pick<PayTo, "method" | "otherName">, t: Dictionary): string {
   const ordered = [...players].sort((a, b) => a.checkedInAt.localeCompare(b.checkedInAt));
   const payments = summarizePayments(players, fee, { sessionEnded: true });
   const rows = ordered.map((p) => [
@@ -99,7 +94,7 @@ export function summaryCsv(players: readonly SummaryPlayer[], fee: number, t: Di
     p.isWalkIn ? t.payments.csvWalkIn : t.payments.csvPhone,
     p.gamesPlayed,
     paymentStatusWords(p.paymentStatus, fee, t),
-    methodWords(p.method, t),
+    paidWith(t, p.method, payTo),
     p.referenceDigits,
     toManilaLocal(new Date(p.checkedInAt)).replace("T", " "),
   ]);

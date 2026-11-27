@@ -8,8 +8,8 @@ const en = {
   summaryLine: (paid: number, toCheck: number, unpaid: number, fee: string) =>
     `${paid} paid · ${toCheck} to check · ${unpaid} unpaid · ${fee} each`,
   progress: (paid: number, toCheck: number, total: number) => `${paid} of ${total} paid, ${toCheck} to check`,
-  checkGcash: "Check in your GCash",
-  checkHint: "Find the reference in your GCash before tapping Received.",
+  checkIn: (app: string) => `Check in your ${app}`,
+  checkHint: (app: string) => `Find the reference number in your ${app} before tapping Received.`,
   ref: (masked: string) => `Ref ${masked}`,
   showRef: (name: string) => `Show ${name}'s full reference`,
   hideRef: (name: string) => `Hide ${name}'s full reference`,
@@ -35,28 +35,29 @@ const en = {
   noPlayers: "No players yet, so no payments. Show the QR or add a walk-in.",
   freeSession: "This session is free. Nothing to collect.",
   // Banners
-  confirmedGcash: (name: string) => `${name}'s GCash is confirmed.`,
+  confirmedTransfer: (name: string, method: string) => `${name}'s payment (${method}) is confirmed.`,
   confirmedCash: (name: string) => `Got ${name}'s cash.`,
   undone: (name: string) => `${name} is marked unpaid again.`,
   undoneConfirm: (name: string) => `${name}'s payment is back to how it was.`,
   reminderSent: (name: string) => `Reminder sent to ${name}.`,
   reminderCopied: (name: string) => `Reminder for ${name} copied. Paste it in Messenger.`,
   reminderFailed: "Couldn't copy the reminder. Try again.",
-  reminder: (input: { name: string; session: string; fee: string; gcash: string | null }) =>
-    `Hi ${input.name}! A friendly reminder about your payment for ${input.session}: ${input.fee}.${input.gcash ? ` GCash: ${input.gcash}.` : ""} Thank you!`,
+  reminder: (input: { name: string; session: string; fee: string; method: string; account: string | null }) =>
+    `Hi ${input.name}! A friendly reminder about your payment for ${input.session}: ${input.fee}.${input.account ? ` ${input.method}: ${input.account}.` : ""} Thank you!`,
   // Errors
   invalidReference: (min: number, max: number) => `That reference doesn't look right. Use ${min} to ${max} digits.`,
   referenceHint: "Spaces and dashes are fine.",
   alreadyPaid: "This is already paid. Refresh the page.",
   notNeeded: "This session is free; nothing to pay.",
-  invalidMethod: "Choose GCash or cash.",
+  invalidMethod: "Choose a payment method.",
+  cashNotAccepted: (method: string) => `This club doesn't take cash. Pay by ${method}.`,
   statusChanged: "This payment changed. Refresh the page.",
   // Player
   statusPaid: "Paid",
   statusPending: "Waiting for the organizer",
   statusUnpaid: "Not paid yet",
   // CSV (Excel)
-  csvHeader: ["Name", "Level", "Joined by", "Games", "Payment", "Method", "Reference", "Checked in"],
+  csvHeader: ["Name", "Level", "Joined by", "Games", "Payment", "Method", "Reference number", "Checked in"],
   csvWalkIn: "Walk-in",
   csvPhone: "Phone",
   csvTotal: "Total",
@@ -64,6 +65,10 @@ const en = {
   csvCounts: (paid: number, toCheck: number, unpaid: number) => `${paid} paid · ${toCheck} to check · ${unpaid} unpaid`,
   csvAmounts: (confirmed: string, expected: string) => `${confirmed} of ${expected}`,
   csvFileName: "summary",
+  // Payment methods (brand names like GCash and Maya are not translated)
+  methodBank: "Bank transfer",
+  methodOther: "Other",
+  appBank: "bank app",
 };
 
 const fil: typeof en = {
@@ -74,8 +79,8 @@ const fil: typeof en = {
   summaryLine: (paid: number, toCheck: number, unpaid: number, fee: string) =>
     `${paid} bayad · ${toCheck} i-check · ${unpaid} hindi pa · ${fee} bawat isa`,
   progress: (paid: number, toCheck: number, total: number) => `${paid} sa ${total} bayad, ${toCheck} i-check`,
-  checkGcash: "I-check sa GCash mo",
-  checkHint: "Buksan ang GCash mo at hanapin ang reference number bago pindutin ang Natanggap.",
+  checkIn: (app: string) => `I-check sa ${app} mo`,
+  checkHint: (app: string) => `Buksan ang ${app} mo at hanapin ang reference number bago pindutin ang Natanggap.`,
   ref: (masked: string) => `Ref ${masked}`,
   showRef: (name: string) => `Ipakita ang buong reference ni ${name}`,
   hideRef: (name: string) => `Itago ang buong reference ni ${name}`,
@@ -100,25 +105,26 @@ const fil: typeof en = {
   nobodyPaid: "Wala pang bayad.",
   noPlayers: "Wala pang player kaya wala pang bayad. Ipakita ang QR o magdagdag ng walk-in.",
   freeSession: "Libre ang session na ito. Walang bayad na kailangang i-check.",
-  confirmedGcash: (name: string) => `Kumpirmado ang GCash ni ${name}.`,
+  confirmedTransfer: (name: string, method: string) => `Kumpirmado ang bayad ni ${name} (${method}).`,
   confirmedCash: (name: string) => `Natanggap ang cash ni ${name}.`,
   undone: (name: string) => `Ibinalik sa hindi pa bayad si ${name}.`,
   undoneConfirm: (name: string) => `Naibalik sa dati ang bayad ni ${name}.`,
   reminderSent: (name: string) => `Naipadala ang paalala para kay ${name}.`,
   reminderCopied: (name: string) => `Nakopya ang paalala para kay ${name}. I-paste sa Messenger.`,
   reminderFailed: "Hindi makopya ang paalala. Subukan ulit.",
-  reminder: (input: { name: string; session: string; fee: string; gcash: string | null }) =>
-    `Hi ${input.name}! Paalala lang po sa bayad para sa ${input.session}: ${input.fee}.${input.gcash ? ` GCash: ${input.gcash}.` : ""} Salamat po!`,
+  reminder: (input: { name: string; session: string; fee: string; method: string; account: string | null }) =>
+    `Hi ${input.name}! Paalala lang po sa bayad para sa ${input.session}: ${input.fee}.${input.account ? ` ${input.method}: ${input.account}.` : ""} Salamat po!`,
   invalidReference: (min: number, max: number) => `Mukhang mali ang reference number. ${min} hanggang ${max} na numero.`,
   referenceHint: "Okay lang kahit may space o gitling.",
   alreadyPaid: "Bayad na ito. I-refresh ang page.",
   notNeeded: "Libre ang session na ito; walang bayad.",
-  invalidMethod: "Pumili kung GCash o cash.",
+  invalidMethod: "Pumili ng paraan ng bayad.",
+  cashNotAccepted: (method: string) => `Hindi tumatanggap ng cash ang club. Magbayad sa ${method}.`,
   statusChanged: "Nagbago na ang bayad na ito. I-refresh ang page.",
   statusPaid: "Bayad na",
   statusPending: "Hinihintay ang kumpirmasyon ng organizer",
   statusUnpaid: "Hindi pa bayad",
-  csvHeader: ["Pangalan", "Level", "Paano pumila", "Laro", "Bayad", "Paraan", "Reference", "Oras ng check-in"],
+  csvHeader: ["Pangalan", "Level", "Paano pumila", "Laro", "Bayad", "Paraan", "Reference number", "Oras ng check-in"],
   csvWalkIn: "Walk-in",
   csvPhone: "Phone",
   csvTotal: "Kabuuan",
@@ -126,6 +132,9 @@ const fil: typeof en = {
   csvCounts: (paid: number, toCheck: number, unpaid: number) => `${paid} bayad · ${toCheck} i-check · ${unpaid} hindi pa`,
   csvAmounts: (confirmed: string, expected: string) => `${confirmed} sa ${expected}`,
   csvFileName: "buod",
+  methodBank: "Bank transfer",
+  methodOther: "Iba pa",
+  appBank: "bank app",
 };
 
 export const payments = { en, fil };

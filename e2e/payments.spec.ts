@@ -27,10 +27,10 @@ async function checkIn(player: Page, path: string, name: string, pay: { referenc
   await expect(player.locator("[data-payment]")).toContainText("Payment · ₱150");
   await expect(player.getByText("You'll be skipped until you pay.")).toBeVisible();
   if (pay.reference) {
-    await player.getByRole("button", { name: "Add GCash reference" }).click();
+    await player.getByRole("button", { name: "Add reference number" }).click();
     await expect(player.getByText(/Juan Dela Cruz/)).toBeVisible();
     await expect(player.getByText("0917 123 4567")).toBeVisible();
-    await player.getByLabel("GCash reference no.").fill(pay.reference);
+    await player.getByLabel("Reference number").fill(pay.reference);
     await player.getByRole("button", { name: "Send reference" }).click();
   }
 }
@@ -48,11 +48,12 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await organizer.addInitScript(() => Object.defineProperty(navigator, "share", { configurable: true, value: undefined }));
   await signInWithNewClub(organizer, "payments", "Makati Picklers");
 
-  // The club's GCash (Settings › GCash and fee), shown to players at check-in.
+  // The club's GCash (Settings › Club details › Payment), shown to players on My place.
   await organizer.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name: "Settings" }).click();
-  await organizer.getByRole("link", { name: /GCash and fee/ }).click();
-  await organizer.getByLabel("Name on GCash").fill("Juan Dela Cruz");
-  await organizer.getByLabel("GCash number").fill("0917 123 4567");
+  await organizer.getByRole("link", { name: /Club details/ }).click();
+  await expect(organizer.getByRole("group", { name: "Payment method" }).getByRole("radio", { name: "GCash" })).toBeChecked();
+  await organizer.getByLabel("Account name").fill("Juan Dela Cruz");
+  await organizer.getByLabel("Account number").fill("0917 123 4567");
   await organizer.getByRole("button", { name: "Save" }).click();
   await expect(organizer.getByText("Saved.")).toBeVisible();
   await organizer.goto("/");
@@ -111,8 +112,8 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await expect(organizer.getByText("of ₱900")).toBeVisible();
   await expect(organizer.getByTestId("payment-counts")).toHaveText("2 paid · 2 to check · 2 unpaid · ₱150 each");
 
-  const check = organizer.getByRole("region", { name: "Check in your GCash" });
-  await expect(organizer.getByText("Find the reference in your GCash before tapping Received.")).toBeVisible();
+  const check = organizer.getByRole("region", { name: "To check" });
+  await expect(organizer.getByText("Find the reference number in your GCash before tapping Received.")).toBeVisible();
   // BR15: the duplicate is flagged on both, not rejected.
   await expect(check.getByText("Same ref as Ana Phone")).toBeVisible();
   await expect(check.getByText("Same ref as GCash Walk")).toBeVisible();
@@ -121,7 +122,7 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await anaRow.getByRole("button", { name: "Show Ana Phone's full reference" }).click();
   await expect(anaRow.getByText("Ref 1234567890")).toBeVisible();
   await anaRow.getByRole("button", { name: "Received from Ana Phone" }).click();
-  await expect(status(organizer, "Ana Phone's GCash is confirmed.")).toBeVisible();
+  await expect(status(organizer, "Ana Phone's payment (GCash) is confirmed.")).toBeVisible();
   await expect(paymentLine(ana)).toHaveText(/Paid/, { timeout: 2_000 });
 
   // Remind copies the reminder; then Ben's cash is received.
@@ -191,7 +192,7 @@ test("a free session has no payment step", async ({ page: organizer, browser }) 
   await player.goto(path);
   await expect(player.getByRole("button", { name: "Join queue" })).toBeVisible();
   await expect(player.getByRole("heading", { name: "Payment" })).toHaveCount(0);
-  await expect(player.getByLabel("GCash reference no.")).toHaveCount(0);
+  await expect(player.getByLabel("Reference number")).toHaveCount(0);
   await player.getByLabel("Name", { exact: true }).fill("Fely Free");
   await player.getByRole("button", { name: "Join queue" }).click();
   await expect(player.getByRole("heading", { level: 1, name: "Hi, Fely" })).toBeVisible();

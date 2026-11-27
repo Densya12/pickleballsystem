@@ -75,7 +75,7 @@ export async function addWalkIn(page: Page, name: string, level = "Not sure", pa
   const option = page.getByRole("radio", { name: choice, exact: true });
   if (payment || (await option.count()) > 0) {
     await option.check();
-    if (payment?.reference) await page.getByLabel("GCash reference no.").fill(payment.reference);
+    if (payment?.reference) await page.getByLabel("Reference number").fill(payment.reference);
   }
   await page.getByRole("button", { name: "Add to queue" }).click();
   await expect(page).toHaveURL(QUEUE_URL);
