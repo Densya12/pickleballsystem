@@ -64,6 +64,16 @@ describe("finishedBanner (after Done)", () => {
     expect(finishedBanner(en, { ...base, next: null })).toBe("Game #1 on Court 2 is done. Court 2 stays empty; not enough players waiting.");
   });
 
+  it("D26 Wait for me: nothing called; says who stays on and to tap Call (English and Taglish)", () => {
+    expect(finishedBanner(en, { ...base, winners: ["Ana", "Ben"], next: null, waiting: { staying: ["Ana", "Ben"] } })).toBe(
+      "Game #1 on Court 2 is done. Won: Ana and Ben. Ana and Ben stay on. Tap Call on Court 2 when you're ready.",
+    );
+    expect(finishedBanner(en, { ...base, next: null, waiting: { staying: [] } })).toBe("Game #1 on Court 2 is done. Tap Call on Court 2 when you're ready.");
+    expect(finishedBanner(fil, { ...base, winners: ["Ana", "Ben"], next: null, waiting: { staying: ["Ana", "Ben"] } })).toBe(
+      "Tapos ang Laro #1 sa Court 2. Panalo: Ana at Ben. Mananatili sina Ana at Ben. I-tap ang Call sa Court 2 kapag handa na.",
+    );
+  });
+
   it("samePlayers ignores order but not size", () => {
     expect(samePlayers(["a", "b"], ["b", "a"])).toBe(true);
     expect(samePlayers(["a", "b"], ["a", "b", "c"])).toBe(false);

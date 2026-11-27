@@ -55,6 +55,13 @@ describe("pickPwestoState", () => {
     });
   });
 
+  it("D26: a winner staying on an empty court (no game yet) sees where they stay and with whom", () => {
+    const staying = [q("a", "playing", 0), q("me", "playing", 0), q("d", "queued", 3)];
+    expect(
+      pickPwestoState({ sessionStatus: "live", me: me("playing"), players: staying, games: [], staying: [{ courtLabel: "Court 1", playerIds: ["me", "a"] }] }),
+    ).toEqual({ kind: "staying", courtLabel: "Court 1", partnerName: "A" });
+  });
+
   it("paused keeps the place number", () => {
     const paused = players.map((p) => (p.id === "me" ? { ...p, status: "paused" } : p));
     expect(pickPwestoState({ sessionStatus: "live", me: me("paused"), players: paused, games: [] })).toEqual({ kind: "paused", position: 2 });

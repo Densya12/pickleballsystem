@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en, fil } from "@/lib/i18n/dictionary";
-import { allOffDescription, matchmakingChoices, rotationChoices } from "./options";
+import { allOffDescription, callModeChoices, callModeLabel, matchmakingChoices, rotationChoices } from "./options";
 
 describe("QA-13: 'All off' says who leaves, by the courts' formats", () => {
   it("doubles: All four; singles: Both; mixed or unknown: Everyone on court", () => {
@@ -38,5 +38,16 @@ describe("D25: who plays together", () => {
     expect(same?.note).toBe(
       "Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session.",
     );
+  });
+});
+
+describe("D26: the Next game setting", () => {
+  it("Wait for me first, then Call next automatically, in English and Taglish", () => {
+    expect(callModeChoices(en).map((c) => [c.value, c.label])).toEqual([
+      ["wait", "Wait for me"],
+      ["auto_call", "Call next automatically"],
+    ]);
+    expect(callModeLabel("wait", fil)).toBe("Hintayin ako");
+    expect(callModeLabel("auto_call", fil)).toBe("Kusang tawagin ang susunod");
   });
 });
