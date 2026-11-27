@@ -7,6 +7,7 @@
 import { auth } from "./dict/auth";
 import { club } from "./dict/club";
 import { choices, common, levels, nav, status } from "./dict/common";
+import { games } from "./dict/games";
 import { guide } from "./dict/guide";
 import { home, time } from "./dict/home";
 import { legal } from "./dict/legal";
@@ -32,6 +33,7 @@ export const en = {
   session: session.en,
   live: live.en,
   payments: payments.en,
+  games: games.en,
   members: members.en,
   settings: settings.en,
   player: player.en,
@@ -55,6 +57,7 @@ export const fil: Dictionary = {
   session: session.fil,
   live: live.fil,
   payments: payments.fil,
+  games: games.fil,
   members: members.fil,
   settings: settings.fil,
   player: player.fil,

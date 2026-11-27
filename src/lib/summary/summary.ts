@@ -18,6 +18,9 @@ export type SummaryPlayer = PayingPlayer & {
   /** ISO time of check-in */
   checkedInAt: string;
   memberId: string | null;
+  /** D27: finished games won and lost (games with no result count in neither). */
+  wins?: number;
+  losses?: number;
 };
 
 export type SessionSummary = {
@@ -93,6 +96,8 @@ export function summaryCsv(players: readonly SummaryPlayer[], fee: number, payTo
     levelLabel(p.level, t),
     p.isWalkIn ? t.payments.csvWalkIn : t.payments.csvPhone,
     p.gamesPlayed,
+    p.wins ?? 0,
+    p.losses ?? 0,
     paymentStatusWords(p.paymentStatus, fee, t),
     paidWith(t, p.method, payTo),
     p.referenceDigits,
@@ -103,6 +108,8 @@ export function summaryCsv(players: readonly SummaryPlayer[], fee: number, payTo
     "",
     t.payments.csvPlayers(players.length),
     players.reduce((sum, p) => sum + p.gamesPlayed, 0),
+    "",
+    "",
     fee > 0 ? t.payments.csvCounts(payments.confirmed.length, payments.pending.length, payments.unpaid.length) : t.common.free,
     fee > 0 ? t.payments.csvAmounts(formatPeso(payments.confirmedTotal), formatPeso(payments.expectedTotal)) : "",
     "",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
-import { Notice, PageShell } from "@/components/ui";
+import { ListGroup, ListRow, Notice, PageShell } from "@/components/ui";
 import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { getCheckinPreview, getPlayerSessionView } from "@/lib/player/data";
@@ -33,14 +33,15 @@ async function PwestoContent({ params }: Pick<PageProps<"/j/[code]/me">, "params
     if (preview.status === "ended") return <Ended />;
     redirect(`/j/${code}`);
   }
-  if (view.session.status === "ended") return <Ended />;
+  if (view.session.status === "ended") return <Ended standingsHref={`/j/${code}/standings`} />;
   // Staff can read the session but have no row: send them to check-in like anyone else.
   if (!view.me) redirect(`/j/${code}`);
 
   return <PlayerView code={code} view={view} />;
 }
 
-async function Ended() {
+/** The session ended. Its players can still open the standings (D27). */
+async function Ended({ standingsHref }: { standingsHref?: string }) {
   const t = await getT();
   return (
     <PageShell
@@ -52,7 +53,14 @@ async function Ended() {
       }
       title={t.player.endedTitle}
     >
-      <Notice kind="info">{t.player.endedBody}</Notice>
+      <div className="flex flex-col gap-3">
+        <Notice kind="info">{t.player.endedBody}</Notice>
+        {standingsHref && (
+          <ListGroup>
+            <ListRow href={standingsHref}>{t.games.playerLink}</ListRow>
+          </ListGroup>
+        )}
+      </div>
     </PageShell>
   );
 }
