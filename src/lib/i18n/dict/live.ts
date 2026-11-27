@@ -115,6 +115,10 @@ const en = {
   nameInLine: (name: string) => `${name} is already in line. Add a last initial, or tap Add anyway.`,
   addAnyway: "Add anyway",
   newPlayer: "New",
+  /** D25: the Queue tab keeps true queue order; the server's next group is tagged in place. */
+  nextTag: "Next",
+  waitingBand: (band: string) => `Waiting for a ${band} group`,
+  waitingAnyGroup: "Waiting for a group",
   // Walk-in
   walkInPageTitle: "Add walk-in",
   walkInTitle: "Add walk-in",
@@ -291,6 +295,9 @@ const fil: typeof en = {
   nameInLine: (name: string) => `Nasa pila na si ${name}. Magdagdag ng initial ng apelyido, o pindutin ang Idagdag pa rin.`,
   addAnyway: "Idagdag pa rin",
   newPlayer: "Bago",
+  nextTag: "Susunod",
+  waitingBand: (band: string) => `Hinihintay ang grupong ${band}`,
+  waitingAnyGroup: "Hinihintay ang mabubuong grupo",
   walkInPageTitle: "Magdagdag ng walk-in",
   walkInTitle: "Magdagdag ng walk-in",
   walkInSubtitle: "Para sa player na walang phone o hindi makapag-scan.",

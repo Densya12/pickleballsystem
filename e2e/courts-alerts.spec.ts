@@ -56,10 +56,11 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await expect(courtsRegion(mia, "Court 1")).toContainText("Doubles · Empty");
   await expect(courtsRegion(mia, "Court 2")).toContainText("Singles · Empty");
   const ready = courtsRegion(mia, "Get ready").getByRole("listitem");
-  await expect(ready).toHaveText(["#1Paid One", "#2Paid Two", "#3Paid Three", "#4Paid Four"]);
-  // Mia is the 5th eligible: "After them", marked as herself (a word, not only color).
+  await expect(ready).toHaveText(["#1Paid OneNext", "#2Paid TwoNext", "#3Paid ThreeNext", "#4Paid FourNext"]);
+  // Mia is the 5th eligible, 6th in line (her real place, as on My place): "After them",
+  // marked as herself (a word, not only color).
   const after = courtsRegion(mia, "After them").getByRole("listitem");
-  await expect(after).toHaveText(["#5Mia PhoneYou"]);
+  await expect(after).toHaveText(["#6Mia PhoneYou"]);
   await expect(mia.locator("[data-me]")).toHaveText(["Mia PhoneYou"]);
   // pay_first: the unpaid walk-in is on hold.
   const onHold = courtsRegion(mia, "On hold").getByRole("listitem");
@@ -71,7 +72,7 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await sheet.getByRole("button", { name: "Pause" }).click();
   // In queue order.
   await expect(onHold).toHaveText(["Paid FourResting", "Unpaid UnoUnpaid"], { timeout: 2_000 });
-  await expect(ready).toHaveText(["#1Paid One", "#2Paid Two", "#3Paid Three", "#4Mia PhoneYou"]);
+  await expect(ready).toHaveText(["#1Paid OneNext", "#2Paid TwoNext", "#3Paid ThreeNext", "#6Mia PhoneYouNext"]);
 
   // The organizer calls Court 1: Mia's phone shows the game and "You're up" within 2 seconds.
   await openTab(organizer, "Courts");

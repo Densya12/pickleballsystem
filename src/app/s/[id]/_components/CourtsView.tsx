@@ -33,6 +33,8 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
     predictedIds(state.preview, state.courts.map((c) => c.format)),
   );
   const noGroup = next?.status === "no_group" ? next : null;
+  // A summary, not the line: the group the server calls next (the Queue tab keeps queue order).
+  const nextGroup = lineup.ready.filter((p) => p.next);
 
   // Games on screen when it opened; any other game started since, and its card is highlighted once.
   const [initialGames] = useState(() => new Set(state.courts.flatMap((c) => (c.game ? [c.game.id] : []))));
@@ -69,8 +71,8 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
       <p className="flex flex-wrap items-baseline gap-x-2.5 px-1.5 pt-1 text-sm">
         <span className="text-muted">{t.live.upNext}</span>
         <span className="font-medium">
-          {lineup.ready.length > 0
-            ? chipLabels(lineup.ready.map((p) => p.name)).join(", ") + explainBand(t, next)
+          {nextGroup.length > 0
+            ? chipLabels(nextGroup.map((p) => p.name)).join(", ") + explainBand(t, next)
             : noGroup
               ? noGroupText(t, noGroup)
               : t.live.nobodyWaiting}

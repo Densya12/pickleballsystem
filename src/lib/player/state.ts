@@ -52,6 +52,26 @@ export function isHeld(player: Pick<QueuePlayer, "status" | "paymentStatus">, ru
   return player.status === "queued" && rules.payFirst && rules.fee > 0 && !isCallable(player, rules);
 }
 
+/**
+ * Where the next group sits in the eligible line (ids in queue order): who is
+ * "Next", how far the front of the line runs, and who was passed over.
+ * predicted: the server's next group, [] when no group fits the levels, null
+ * when unknown or not enough players (then the next `size` in queue order).
+ */
+export function frontOfLine(
+  eligibleIds: readonly string[],
+  size: number,
+  predicted: readonly string[] | null | undefined,
+): { next: Set<string>; end: number; passedOver: Set<string> } {
+  if (!predicted) return { next: new Set(eligibleIds.slice(0, size)), end: Math.min(size, eligibleIds.length), passedOver: new Set() };
+  const next = new Set(predicted.filter((id) => eligibleIds.includes(id)));
+  const last = Math.max(-1, ...eligibleIds.map((id, i) => (next.has(id) ? i : -1)));
+  const end = Math.min(eligibleIds.length, Math.max(size, last + 1));
+  // With a group: everyone ahead of its last player who isn't in it. No group: the front waits for one.
+  const passedOver = new Set(eligibleIds.slice(0, next.size > 0 ? last + 1 : end).filter((id) => !next.has(id)));
+  return { next, end, passedOver };
+}
+
 export type QueueInfo = {
   /** #N in line among everyone waiting (queued and paused), BR5 order. */
   position: number;
@@ -59,6 +79,8 @@ export type QueueInfo = {
   nextUp: boolean;
   /** Up to 3 names right before the player, in queue order. */
   ahead: string[];
+  /** D25: not in the next group although someone behind them is (or no group fits): waiting for a level group. */
+  passedOver: boolean;
 };
 
 export function queueInfo(
@@ -76,13 +98,16 @@ export function queueInfo(
   if (index < 0) return null;
 
   const before = waiting.slice(0, index);
-  const me = waiting[index];
+  const front = frontOfLine(
+    waiting.filter((p) => isCallable(p, rules)).map((p) => p.id),
+    callSize,
+    predicted,
+  );
   return {
     position: index + 1,
-    nextUp: predicted
-      ? predicted.includes(me.id)
-      : isCallable(me, rules) && before.filter((p) => isCallable(p, rules)).length < callSize,
+    nextUp: front.next.has(meId),
     ahead: before.slice(-AHEAD_SHOWN).map((p) => p.name),
+    passedOver: front.passedOver.has(meId),
   };
 }
 
@@ -139,5 +164,5 @@ export function pickPwestoState(input: {
 
   const info = queueInfo(players, me.id, callSize, rules, predicted);
   if (me.status === "paused") return { kind: "paused", position: info?.position ?? 0 };
-  return { kind: "queued", ...(info ?? { position: 0, nextUp: false, ahead: [] }) };
+  return { kind: "queued", ...(info ?? { position: 0, nextUp: false, ahead: [], passedOver: false }) };
 }

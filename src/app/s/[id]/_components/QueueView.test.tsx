@@ -56,11 +56,49 @@ describe("Queue tab (D25)", () => {
     expect(screen.queryByText("Not sure")).not.toBeInTheDocument();
   });
 
-  it("'Up next' is the server's next group (Cy, level 5, waits in 'After that')", () => {
+  it("keeps true queue order and real places: the next group is tagged in place, Cy (passed over) says why", () => {
     render(<QueueView state={state} rules={{ payFirst: false, fee: 0 }} sessionId="s1" />);
     const upNext = screen.getByRole("region", { name: "Up next" });
-    expect(within(upNext).getAllByRole("button").map((b) => b.textContent?.match(/Ana|Ben|Cy|Dee|Eli/)?.[0])).toEqual(["Ana", "Ben", "Dee", "Eli"]);
-    expect(within(screen.getByRole("region", { name: "After that" })).getByRole("button", { name: /Cy/ })).toBeInTheDocument();
+    const rows = within(upNext).getAllByRole("button");
+    expect(rows.map((b) => b.textContent?.match(/Ana|Ben|Cy|Dee|Eli/)?.[0])).toEqual(["Ana", "Ben", "Cy", "Dee", "Eli"]);
+    expect(rows.map((b) => b.textContent?.match(/^#?(\d+)/)?.[1])).toEqual(["1", "2", "3", "4", "5"]);
+    const tagged = rows.filter((b) => within(b).queryByText("Next"));
+    expect(tagged.map((b) => b.textContent?.match(/Ana|Ben|Cy|Dee|Eli/)?.[0])).toEqual(["Ana", "Ben", "Dee", "Eli"]);
+    // Cy (level 5) under Mixed waits for a level 4-5 group, in place at #3.
+    expect(within(rows[2]).getByText("Waiting for a level 4–5 group")).toBeInTheDocument();
+    expect(within(rows[2]).queryByText("Next")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "After that" })).not.toBeInTheDocument();
+  });
+
+  it("a later arrival in the next group never appears above an earlier player", () => {
+    render(<QueueView state={state} rules={{ payFirst: false, fee: 0 }} sessionId="s1" />);
+    const names = screen.getAllByRole("button").map((b) => b.textContent?.match(/Ana|Ben|Cy|Dee|Eli/)?.[0]);
+    expect(names.indexOf("Cy")).toBeLessThan(names.indexOf("Dee"));
+    expect(names.indexOf("Cy")).toBeLessThan(names.indexOf("Eli"));
+  });
+
+  it("Fair line: the first 4 are tagged Next, the rest follow under After that; no waiting line", () => {
+    const fair: LiveState = {
+      ...state,
+      preview: { preset: "fair_line", formats: { doubles: { status: "ok", group: ["a", "b", "c", "d"].map((id) => ({ id, name: id, skill: null })) } } },
+    };
+    render(<QueueView state={fair} rules={{ payFirst: false, fee: 0 }} sessionId="s1" />);
+    const upNext = within(screen.getByRole("region", { name: "Up next" })).getAllByRole("button");
+    expect(upNext.map((b) => b.textContent?.match(/Ana|Ben|Cy|Dee|Eli/)?.[0])).toEqual(["Ana", "Ben", "Cy", "Dee"]);
+    expect(upNext.every((b) => within(b).queryByText("Next"))).toBe(true);
+    const after = within(screen.getByRole("region", { name: "After that" })).getByRole("button", { name: /Eli/ });
+    expect(after).toHaveTextContent(/^#?5/);
+    expect(within(after).queryByText("Next")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("waiting-for")).not.toBeInTheDocument();
+  });
+
+  it("no group fits yet: nobody is tagged; the front of the line says which group they wait for", () => {
+    const none: LiveState = { ...state, preview: { preset: "same_level", formats: { doubles: { status: "no_group", group: [], lo: 3, hi: 3 } } } };
+    render(<QueueView state={none} rules={{ payFirst: false, fee: 0 }} sessionId="s1" />);
+    expect(screen.queryByText("Next")).not.toBeInTheDocument();
+    const ana = screen.getByRole("button", { name: /Ana/ });
+    expect(within(ana).getByText("Waiting for a level 3 group")).toBeInTheDocument();
+    expect(within(screen.getByRole("button", { name: /Ben/ })).getByText("Waiting for a group")).toBeInTheDocument();
   });
 
   it("the organizer changes a level: tap the name, Level, pick, Save level", async () => {

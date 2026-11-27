@@ -30,7 +30,7 @@ describe("queueInfo (BR5 order, next 4 eligible)", () => {
 
   it("sorts by queue_pos, not by list order", () => {
     const shuffled = [q("me", "queued", 9), q("z", "queued", 1)];
-    expect(queueInfo(shuffled, "me")).toEqual({ position: 2, nextUp: true, ahead: ["Z"] });
+    expect(queueInfo(shuffled, "me")).toEqual({ position: 2, nextUp: true, ahead: ["Z"], passedOver: false });
   });
 
   it("returns null for someone not waiting", () => {
@@ -51,6 +51,7 @@ describe("pickPwestoState", () => {
       position: 2,
       nextUp: true,
       ahead: ["D"],
+      passedOver: false,
     });
   });
 

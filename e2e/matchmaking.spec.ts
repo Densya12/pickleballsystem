@@ -68,15 +68,17 @@ test("Mixed: levels, the next group and why, teams, Who won by side, team swap, 
   await fe.getByRole("button", { name: "Join queue" }).click();
   await expect(fe.getByTestId("position")).toBeVisible();
 
-  // Queue: a level badge on every row; "Up next" is the server's group (Bea, level 5, waits).
+  // Queue: a level badge on every row; true queue order, the server's group tagged Next in place
+  // (Bea, level 5, and Eli, level 4, wait for their level group).
   await openTab(page, "Queue");
   await expect(queueRows(page).filter({ hasText: "Bea" })).toContainText("Level 5");
-  await expect(queueSection(page, "Up next").getByRole("listitem")).toHaveText([/Ana/, /Cy/, /Dee/, /Fe/]);
+  await expect(queueSection(page, "Up next").getByRole("listitem")).toHaveText([/^#?1Ana/, /^#?2Bea/, /^#?3Cy/, /^#?4Dee/, /^#?5Eli/, /^#?6Fe/]);
+  await expect(queueSection(page, "Up next").getByRole("listitem").filter({ has: page.getByTestId("next-tag") })).toHaveText([/Ana/, /Cy/, /Dee/, /Fe/]);
   await expect(page.getByText("Not sure").filter({ visible: true })).toHaveCount(0);
   await shot(page, "queue-levels");
 
   // Bea is 2nd in line but not in the next group: the player sees why.
-  await expect(bea.getByTestId("wait-band")).toHaveText("You're up when a level 4–5 group forms. You're 2nd in line.", { timeout: 5_000 });
+  await expect(bea.getByTestId("wait-band")).toHaveText("You're 2nd in line. Waiting for a level 4–5 group.", { timeout: 5_000 });
   await shot(bea, "player-band");
 
   // Courts: Up next with its level range; the call explains itself.
@@ -162,9 +164,8 @@ test("Settings › club defaults: Same level says courts may wait, in English an
   const presets = page.getByRole("group", { name: "Who plays together" });
   await expect(presets.getByText(SAME_LEVEL_NOTE)).toBeVisible();
 
-  await page.goto("/settings");
-  await page.getByRole("radiogroup", { name: "Language" }).getByRole("radio", { name: "Taglish" }).click();
-  await expect(page.getByRole("radiogroup", { name: "Wika" })).toBeVisible();
+  // Taglish on this device (the language cookie, D20; the switch itself is covered in language.spec).
+  await page.context().addCookies([{ name: "opq-lang", value: "fil", url: new URL(page.url()).origin }]);
   await page.goto("/settings/club");
   await expect(
     page
@@ -172,4 +173,56 @@ test("Settings › club defaults: Same level says courts may wait, in English an
       .getByText("Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session."),
   ).toBeVisible();
   await shot(page, "same-level-note");
+});
+
+test("Keeps queue order: a later arrival in the next group never shows above an earlier player", async ({ page, browser }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize(SIZE);
+  await signInWithNewClub(page, "phase9-order", "Order Club");
+  await newSession(page, "Order Night", "Mixed");
+  await page.getByRole("link", { name: "Show QR" }).click();
+  const path = new URL((await page.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
+  await page.goBack();
+
+  // Ana (3), then Bea (5) on her phone, then Cy, Dee (3) and Eli (2). Mixed calls Ana, Cy, Dee, Eli:
+  // Bea, 2nd in line, is the one player passed over.
+  await addWalkIn(page, "Ana", "Level 3");
+  const bea = await phone(browser);
+  await bea.goto(path);
+  await bea.getByLabel("Name", { exact: true }).fill("Bea");
+  await bea.getByRole("radio", { name: "Level 5" }).check();
+  await bea.getByRole("button", { name: "Join queue" }).click();
+  await expect(bea.getByTestId("position")).toHaveText("2");
+  for (const [name, level] of [["Cy", "Level 3"], ["Dee", "Level 3"], ["Eli", "Level 2"]] as const) await addWalkIn(page, name, level);
+
+  // Organizer: true order and real places; Eli (last to arrive) is tagged Next but stays below Bea.
+  await openTab(page, "Queue");
+  const rows = queueSection(page, "Up next").getByRole("listitem");
+  await expect(rows).toHaveText([/^#?1Ana/, /^#?2Bea/, /^#?3Cy/, /^#?4Dee/, /^#?5Eli/]);
+  await expect(rows.filter({ has: page.getByTestId("next-tag") })).toHaveText([/Ana/, /Cy/, /Dee/, /Eli/]);
+  const beaRow = rows.filter({ hasText: "Bea" });
+  await expect(beaRow.getByTestId("next-tag")).toHaveCount(0);
+  await expect(beaRow.getByTestId("waiting-for")).toHaveText("Waiting for a level 4–5 group");
+  await expect(page.getByTestId("waiting-for")).toHaveCount(1);
+  await shot(page, "queue-keep-order");
+
+  // Courts: the Up next summary may list the group the server calls.
+  await openTab(page, "Courts");
+  await expect(page.getByText("Ana, Cy, Dee, Eli · levels 2–3")).toBeVisible();
+
+  // Bea's phone: her true place and why she waits; nobody listed above her who came later.
+  await expect(bea.getByTestId("position")).toHaveText("2");
+  await expect(bea.getByTestId("wait-band")).toHaveText("You're 2nd in line. Waiting for a level 4–5 group.", { timeout: 5_000 });
+  await expect(bea.getByText("You're in the next group")).toHaveCount(0);
+  await expect(bea.getByTestId("ahead")).toHaveText("Ahead of you: Ana");
+  await shot(bea, "player-passed-over");
+  await bea.getByRole("link", { name: "View courts" }).click();
+  const ready = bea.getByRole("region", { name: "Get ready", exact: true }).getByRole("listitem");
+  await expect(ready).toHaveText(["#1AnaNext", "#2BeaYou", "#3CyNext", "#4DeeNext", "#5EliNext"]);
+
+  // Taglish on Bea's phone (the per-device language cookie, D20).
+  await bea.context().addCookies([{ name: "opq-lang", value: "fil", url: new URL(bea.url()).origin }]);
+  await bea.goto(path.replace(/\/?$/, "/me"));
+  await expect(bea.getByTestId("wait-band")).toHaveText("Pang-2 ka sa pila. Hinihintay ang grupong level 4–5.");
+  await bea.context().close();
 });
