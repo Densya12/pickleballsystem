@@ -6,7 +6,7 @@ import { BackLink, Button, EmptyState, ListGroup, Notice, PageShell, Section, St
 import { BellIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/client";
-import { courtCards, courtsLineup, type LineupPlayer } from "@/lib/player/courts";
+import { courtCards, courtsLineup, type LinePlayer, type LineupPlayer } from "@/lib/player/courts";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
 import { predictedIds } from "@/lib/queue/preview";
@@ -99,7 +99,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
 
         {lineup.after.length > 0 && (
           <Section id="after-them" label={t.player.afterThem}>
-            <NameList players={lineup.after} meId={meId} start={lineup.ready.length + 1} />
+            <NameList players={lineup.after} meId={meId} />
           </Section>
         )}
 
@@ -136,16 +136,23 @@ function PlayerName({ player, meId }: { player: LineupPlayer; meId: string | nul
   );
 }
 
-function NameList({ players, meId, start = 1 }: { players: LineupPlayer[]; meId: string | null; start?: number }) {
+/** In true queue order with real places; the group called next is tagged "Next" (a word, not color alone). */
+function NameList({ players, meId }: { players: LinePlayer[]; meId: string | null }) {
+  const t = useT();
   return (
     <ol className="divide-y divide-hairline overflow-hidden rounded-group bg-surface">
-      {players.map((player, index) => (
+      {players.map((player) => (
         <li key={player.id} className={cn("flex items-center gap-3 px-4 py-[11px]", player.id === meId && "bg-accent-faint")}>
           <span className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-semibold">
             <span className="sr-only">#</span>
-            {start + index}
+            {player.place}
           </span>
           <PlayerName player={player} meId={meId} />
+          {player.next && (
+            <span className="ml-auto shrink-0 rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent" data-testid="next-tag">
+              {t.player.nextTag}
+            </span>
+          )}
         </li>
       ))}
     </ol>

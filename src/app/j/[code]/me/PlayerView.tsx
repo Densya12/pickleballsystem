@@ -198,13 +198,13 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
           <p className="mt-4 text-sm text-muted" data-testid="ahead">
             {state.ahead.length > 0 ? t.player.aheadOfYou(state.ahead.join(", ")) : t.player.firstInLine}
           </p>
-          {view.matchmaking !== "fair_line" && !state.nextUp && (
-            // D25: the level group the player waits for (Mixed / Same level).
+          {state.passedOver && (
+            // D25: passed over for the next group: their true place, and the level group they wait for.
             <p className="mt-2 text-sm text-secondary" data-testid="wait-band">
               {(() => {
                 const band = playerBand(view.matchmaking, view.mySkill);
                 const place = t.player.ordinal(state.position);
-                return band ? t.player.upWhenBand(t.levels.groupBand(band[0], band[1]), place) : t.player.upWhenAnyGroup(place);
+                return band ? t.player.passedOverBand(place, t.levels.groupBand(band[0], band[1])) : t.player.passedOverAny(place);
               })()}
             </p>
           )}

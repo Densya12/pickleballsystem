@@ -44,19 +44,45 @@ describe("D25 previews and call notes (presentation only)", () => {
     expect(playerBand("fair_line", 3)).toBeNull();
     expect(playerBand("mixed", null)).toBeNull();
     expect(bandText(en, 2, 4)).toBe("levels 2–4");
-    expect(en.player.upWhenBand(en.levels.groupBand(2, 4), en.player.ordinal(2))).toBe("You're up when a level 2–4 group forms. You're 2nd in line.");
+    expect(en.player.passedOverBand(en.player.ordinal(2), en.levels.groupBand(2, 4))).toBe("You're 2nd in line. Waiting for a level 2–4 group.");
+    expect(fil.player.passedOverBand(fil.player.ordinal(2), fil.levels.groupBand(4, 5))).toBe("Pang-2 ka sa pila. Hinihintay ang grupong level 4–5.");
+    expect(en.live.waitingBand(en.levels.groupBand(4, 5))).toBe("Waiting for a level 4–5 group");
+    expect(fil.live.waitingBand(fil.levels.groupBand(3, 3))).toBe("Hinihintay ang grupong level 3");
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22].map(en.player.ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd"]);
   });
 
-  it("the lineup and 'next group' follow the server's group, not queue order", () => {
-    const players = ["a", "b", "c", "d", "e", "f"].map((id, i) => ({ id, name: id, status: "queued", queuePos: i + 1 }));
+  it("the line keeps queue order: the server's group is tagged Next in place, players passed over stay put", () => {
+    const players = ["a", "b", "c", "d", "e", "f", "g"].map((id, i) => ({ id, name: id, status: "queued", queuePos: i + 1 }));
     const lineup = courtsLineup(players, ["doubles"], { payFirst: false, fee: 0 }, Infinity, ["a", "c", "d", "f"]);
-    expect(lineup.ready.map((p) => p.id)).toEqual(["a", "c", "d", "f"]);
-    expect(lineup.after.map((p) => p.id)).toEqual(["b", "e"]);
-    expect(queueInfo(players, "b", 4, undefined, ["a", "c", "d", "f"])?.nextUp).toBe(false);
-    expect(queueInfo(players, "f", 4, undefined, ["a", "c", "d", "f"])?.nextUp).toBe(true);
-    // No group fits: nobody is "next".
-    expect(courtsLineup(players, ["doubles"], { payFirst: false, fee: 0 }, Infinity, []).ready).toEqual([]);
+    expect(lineup.ready.map((p) => [p.id, p.place, p.next, p.passedOver])).toEqual([
+      ["a", 1, true, false],
+      ["b", 2, false, true],
+      ["c", 3, true, false],
+      ["d", 4, true, false],
+      ["e", 5, false, true],
+      ["f", 6, true, false],
+    ]);
+    expect(lineup.after.map((p) => [p.id, p.place, p.next, p.passedOver])).toEqual([["g", 7, false, false]]);
+    expect(queueInfo(players, "b", 4, undefined, ["a", "c", "d", "f"])).toMatchObject({ position: 2, nextUp: false, passedOver: true });
+    expect(queueInfo(players, "f", 4, undefined, ["a", "c", "d", "f"])).toMatchObject({ position: 6, nextUp: true, passedOver: false });
+    expect(queueInfo(players, "g", 4, undefined, ["a", "c", "d", "f"])).toMatchObject({ position: 7, nextUp: false, passedOver: false });
+    // No group fits: nobody is "next"; the front of the line waits for a group, in place.
+    const none = courtsLineup(players, ["doubles"], { payFirst: false, fee: 0 }, Infinity, []);
+    expect(none.ready.map((p) => [p.id, p.next, p.passedOver])).toEqual([
+      ["a", false, true],
+      ["b", false, true],
+      ["c", false, true],
+      ["d", false, true],
+    ]);
+    expect(queueInfo(players, "e", 4, undefined, [])).toMatchObject({ nextUp: false, passedOver: false });
+    // Unknown or not enough players (null): the first 4 in queue order, nobody passed over.
+    const unknown = courtsLineup(players, ["doubles"], { payFirst: false, fee: 0 }, Infinity, null);
+    expect(unknown.ready.map((p) => [p.id, p.next, p.passedOver])).toEqual([
+      ["a", true, false],
+      ["b", true, false],
+      ["c", true, false],
+      ["d", true, false],
+    ]);
     expect(parsePreview({ preset: "mixed" })).toEqual({ preset: "mixed", formats: {} });
     expect(parsePreview(null)).toBeNull();
   });

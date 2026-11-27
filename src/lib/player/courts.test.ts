@@ -54,6 +54,8 @@ describe("courtsLineup", () => {
       p("Hana", "queued", "confirmed")];
     const lineup = courtsLineup(list, ["doubles"], PAY_FIRST);
     expect(names(lineup.ready)).toEqual(["Ben", "Cara", "Fely", "Gabe"]);
+    // Real places count everyone waiting (held and resting too), as on the player's phone.
+    expect(lineup.ready.map((x) => x.place)).toEqual([2, 3, 6, 7]);
     expect(names(lineup.after)).toEqual(["Hana"]);
     expect(lineup.notCallable).toEqual([
       { id: "ana", name: "Ana", reason: "unpaid" },

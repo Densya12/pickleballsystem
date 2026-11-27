@@ -6,20 +6,23 @@ import { BottomSheet, Button, EmptyState, ListGroup, Section, StatusChip } from 
 import { PauseIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/client";
-import { courtsLineup, type LineupPlayer } from "@/lib/player/courts";
+import { courtsLineup, type LineupPlayer, type LinePlayer } from "@/lib/player/courts";
 import type { CallRules } from "@/lib/player/state";
 import type { LiveState, QueueEntry } from "@/lib/queue/data";
 import { LevelBadge } from "@/components/level/LevelBadge";
 import { LevelPicker } from "@/components/level/LevelPicker";
-import { isNewCheckIn, levelLabel, type Level } from "@/lib/queue/players";
-import { predictedIds } from "@/lib/queue/preview";
+import { isNewCheckIn, levelLabel, levelNumber, type Level } from "@/lib/queue/players";
+import { playerBand, predictedIds } from "@/lib/queue/preview";
 import { useNow } from "@/lib/useNow";
 import { useSessionFrame } from "./SessionFrame";
 
 /**
- * Queue tab (D19): "Up next" (the next 4 eligible, or 2 when every court is
- * singles), "After that", and "On hold" (unpaid under pay first, or resting).
- * Tap a row for its actions.
+ * Queue tab (D19): "Up next" (the front of the line: the next 4 eligible, or 2
+ * when every court is singles, through the last player of the server's next
+ * group), "After that", and "On hold" (unpaid under pay first, or resting).
+ * Always true queue order with real place numbers: nobody moves (D25). The
+ * next group is tagged "Next" in place; a player passed over for level says
+ * which group they wait for. Tap a row for its actions.
  */
 export function QueueView({ state, rules, sessionId }: { state: LiveState; rules: CallRules; sessionId: string }) {
   const t = useT();
@@ -32,37 +35,57 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
     state.courts.map((c) => c.format),
     rules,
     Infinity,
-    // D25: "Up next" is the group the server will call; no group: everyone is in "After that".
+    // D25: the group the server will call, tagged in place ([]: no group fits yet).
     predictedIds(state.preview, state.courts.map((c) => c.format)),
   );
 
   if (state.queue.length === 0) return <EmptyState>{t.live.queueEmpty}</EmptyState>;
 
-  const row = (player: LineupPlayer, badge: number | null, tone: "next" | "after" | "hold", reason?: "unpaid" | "resting") => {
+  const preset = state.preview?.preset ?? "fair_line";
+  const waitingFor = (level: string | undefined) => {
+    const band = playerBand(preset, levelNumber(level));
+    return band ? t.live.waitingBand(t.levels.groupBand(band[0], band[1])) : t.live.waitingAnyGroup;
+  };
+
+  const row = (player: LineupPlayer | LinePlayer, tone: "line" | "hold", reason?: "unpaid" | "resting") => {
     const entry = byId.get(player.id);
+    const place = "place" in player ? player : null;
+    const next = place?.next ?? false;
     return (
-      <li key={player.id} className={cn(tone === "next" && "bg-accent-faint")}>
+      <li key={player.id} className={cn(next && "bg-accent-faint")}>
         <button
           type="button"
           onClick={() => setOpenId(player.id)}
           className="flex min-h-12 w-full items-center gap-3 px-4 py-[11px] text-left hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
         >
-          {badge !== null && (
+          {tone === "line" && place && (
             <span
               className={cn(
                 "flex size-[26px] shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-                tone === "next" ? "bg-accent text-on-accent" : "bg-subtle text-ink",
+                next ? "bg-accent text-on-accent" : "bg-subtle text-ink",
               )}
             >
               <span className="sr-only">#</span>
-              {badge}
+              {place.place}
             </span>
           )}
-          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-medium [overflow-wrap:anywhere]">{player.name}</span>
-            {entry && isNewCheckIn(entry, now) && (
-              // QA-05: phone check-ins from the last 10 minutes, so a flood is easy to spot.
-              <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.live.newPlayer}</span>
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-medium [overflow-wrap:anywhere]">{player.name}</span>
+              {next && (
+                <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent" data-testid="next-tag">
+                  {t.live.nextTag}
+                </span>
+              )}
+              {entry && isNewCheckIn(entry, now) && (
+                // QA-05: phone check-ins from the last 10 minutes, so a flood is easy to spot.
+                <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.live.newPlayer}</span>
+              )}
+            </span>
+            {place?.passedOver && (
+              <span className="text-sm text-muted" data-testid="waiting-for">
+                {waitingFor(entry?.level)}
+              </span>
             )}
           </span>
           {entry && <LevelBadge level={entry.level} />}
@@ -76,17 +99,17 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
     <div className="flex flex-col gap-5">
       {lineup.ready.length > 0 && (
         <Section id="up-next" label={t.live.upNextSection}>
-          <ListGroup>{lineup.ready.map((p, i) => row(p, i + 1, "next"))}</ListGroup>
+          <ListGroup>{lineup.ready.map((p) => row(p, "line"))}</ListGroup>
         </Section>
       )}
       {lineup.after.length > 0 && (
         <Section id="after-that" label={t.live.afterThat}>
-          <ListGroup>{lineup.after.map((p, i) => row(p, lineup.ready.length + i + 1, "after"))}</ListGroup>
+          <ListGroup>{lineup.after.map((p) => row(p, "line"))}</ListGroup>
         </Section>
       )}
       {lineup.notCallable.length > 0 && (
         <Section id="on-hold" label={t.live.onHold}>
-          <ListGroup>{lineup.notCallable.map((p) => row(p, null, "hold", p.reason))}</ListGroup>
+          <ListGroup>{lineup.notCallable.map((p) => row(p, "hold", p.reason))}</ListGroup>
         </Section>
       )}
 

@@ -61,9 +61,11 @@ const en = {
   yourTurn: (name: string) => `Your turn, ${name}!`,
   headTo: "Head to",
   highlighted: (format: string) => `${format} · you're highlighted`,
-  /** D25: the level group the player waits for, and their place. */
-  upWhenBand: (band: string, place: string) => `You're up when a ${band} group forms. You're ${place} in line.`,
-  upWhenAnyGroup: (place: string) => `You're up when a group forms. You're ${place} in line.`,
+  /** D25: passed over for the next group: their true place, and the level group they wait for. */
+  passedOverBand: (place: string, band: string) => `You're ${place} in line. Waiting for a ${band} group.`,
+  passedOverAny: (place: string) => `You're ${place} in line. Waiting for a group.`,
+  /** Courts: the players in the group called next, tagged in place (names stay in queue order). */
+  nextTag: "Next",
   ordinal: (n: number) => {
     const tens = n % 100;
     const suffix = tens >= 11 && tens <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";
@@ -87,7 +89,7 @@ const en = {
   courtsTitle: "Courts",
   backToPlace: "My place",
   getReady: "Get ready",
-  getReadyHint: "They're called to the next free court.",
+  getReadyHint: "Players marked Next are called to the next free court.",
   afterThem: "After them",
   notCallable: "On hold",
   nobodyWaiting: "Nobody in the queue yet.",
@@ -168,8 +170,9 @@ const fil: typeof en = {
   yourTurn: (name: string) => `Ikaw na, ${name}!`,
   headTo: "Pumunta sa",
   highlighted: (format: string) => `${format} · naka-highlight ka`,
-  upWhenBand: (band: string, place: string) => `Ikaw na kapag may grupong ${band}. ${place} ka sa pila.`,
-  upWhenAnyGroup: (place: string) => `Ikaw na kapag may nabuong grupo. ${place} ka sa pila.`,
+  passedOverBand: (place: string, band: string) => `${place} ka sa pila. Hinihintay ang grupong ${band}.`,
+  passedOverAny: (place: string) => `${place} ka sa pila. Hinihintay ang mabubuong grupo.`,
+  nextTag: "Susunod",
   ordinal: (n: number) => `Pang-${n}`,
   yourSide: (side: 0 | 1, partner: string | null) =>
     `${side === 0 ? "Kaliwang panig" : "Kanang panig"}${partner ? ` · kasama si ${partner}` : ""}`,
@@ -186,7 +189,7 @@ const fil: typeof en = {
   courtsTitle: "Mga court",
   backToPlace: "Pwesto ko",
   getReady: "Maghanda na",
-  getReadyHint: "Sila ang tatawagin sa susunod na bakanteng court.",
+  getReadyHint: "Ang may markang Susunod ang tatawagin sa susunod na bakanteng court.",
   afterThem: "Susunod pagkatapos",
   notCallable: "Hindi pa matatawag",
   nobodyWaiting: "Wala pang nakapila.",
