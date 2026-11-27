@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 import { Button, Card, CopyButton, Input, Notice, RadioGroup } from "@/components/ui";
-import { formatGcashNumber, formatPeso } from "@/lib/format";
+import { formatPeso } from "@/lib/format";
 import { useFocusFirstError } from "@/lib/forms/useFocusFirstError";
 import { useT } from "@/lib/i18n/client";
+import { formatAccountNumber, methodName, type PayTo } from "@/lib/payments/method";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 import { unlockAudio } from "@/lib/player/alert";
 import { playerErrorMessage } from "@/lib/player/messages";
@@ -17,8 +18,8 @@ import { createClient } from "@/lib/supabase/client";
 export type CheckInPayment = {
   fee: number;
   payFirst: boolean;
-  gcashName: string | null;
-  gcashNumber: string | null;
+  /** The club's method and account; without cash, the cash choice is hidden. */
+  payTo: PayTo;
 };
 
 /** A returning player's name and level from their last row in this club (my_last_profile). */
@@ -35,11 +36,14 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstError(formRef, errors, Object.values(errors).some(Boolean));
   const [pending, setPending] = useState(false);
-  const [method, setMethod] = useState<"gcash" | "cash">("gcash");
+  const [choice, setChoice] = useState<"gcash" | "cash">("gcash");
   // D18: a returning player checks in with one tap; "Not {name}?" shows the empty form.
   const [returning, setReturning] = useState(lastProfile !== null);
   const remembered = returning ? lastProfile : null;
   const needsPayment = payment.fee > 0;
+  const cashAccepted = payment.payTo.cashAccepted;
+  const method = cashAccepted ? choice : "gcash";
+  const payToName = methodName(t, payment.payTo);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,14 +59,14 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
     if (!form.get("level")) form.set("level", "unsure");
     const parsed = parseWalkIn(form, t);
 
-    // BR13: with a fee, a GCash reference or cash.
+    // BR13: with a fee, a reference number (paid to the club's account) or cash, if the club takes it.
     let payWith: "gcash" | "cash" | undefined;
     let reference: string | undefined;
     let referenceError: string | undefined;
     if (needsPayment) {
       const raw = String(form.get("reference") ?? "").trim();
-      if (method === "cash") payWith = "cash";
-      else if (!raw) referenceError = t.player.referenceOrCash;
+      if (method === "cash" && cashAccepted) payWith = "cash";
+      else if (!raw) referenceError = t.player.referenceOrCash(cashAccepted);
       else if (!normalizeReference(raw)) referenceError = t.payments.invalidReference(REFERENCE_MIN, REFERENCE_MAX);
       else {
         payWith = "gcash";
@@ -145,33 +149,37 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
             <p className="font-semibold">{formatPeso(payment.fee)}</p>
           </div>
           {payment.payFirst && <p className="text-sm font-medium text-warn">{t.player.payFirstNote}</p>}
-          <RadioGroup
-            legend={t.player.paymentMethod}
-            legendHidden
-            name="pay_method"
-            look="segmented"
-            options={[
-              { value: "gcash", label: t.player.gcash },
-              { value: "cash", label: t.player.cash },
-            ]}
-            value={method}
-            onValueChange={(value) => {
-              setMethod(value as "gcash" | "cash");
-              setErrors((current) => ({ ...current, reference: undefined }));
-            }}
-          />
+          {cashAccepted && (
+            <RadioGroup
+              legend={t.player.paymentMethod}
+              legendHidden
+              name="pay_method"
+              look="segmented"
+              options={[
+                { value: "gcash", label: payToName },
+                { value: "cash", label: t.player.cash },
+              ]}
+              value={method}
+              onValueChange={(value) => {
+                setChoice(value as "gcash" | "cash");
+                setErrors((current) => ({ ...current, reference: undefined }));
+              }}
+            />
+          )}
           {method === "gcash" ? (
             <>
-              {payment.gcashNumber ? (
+              {payment.payTo.accountNumber ? (
                 <div className="flex items-center justify-between gap-3 rounded-control bg-info px-3 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-sm text-muted [overflow-wrap:anywhere]">{t.player.sendTo(payment.gcashName)}</p>
-                    <p className="font-medium tracking-[0.3px]">{formatGcashNumber(payment.gcashNumber)}</p>
+                    <p className="text-sm text-muted [overflow-wrap:anywhere]">
+                      {payToName} · {t.player.sendTo(payment.payTo.accountName)}
+                    </p>
+                    <p className="font-medium tracking-[0.3px]">{formatAccountNumber(payment.payTo.accountNumber)}</p>
                   </div>
-                  <CopyButton text={payment.gcashNumber} label={t.player.copyNumber} />
+                  <CopyButton text={payment.payTo.accountNumber} label={t.player.copyNumber} />
                 </div>
               ) : (
-                <p className="text-sm text-muted">{t.player.noGcash}</p>
+                <p className="text-sm text-muted">{t.player.noAccount(payToName, cashAccepted)}</p>
               )}
               <Input
                 label={t.player.reference}

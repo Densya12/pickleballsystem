@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { formatPeso } from "@/lib/format";
 import { useT } from "@/lib/i18n/client";
 import { reminderMessage } from "@/lib/payments/messages";
+import { methodApp, methodName, type PayTo } from "@/lib/payments/method";
 import { maskReference } from "@/lib/payments/reference";
 import { sendReminder } from "@/lib/payments/remind";
 import { duplicateReferences, summarizePayments, type PayingPlayer } from "@/lib/payments/summary";
@@ -14,11 +15,11 @@ import { undoPaymentAction } from "../_lib/payment-actions";
 import { useSessionFrame } from "./SessionFrame";
 
 type Props = {
-  session: { id: string; name: string; fee: number; payFirst: boolean; status: string; gcashName: string | null; gcashNumber: string | null };
+  session: { id: string; name: string; fee: number; payFirst: boolean; status: string; payTo: PayTo };
   players: PayingPlayer[];
 };
 
-/** Payments (D16, D19): who to check in GCash, who still owes, who has paid. The app only records. */
+/** Payments (D16, D19): who to check (in the club's payment app), who still owes, who has paid. The app only records. */
 export function PaymentsView({ session, players }: Props) {
   const t = useT();
   const { act, runOnline, busy, showError } = useSessionFrame();
@@ -37,10 +38,7 @@ export function PaymentsView({ session, players }: Props) {
     setReminded(null);
     const outcome = await sendReminder(
       player.name,
-      reminderMessage(
-        { name: player.name, session: session.name, fee: session.fee, gcashName: session.gcashName, gcashNumber: session.gcashNumber },
-        t,
-      ),
+      reminderMessage({ name: player.name, session: session.name, fee: session.fee, payTo: session.payTo }, t),
       t,
     );
     if (outcome.banner) setReminded(outcome.banner);
@@ -75,7 +73,7 @@ export function PaymentsView({ session, players }: Props) {
       )}
 
       {summary.pending.length > 0 && (
-        <Section id="check" label={t.payments.checkGcash}>
+        <Section id="check" label={t.status.toCheck}>
           <ListGroup>
             {summary.pending.map((player) => (
               <li key={player.id} role="group" aria-label={player.name} className="flex items-center gap-3 px-4 py-3">
@@ -101,7 +99,7 @@ export function PaymentsView({ session, players }: Props) {
               </li>
             ))}
           </ListGroup>
-          <p className="mx-1 mt-2 text-xs text-muted">{t.payments.checkHint}</p>
+          <p className="mx-1 mt-2 text-xs text-muted">{t.payments.checkHint(methodApp(t, session.payTo))}</p>
         </Section>
       )}
 
@@ -140,6 +138,7 @@ export function PaymentsView({ session, players }: Props) {
 
       <PaidList
         players={summary.confirmed}
+        method={methodName(t, session.payTo)}
         busy={busy}
         onUndo={(player) => void runOnline(() => undoPaymentAction(session.id, player.id))}
       />
@@ -164,7 +163,17 @@ function Reference({ name, digits }: { name: string; digits: string }) {
   );
 }
 
-function PaidList({ players, busy, onUndo }: { players: PayingPlayer[]; busy: boolean; onUndo: (player: PayingPlayer) => void }) {
+function PaidList({
+  players,
+  method,
+  busy,
+  onUndo,
+}: {
+  players: PayingPlayer[];
+  method: string;
+  busy: boolean;
+  onUndo: (player: PayingPlayer) => void;
+}) {
   const t = useT();
   return (
     <details className="group overflow-hidden rounded-group bg-surface">
@@ -180,7 +189,7 @@ function PaidList({ players, busy, onUndo }: { players: PayingPlayer[]; busy: bo
       ) : (
         <ul className="divide-y divide-hairline border-t border-hairline">
           {players.map((player) => (
-            <PaidRow key={player.id} player={player} busy={busy} onUndo={() => onUndo(player)} />
+            <PaidRow key={player.id} player={player} method={method} busy={busy} onUndo={() => onUndo(player)} />
           ))}
         </ul>
       )}
@@ -188,7 +197,8 @@ function PaidList({ players, busy, onUndo }: { players: PayingPlayer[]; busy: bo
   );
 }
 
-function PaidRow({ player, busy, onUndo }: { player: PayingPlayer; busy: boolean; onUndo: () => void }) {
+/** `method`: the club's payment method name (a payment made to its account is stored as "gcash"). */
+function PaidRow({ player, method, busy, onUndo }: { player: PayingPlayer; method: string; busy: boolean; onUndo: () => void }) {
   const t = useT();
   const [confirming, setConfirming] = useState(false);
   return (
@@ -198,8 +208,8 @@ function PaidRow({ player, busy, onUndo }: { player: PayingPlayer; busy: boolean
           <span className="font-medium [overflow-wrap:anywhere]">{player.name}</span>
           <span className="text-sm text-muted">
             {player.method === "gcash"
-              ? `${t.player.gcash}${player.referenceDigits ? ` · ${maskReference(player.referenceDigits)}` : ""}`
-              : t.player.cash}
+              ? `${method}${player.referenceDigits ? ` · ${maskReference(player.referenceDigits)}` : ""}`
+              : t.payments.cash}
             {player.status === "left" ? ` · ${t.payments.left}` : ""}
           </span>
         </div>

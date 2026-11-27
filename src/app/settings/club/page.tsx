@@ -23,7 +23,7 @@ async function Content() {
   const [{ values, isOwner }, t] = await Promise.all([getClubFormValues(), getT()]);
   return (
     <PageShell top={<BackLink href="/settings" label={t.settings.title} />} title={t.settings.clubDetails}>
-      <ClubSettingsForm section="club" club={values} isOwner={isOwner} />
+      <ClubSettingsForm club={values} isOwner={isOwner} />
     </PageShell>
   );
 }

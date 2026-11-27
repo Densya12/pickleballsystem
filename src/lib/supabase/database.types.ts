@@ -65,14 +65,14 @@ isOneToOne: false
                   ]
                 },"clubs": {
                   Row: {
-                    "city": string | null,"created_at": string,"created_by": string | null,"default_call_mode": string,"default_fee": number,"default_matchmaking": string,"default_points": number,"default_rotation": string,"entry_code": string,"gcash_name": string | null,"gcash_number": string | null,"id": string,"name": string,"updated_at": string
+                    "cash_accepted": boolean,"city": string | null,"created_at": string,"created_by": string | null,"default_call_mode": string,"default_fee": number,"default_matchmaking": string,"default_points": number,"default_rotation": string,"entry_code": string,"gcash_name": string | null,"gcash_number": string | null,"id": string,"name": string,"payment_method": string,"payment_method_other": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_call_mode"?: string,"default_fee"?: number,"default_matchmaking"?: string,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name": string,"updated_at"?: string
+                    "cash_accepted"?: boolean,"city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_call_mode"?: string,"default_fee"?: number,"default_matchmaking"?: string,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name": string,"payment_method"?: string,"payment_method_other"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_call_mode"?: string,"default_fee"?: number,"default_matchmaking"?: string,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name"?: string,"updated_at"?: string
+                    "cash_accepted"?: boolean,"city"?: string | null,"created_at"?: string,"created_by"?: string | null,"default_call_mode"?: string,"default_fee"?: number,"default_matchmaking"?: string,"default_points"?: number,"default_rotation"?: string,"entry_code"?: string,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"name"?: string,"payment_method"?: string,"payment_method_other"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -223,14 +223,14 @@ isOneToOne: false
                   ]
                 },"sessions": {
                   Row: {
-                    "call_mode": string,"club_id": string,"court_formats": (string)[],"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"matchmaking": string,"name": string,"pay_first": boolean,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
+                    "call_mode": string,"cash_accepted": boolean,"club_id": string,"court_formats": (string)[],"courts_count": number,"created_at": string,"created_by": string | null,"display_token": string,"ended_at": string | null,"ends_at": string,"fee": number,"gcash_name": string | null,"gcash_number": string | null,"id": string,"join_code": string,"matchmaking": string,"name": string,"pay_first": boolean,"payment_method": string,"payment_method_other": string | null,"points_to": number,"rotation": string,"started_at": string | null,"starts_at": string,"status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "call_mode"?: string,"club_id": string,"court_formats": (string)[],"courts_count": number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at": string,"fee": number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"matchmaking"?: string,"name": string,"pay_first"?: boolean,"points_to": number,"rotation": string,"started_at"?: string | null,"starts_at": string,"status"?: string
+                    "call_mode"?: string,"cash_accepted"?: boolean,"club_id": string,"court_formats": (string)[],"courts_count": number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at": string,"fee": number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"matchmaking"?: string,"name": string,"pay_first"?: boolean,"payment_method"?: string,"payment_method_other"?: string | null,"points_to": number,"rotation": string,"started_at"?: string | null,"starts_at": string,"status"?: string
                   }
                   Update: {
-                    "call_mode"?: string,"club_id"?: string,"court_formats"?: (string)[],"courts_count"?: number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at"?: string,"fee"?: number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"matchmaking"?: string,"name"?: string,"pay_first"?: boolean,"points_to"?: number,"rotation"?: string,"started_at"?: string | null,"starts_at"?: string,"status"?: string
+                    "call_mode"?: string,"cash_accepted"?: boolean,"club_id"?: string,"court_formats"?: (string)[],"courts_count"?: number,"created_at"?: string,"created_by"?: string | null,"display_token"?: string,"ended_at"?: string | null,"ends_at"?: string,"fee"?: number,"gcash_name"?: string | null,"gcash_number"?: string | null,"id"?: string,"join_code"?: string,"matchmaking"?: string,"name"?: string,"pay_first"?: boolean,"payment_method"?: string,"payment_method_other"?: string | null,"points_to"?: number,"rotation"?: string,"started_at"?: string | null,"starts_at"?: string,"status"?: string
                   }
                   Relationships: [
                     {

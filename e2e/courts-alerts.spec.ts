@@ -40,15 +40,15 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await addWalkIn(organizer, "Unpaid Uno", "Level 2", { choice: "Pay later" });
   const path = await joinPath(organizer);
 
-  // Mia checks in, sends a GCash reference on My place (to check counts as paid, BR14;
+  // Mia checks in, sends a reference number on My place (to check counts as paid, BR14;
   // payment isn't on the check-in page, QA-06) and opens Courts.
   const mia = await phone(browser);
   await mia.goto(path);
   await mia.getByLabel("Name", { exact: true }).fill("Mia Phone");
   await mia.getByRole("button", { name: "Join queue" }).click();
   await expect(mia.getByRole("heading", { level: 1, name: "Hi, Mia" })).toBeVisible();
-  await mia.getByRole("button", { name: "Add GCash reference" }).click();
-  await mia.getByLabel("GCash reference no.").fill("9876 5432 10");
+  await mia.getByRole("button", { name: "Add reference number" }).click();
+  await mia.getByLabel("Reference number").fill("9876 5432 10");
   await mia.getByRole("button", { name: "Send reference" }).click();
   await expect(mia.locator('[data-payment="pending"]')).toBeVisible();
   await mia.getByRole("link", { name: "View courts" }).click();

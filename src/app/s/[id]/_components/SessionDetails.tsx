@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import { callModeLabel, matchmakingLabel, rotationLabel } from "@/lib/club/options";
-import { formatGcashNumber, formatPeso } from "@/lib/format";
+import { formatPeso } from "@/lib/format";
+import { accountLine, methodName, payToFromRow } from "@/lib/payments/method";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { Session } from "@/lib/session/data";
 import { courtFormatLabel } from "@/lib/session/validation";
 
 /** The session's settings as a grouped list (More › Session details, draft page, summary). */
 export function SessionDetails({ session, t, framed = false }: { session: Session; t: Dictionary; framed?: boolean }) {
-  const gcash = session.gcash_number
-    ? `${session.gcash_name ? `${session.gcash_name} · ` : ""}${formatGcashNumber(session.gcash_number)}`
-    : t.session.none;
+  const payTo = payToFromRow(session);
+  const payment = [methodName(t, payTo), accountLine(payTo)].filter(Boolean).join(" · ");
   return (
     <dl
       role="region"
@@ -26,7 +26,8 @@ export function SessionDetails({ session, t, framed = false }: { session: Sessio
       <Row term={t.session.detailMatchmaking}>{matchmakingLabel(session.matchmaking, t)}</Row>
       <Row term={t.session.detailPayFirst}>{session.pay_first ? t.session.yes : t.session.no}</Row>
       <Row term={t.session.detailFee}>{formatPeso(session.fee)}</Row>
-      <Row term={t.session.detailGcash}>{gcash}</Row>
+      <Row term={t.session.detailPayment}>{payment}</Row>
+      <Row term={t.session.detailCash}>{payTo.cashAccepted ? t.session.yes : t.session.no}</Row>
     </dl>
   );
 }

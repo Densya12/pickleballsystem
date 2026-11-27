@@ -13,6 +13,7 @@ import { PaymentsView } from "../_components/PaymentsView";
 import { SessionDetails } from "../_components/SessionDetails";
 import { SessionFrame } from "../_components/SessionFrame";
 import { PaymentsSkeleton } from "../_components/SessionSkeletons";
+import { payToFromRow } from "@/lib/payments/method";
 
 export const metadata: Metadata = {
   title: en.payments.pageTitle,
@@ -61,8 +62,7 @@ async function PaymentsContent({ params }: Pick<PageProps<"/s/[id]/payments">, "
           fee: session.fee,
           payFirst: session.pay_first,
           status: session.status,
-          gcashName: session.gcash_name,
-          gcashNumber: session.gcash_number,
+          payTo: payToFromRow(session),
         }}
         players={players}
       />

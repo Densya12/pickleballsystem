@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { playerNames } from "@/lib/queue/data";
 import { queueErrorMessage } from "@/lib/queue/messages";
+import { methodName, payToFromRow } from "@/lib/payments/method";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeSession } from "./authorize";
 
@@ -15,7 +16,7 @@ export type PaymentActionResult = {
   undo?: { banner: string };
 };
 
-/** "Received": pending GCash or cash -> confirmed (BR13/BR14). */
+/** "Received": a pending transfer (the club's payment method) or cash -> confirmed (BR13/BR14). */
 export async function confirmPaymentAction(sessionId: string, playerId: string): Promise<PaymentActionResult> {
   const { t, error: denied } = await authorizeSession(sessionId);
   if (denied) return { error: denied };
@@ -24,13 +25,18 @@ export async function confirmPaymentAction(sessionId: string, playerId: string):
   const { error } = await supabase.rpc("confirm_payment", { p_player_id: playerId });
   if (error) return { error: queueErrorMessage(error, t), code: error.message };
 
-  const [[name], { data: payment }] = await Promise.all([
+  const [[name], { data: payment }, { data: session }] = await Promise.all([
     playerNames([playerId]),
     supabase.from("payments").select("method").eq("session_player_id", playerId).maybeSingle(),
+    supabase
+      .from("sessions")
+      .select("payment_method, payment_method_other, gcash_name, gcash_number, cash_accepted")
+      .eq("id", sessionId)
+      .maybeSingle(),
   ]);
   refresh();
   return {
-    banner: payment?.method === "cash" ? t.payments.confirmedCash(name) : t.payments.confirmedGcash(name),
+    banner: payment?.method === "cash" ? t.payments.confirmedCash(name) : t.payments.confirmedTransfer(name, session ? methodName(t, payToFromRow(session)) : t.payments.methodOther),
     undo: { banner: t.payments.undoneConfirm(name) },
   };
 }

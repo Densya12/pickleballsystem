@@ -5,8 +5,9 @@ import { useState, type FormEvent } from "react";
 import { Button, CopyButton, Input } from "@/components/ui";
 import { AlertIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
-import { formatGcashNumber, formatPeso } from "@/lib/format";
+import { formatPeso } from "@/lib/format";
 import { useT } from "@/lib/i18n/client";
+import { formatAccountNumber, methodName, type PayTo } from "@/lib/payments/method";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 import { playerErrorMessage } from "@/lib/player/messages";
 import { createClient } from "@/lib/supabase/client";
@@ -15,12 +16,12 @@ type Props = {
   playerId: string;
   fee: number;
   payFirst: boolean;
-  gcash: { name: string | null; number: string | null };
+  payTo: PayTo;
   payment: { status: string; method: string | null };
 };
 
-/** A list row: the player's payment status, and a way to send a GCash reference while unpaid (BR13). */
-export function PaymentRow({ playerId, fee, payFirst, gcash, payment }: Props) {
+/** A list row: the player's payment status, and a way to send a reference number while unpaid (BR13). */
+export function PaymentRow({ playerId, fee, payFirst, payTo, payment }: Props) {
   const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -34,7 +35,7 @@ export function PaymentRow({ playerId, fee, payFirst, gcash, payment }: Props) {
     status === "confirmed"
       ? t.player.paymentPaid
       : status === "pending"
-        ? t.player.paymentPending
+        ? t.player.paymentPending(methodName(t, payTo))
         : payment.method === "cash"
           ? t.player.paymentUnpaidCash
           : t.player.paymentUnpaid;
@@ -71,14 +72,18 @@ export function PaymentRow({ playerId, fee, payFirst, gcash, payment }: Props) {
       {status === "unpaid" &&
         (open ? (
           <form onSubmit={submit} noValidate className="flex flex-col gap-3 border-t border-hairline px-4 py-3">
-            {gcash.number && (
-              <div className="flex items-center justify-between gap-3 rounded-control bg-info px-3 py-2.5">
+            {payTo.accountNumber ? (
+              <div className="flex items-center justify-between gap-3 rounded-control bg-info px-3 py-2.5" data-testid="pay-to">
                 <div className="min-w-0">
-                  <p className="text-sm text-muted [overflow-wrap:anywhere]">{t.player.sendTo(gcash.name)}</p>
-                  <p className="font-medium">{formatGcashNumber(gcash.number)}</p>
+                  <p className="text-sm text-muted [overflow-wrap:anywhere]">
+                    {methodName(t, payTo)} · {t.player.sendTo(payTo.accountName)}
+                  </p>
+                  <p className="font-medium">{formatAccountNumber(payTo.accountNumber)}</p>
                 </div>
-                <CopyButton text={gcash.number} label={t.player.copyNumber} />
+                <CopyButton text={payTo.accountNumber} label={t.player.copyNumber} />
               </div>
+            ) : (
+              <p className="text-sm text-muted">{t.player.noAccount(methodName(t, payTo), payTo.cashAccepted)}</p>
             )}
             <Input label={t.player.reference} name="reference" inputMode="numeric" autoComplete="off" hint={t.payments.referenceHint} error={error} />
             <div className="flex gap-2">

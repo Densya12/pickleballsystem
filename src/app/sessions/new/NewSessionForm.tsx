@@ -6,15 +6,16 @@ import { Button, Card, Input, Notice, RadioGroup, Stepper, Toggle } from "@/comp
 import { useFocusFirstError } from "@/lib/forms/useFocusFirstError";
 import { callModeChoices, matchmakingChoices, POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
 import type { CallMode, Matchmaking, Points, Rotation } from "@/lib/club/validation";
-import { formatGcashNumber } from "@/lib/format";
 import { useT } from "@/lib/i18n/client";
+import { accountLine, methodName, type PayTo } from "@/lib/payments/method";
 import { COURTS_MAX, COURTS_MIN, type CourtFormat, type SessionField } from "@/lib/session/validation";
 import { createSessionAction, type NewSessionState } from "./actions";
 import { CourtFormats } from "./CourtFormats";
 
 type Props = {
   defaults: Record<SessionField, string>;
-  gcash: { name: string | null; number: string | null };
+  /** The club's payment method and account (Settings › Club details), copied to the session. */
+  payTo: PayTo;
   /** BR1: the club's live session, if any (only one can be live). */
   liveSession?: { id: string; name: string } | null;
 };
@@ -22,7 +23,7 @@ type Props = {
 const FORM_ID = "new-session";
 
 /** New session (BR2): grouped cards, then Start (the main button) or Save as draft. */
-export function NewSessionForm({ defaults, gcash, liveSession = null }: Props) {
+export function NewSessionForm({ defaults, payTo, liveSession = null }: Props) {
   const t = useT();
   const [state, formAction, pending] = useActionState<NewSessionState, FormData>(createSessionAction, {});
   const value = (field: SessionField) => state.values?.[field] ?? defaults[field];
@@ -125,12 +126,13 @@ export function NewSessionForm({ defaults, gcash, liveSession = null }: Props) {
       <Card className="flex flex-col gap-3">
         <Toggle label={t.session.payFirst} description={t.session.payFirstDescription} name="pay_first" defaultChecked={value("pay_first") === "on"} />
         <Input label={t.session.fee} name="fee" inputMode="numeric" pattern="[0-9]*" defaultValue={value("fee")} error={errors.fee} />
-        <div className="rounded-control bg-info px-3.5 py-2.5">
-          <p className="text-sm text-muted">{t.session.clubGcash}</p>
+        <div className="rounded-control bg-info px-3.5 py-2.5" data-testid="session-payment">
+          <p className="text-sm text-muted">{t.session.clubPayment}</p>
           <p className="font-medium [overflow-wrap:anywhere]">
-            {gcash.number ? `${gcash.name ? `${gcash.name} · ` : ""}${formatGcashNumber(gcash.number)}` : t.session.noGcash}
+            {methodName(t, payTo)} · {accountLine(payTo) ?? t.session.noAccount}
           </p>
-          <p className="text-xs text-muted">{t.session.gcashFromSettings}</p>
+          <p className="text-sm text-muted">{payTo.cashAccepted ? t.session.cashAccepted : t.session.cashNotAccepted}</p>
+          <p className="text-xs text-muted">{t.session.paymentFromSettings}</p>
         </div>
       </Card>
 

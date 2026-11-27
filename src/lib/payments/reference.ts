@@ -1,5 +1,5 @@
 /**
- * GCash reference numbers (BR15): typed with spaces or dashes, stored as
+ * Payment reference numbers (BR15): typed with spaces or dashes, stored as
  * digits only, 6-20 digits. Mirrors private.normalize_reference.
  */
 export const REFERENCE_MIN = 6;

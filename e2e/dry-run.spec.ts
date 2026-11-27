@@ -43,8 +43,8 @@ test("dry run: a full session from members and phones to the summary and CSV", a
     await phone.getByRole("button", { name: "Join queue" }).click();
     await expect(phone.getByRole("heading", { level: 1, name: `Hi, ${name.split(" ")[0]}` })).toBeVisible();
     if (index < 3) {
-      await phone.getByRole("button", { name: "Add GCash reference" }).click();
-      await phone.getByLabel("GCash reference no.").fill(`90000000${index + 10}`);
+      await phone.getByRole("button", { name: "Add reference number" }).click();
+      await phone.getByLabel("Reference number").fill(`90000000${index + 10}`);
       await phone.getByRole("button", { name: "Send reference" }).click();
       await expect(phone.locator('[data-payment="pending"]')).toBeVisible();
     }
@@ -113,7 +113,7 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv.charCodeAt(0)).toBe(0xfeff);
   const lines = csv.slice(1).trimEnd().split("\r\n");
-  expect(lines[0]).toBe("Name,Level,Joined by,Games,Payment,Method,Reference,Checked in");
+  expect(lines[0]).toBe("Name,Level,Joined by,Games,Payment,Method,Reference number,Checked in");
   expect(lines).toHaveLength(20);
   expect(lines[1]).toMatch(/^Pia Phone,Not set,Phone,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   expect(lines.filter((l) => /^Member \d\d,Level 3,Walk-in,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);

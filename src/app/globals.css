@@ -16,7 +16,7 @@
   --background-color-surface: #ffffff;
   /* Segmented-control track, number badges (text on it uses ink or secondary, never muted: 4.41:1). */
   --background-color-subtle: #f1f1ed;
-  /* Quiet info rows inside a card (e.g. "Send to · GCash"). */
+  /* Quiet info rows inside a card (e.g. "Maya · Send to · Juan"). */
   --background-color-info: #f7f7f4;
   --background-color-primary: #111412;
   --background-color-accent: #c9f26b;

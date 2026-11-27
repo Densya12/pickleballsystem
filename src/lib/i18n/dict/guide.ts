@@ -41,7 +41,7 @@ const en = {
       title: "4. Payments",
       items: [
         "Open the Payments tab.",
-        "GCash: find the reference in your GCash, then Received. Cash: tap Cash.",
+        "Transfers: find the reference number in your e-wallet or bank app, then Received. Cash: tap Cash.",
         "Not paid yet: tap the bell to send a reminder in Messenger.",
       ],
     },
@@ -100,7 +100,7 @@ const fil: typeof en = {
       title: "4. Bayad",
       items: [
         "Buksan ang tab na Bayad.",
-        "GCash: hanapin ang reference sa GCash mo, saka Natanggap. Cash: pindutin ang Cash.",
+        "Transfer: hanapin ang reference number sa e-wallet o bank app mo, saka Natanggap. Cash: pindutin ang Cash.",
         "Hindi pa bayad: pindutin ang kampana para ipadala ang paalala sa Messenger.",
       ],
     },

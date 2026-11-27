@@ -15,8 +15,9 @@ import { en } from "@/lib/i18n/dictionary";
 import { I18nProvider } from "@/lib/i18n/client";
 import { CheckInForm } from "./CheckInForm";
 
-const FREE = { fee: 0, payFirst: false, gcashName: null, gcashNumber: null };
-const PAID = { fee: 150, payFirst: true, gcashName: "Juan Dela Cruz", gcashNumber: "09171234567" };
+const GCASH = { method: "gcash" as const, otherName: null, accountName: "Juan Dela Cruz", accountNumber: "09171234567", cashAccepted: true };
+const FREE = { fee: 0, payFirst: false, payTo: { ...GCASH, accountName: null, accountNumber: null } };
+const PAID = { fee: 150, payFirst: true, payTo: GCASH };
 
 beforeEach(() => {
   push.mockReset();
@@ -77,14 +78,14 @@ describe("CheckInForm", () => {
     render(<CheckInForm code="ABC234" payment={PAID} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ana");
     await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
-    expect(screen.getByText(en.player.referenceOrCash)).toBeInTheDocument();
+    expect(screen.getByText(en.player.referenceOrCash(true))).toBeInTheDocument();
     expect(rpc).not.toHaveBeenCalled();
   });
 
   it("sends a GCash reference as typed", async () => {
     render(<CheckInForm code="ABC234" payment={PAID} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ana");
-    await userEvent.type(screen.getByLabelText("GCash reference no."), "1234 5678-90");
+    await userEvent.type(screen.getByLabelText("Reference number"), "1234 5678-90");
     await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
     expect(rpc).toHaveBeenCalledWith("join_session", {
       p_join_code: "ABC234",
@@ -98,7 +99,7 @@ describe("CheckInForm", () => {
   it("refuses a reference that isn't 6-20 digits", async () => {
     render(<CheckInForm code="ABC234" payment={PAID} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ana");
-    await userEvent.type(screen.getByLabelText("GCash reference no."), "12a45");
+    await userEvent.type(screen.getByLabelText("Reference number"), "12a45");
     await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
     expect(screen.getByText(en.payments.invalidReference(6, 20))).toBeInTheDocument();
     expect(rpc).not.toHaveBeenCalled();
@@ -108,9 +109,26 @@ describe("CheckInForm", () => {
     render(<CheckInForm code="ABC234" payment={PAID} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ben");
     await userEvent.click(screen.getByRole("radio", { name: "Cash" }));
-    expect(screen.queryByLabelText("GCash reference no.")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Reference number")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
     expect(rpc).toHaveBeenCalledWith("join_session", expect.objectContaining({ p_method: "cash", p_reference: undefined }));
+  });
+
+  it("Maya: the choice and the account say Maya; nothing says GCash", () => {
+    const { container } = render(<CheckInForm code="ABC234" payment={{ ...PAID, payTo: { ...GCASH, method: "maya" } }} />);
+    expect(screen.getByRole("radio", { name: "Maya" })).toBeChecked();
+    expect(screen.getByText("Maya · Send to · Juan Dela Cruz")).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/gcash/i);
+  });
+
+  it("no cash accepted: no Cash choice; a reference is required", async () => {
+    render(<CheckInForm code="ABC234" payment={{ ...PAID, payTo: { ...GCASH, method: "bank", accountNumber: "001234567890", cashAccepted: false } }} />);
+    expect(screen.queryByRole("radio", { name: "Cash" })).not.toBeInTheDocument();
+    expect(screen.getByText("0012 3456 7890")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("Name"), "Ana");
+    await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
+    expect(screen.getByText(en.player.referenceOrCash(false))).toBeInTheDocument();
+    expect(rpc).not.toHaveBeenCalled();
   });
 
   it("speaks Taglish when the device is set to Taglish", () => {
@@ -150,7 +168,7 @@ describe("CheckInForm", () => {
     it("still asks for payment when there is a fee", async () => {
       render(<CheckInForm code="ABC234" payment={PAID} lastProfile={ANA} />);
       await userEvent.click(screen.getByRole("button", { name: "Join as Ana Dela Cruz" }));
-      expect(screen.getByText(en.player.referenceOrCash)).toBeInTheDocument();
+      expect(screen.getByText(en.player.referenceOrCash(true))).toBeInTheDocument();
       expect(rpc).not.toHaveBeenCalled();
       await userEvent.click(screen.getByRole("radio", { name: "Cash" }));
       await userEvent.click(screen.getByRole("button", { name: "Join as Ana Dela Cruz" }));

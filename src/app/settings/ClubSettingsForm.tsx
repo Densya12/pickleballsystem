@@ -3,27 +3,22 @@
 import { useActionState, useState } from "react";
 import { Button, Card, Input, Notice, RadioGroup } from "@/components/ui";
 import { callModeChoices, matchmakingChoices, POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
+import { OTHER_NAME_MAX, paymentMethodChoices, usesMobileNumber, type PaymentMethod } from "@/lib/payments/method";
 import type { CallMode, Matchmaking, Points, Rotation } from "@/lib/club/validation";
 import { useT } from "@/lib/i18n/client";
 import { saveSettingsAction, type SettingsState } from "./actions";
 import type { ClubValues } from "./data";
 
-const FIELDS: Record<"club" | "payments", (keyof ClubValues)[]> = {
-  club: ["name", "city", "default_points", "default_rotation", "default_call_mode", "default_matchmaking"],
-  payments: ["gcash_name", "gcash_number", "default_fee"],
-};
-
-/**
- * One Settings page's fields (Club details, or GCash and fee). The other
- * fields go along as hidden inputs, so the save is the same as before.
- */
-export function ClubSettingsForm({ section, club, isOwner }: { section: "club" | "payments"; club: ClubValues; isOwner: boolean }) {
+/** Settings › Club details: the club, its defaults for new sessions, and how players pay. */
+export function ClubSettingsForm({ club, isOwner }: { club: ClubValues; isOwner: boolean }) {
   const t = useT();
   const [state, dispatch, pending] = useActionState<SettingsState, FormData>(saveSettingsAction, { status: "idle" });
   const [edited, setEdited] = useState(false);
   const value = (field: keyof ClubValues) => state.values?.[field] ?? club[field];
   const errors = state.fieldErrors ?? {};
-  const shown = FIELDS[section];
+  // Shows the Other name field and the right number hint as the method changes.
+  const [method, setMethod] = useState<PaymentMethod>(value("payment_method") as PaymentMethod);
+  const mobile = usesMobileNumber(method);
 
   return (
     <form
@@ -39,15 +34,9 @@ export function ClubSettingsForm({ section, club, isOwner }: { section: "club" |
       {!edited && state.status !== "idle" && state.message && (
         <Notice kind={state.status === "saved" ? "success" : "error"}>{state.message}</Notice>
       )}
-      {(Object.keys(club) as (keyof ClubValues)[])
-        .filter((field) => !shown.includes(field))
-        .map((field) => (
-          <input key={field} type="hidden" name={field} value={club[field]} />
-        ))}
 
       <fieldset disabled={!isOwner} className="flex min-w-0 flex-col gap-3">
-        {section === "club" ? (
-          <>
+        <>
             <Card className="flex flex-col gap-4">
               <Input label={t.settings.clubName} name="name" required maxLength={60} defaultValue={value("name")} error={errors.name} />
               <Input label={t.settings.city} labelNote={t.common.optional} name="city" maxLength={60} defaultValue={value("city")} error={errors.city} />
@@ -84,29 +73,61 @@ export function ClubSettingsForm({ section, club, isOwner }: { section: "club" |
                 error={errors.default_matchmaking}
               />
             </Card>
+            <h2 id="payment" className="section-label mx-1 mt-3 scroll-mt-4">
+              {t.settings.paymentSection}
+            </h2>
+            <Card className="flex flex-col gap-4">
+              <Input
+                label={t.settings.defaultFee}
+                name="default_fee"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                defaultValue={value("default_fee")}
+                error={errors.default_fee}
+              />
+              <RadioGroup
+                legend={t.settings.paymentMethod}
+                name="payment_method"
+                look="chips"
+                options={paymentMethodChoices(t)}
+                value={method}
+                onValueChange={setMethod}
+                error={errors.payment_method}
+              />
+              {method === "other" && (
+                <Input
+                  label={t.settings.otherMethodName}
+                  name="payment_method_other"
+                  maxLength={OTHER_NAME_MAX}
+                  autoComplete="off"
+                  hint={t.settings.otherMethodHint}
+                  defaultValue={value("payment_method_other")}
+                  error={errors.payment_method_other}
+                />
+              )}
+              <Input label={t.settings.accountName} name="gcash_name" maxLength={80} autoComplete="off" defaultValue={value("gcash_name")} error={errors.gcash_name} />
+              <Input
+                label={t.settings.accountNumber}
+                name="gcash_number"
+                inputMode={mobile ? "tel" : "numeric"}
+                autoComplete="off"
+                hint={mobile ? t.settings.mobileNumberHint : t.settings.accountNumberHint}
+                defaultValue={value("gcash_number")}
+                error={errors.gcash_number}
+              />
+              <RadioGroup
+                legend={t.settings.cashAccepted}
+                name="cash_accepted"
+                look="segmented"
+                options={[
+                  { value: "on", label: t.settings.on },
+                  { value: "off", label: t.settings.off },
+                ]}
+                defaultValue={value("cash_accepted") as "on" | "off"}
+                error={errors.cash_accepted}
+              />
+            </Card>
           </>
-        ) : (
-          <Card className="flex flex-col gap-4">
-            <Input label={t.settings.gcashName} name="gcash_name" maxLength={80} autoComplete="off" defaultValue={value("gcash_name")} error={errors.gcash_name} />
-            <Input
-              label={t.settings.gcashNumber}
-              name="gcash_number"
-              inputMode="tel"
-              autoComplete="off"
-              hint={t.settings.gcashNumberHint}
-              defaultValue={value("gcash_number")}
-              error={errors.gcash_number}
-            />
-            <Input
-              label={t.settings.defaultFee}
-              name="default_fee"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              defaultValue={value("default_fee")}
-              error={errors.default_fee}
-            />
-          </Card>
-        )}
       </fieldset>
 
       {isOwner && (

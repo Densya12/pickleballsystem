@@ -178,7 +178,7 @@ export function PaymentsSkeleton() {
           <Skeleton height={6} rounded="full" className="mt-3 w-full" />
           <SkeletonLine size="sm" width="78%" className="mt-2.5" />
         </SkeletonCard>
-        <Section id="check-loading" label={t.payments.checkGcash}>
+        <Section id="check-loading" label={t.status.toCheck}>
           <PaymentRows />
         </Section>
         <Section id="unpaid-loading" label={t.payments.unpaid}>

@@ -79,7 +79,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     </>
   );
   const paymentRow = view.me ? (
-    <PaymentRow playerId={view.me.id} fee={view.rules.fee} payFirst={view.rules.payFirst} gcash={view.gcash} payment={view.payment} />
+    <PaymentRow playerId={view.me.id} fee={view.rules.fee} payFirst={view.rules.payFirst} payTo={view.payTo} payment={view.payment} />
   ) : null;
   const courtsRow = (
     <li>

@@ -1,29 +1,6 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { BackLink, PageShell } from "@/components/ui";
-import { en } from "@/lib/i18n/dictionary";
-import { getT } from "@/lib/i18n/server";
-import { ClubSettingsForm } from "../ClubSettingsForm";
-import { getClubFormValues } from "../data";
-import { SettingsFormSkeleton } from "@/components/skeletons/OrganizerSkeletons";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: en.settings.gcashAndFee,
-};
-
+/** The old "GCash and fee" page: payment is now a section of Club details. */
 export default function Page() {
-  return (
-    <Suspense fallback={<SettingsFormSkeleton page="gcashAndFee" />}>
-      <Content />
-    </Suspense>
-  );
-}
-
-async function Content() {
-  const [{ values, isOwner }, t] = await Promise.all([getClubFormValues(), getT()]);
-  return (
-    <PageShell top={<BackLink href="/settings" label={t.settings.title} />} title={t.settings.gcashAndFee}>
-      <ClubSettingsForm section="payments" club={values} isOwner={isOwner} />
-    </PageShell>
-  );
+  redirect("/settings/club#payment");
 }

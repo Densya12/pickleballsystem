@@ -4,7 +4,6 @@ import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { MainTabBar } from "@/components/nav/MainTabBar";
 import { FeedbackRow, ListGroup, ListRow, PageShell, Section } from "@/components/ui";
 import { requireClub } from "@/lib/auth/dal";
-import { formatPeso } from "@/lib/format";
 import { en } from "@/lib/i18n/dictionary";
 import { getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
@@ -38,9 +37,6 @@ async function SettingsContent() {
           <ListGroup>
             <ListRow href="/settings/club" trailing={value(club.name)}>
               {t.settings.clubDetails}
-            </ListRow>
-            <ListRow href="/settings/payments" trailing={value(formatPeso(club.default_fee))}>
-              {t.settings.gcashAndFee}
             </ListRow>
             {role === "owner" && <ListRow href="/settings/qr">{t.settings.clubQr}</ListRow>}
             <ListRow href="/settings/organizers" trailing={value(String(staff?.length ?? 1))}>

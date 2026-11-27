@@ -4,11 +4,15 @@
  * exists to give a clear message per field, in the device's language.
  */
 import type { Dictionary } from "@/lib/i18n/dictionary";
+import { isPaymentMethod, OTHER_NAME_MAX, OTHER_NAME_MIN, usesMobileNumber, type PaymentMethod } from "@/lib/payments/method";
 
 export const CLUB_NAME_MIN = 2;
 export const CLUB_NAME_MAX = 60;
 export const CITY_MAX = 60;
+/** The account name and number columns keep their old names (gcash_name, gcash_number) for any method. */
 export const GCASH_NAME_MAX = 80;
+export const ACCOUNT_NUMBER_MIN = 4;
+export const ACCOUNT_NUMBER_MAX = 30;
 export const FEE_MAX = 100_000;
 
 export const POINTS_OPTIONS = [11, 15, 21] as const;
@@ -47,6 +51,15 @@ export function isValidGcashNumber(normalized: string): boolean {
   return /^09\d{9}$/.test(normalized);
 }
 
+/** GCash and Maya: a mobile number. Bank and other accounts: 4-30 digits. Mirrors clubs_gcash_number_format. */
+export function accountNumberError(method: PaymentMethod, normalized: string | null, t: Dictionary): string | undefined {
+  if (normalized === null) return undefined;
+  if (usesMobileNumber(method)) return isValidGcashNumber(normalized) ? undefined : t.club.mobileNumberInvalid;
+  return new RegExp(`^\\d{${ACCOUNT_NUMBER_MIN},${ACCOUNT_NUMBER_MAX}}$`).test(normalized)
+    ? undefined
+    : t.club.accountNumberInvalid(ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX);
+}
+
 export function validateClubName(name: string, t: Dictionary): string | undefined {
   const length = [...name].length;
   if (length === 0) return t.club.nameRequired;
@@ -78,6 +91,9 @@ export type ClubSettingsInput = {
   gcash_name: string | null;
   gcash_number: string | null;
   default_fee: number;
+  payment_method: PaymentMethod;
+  payment_method_other: string | null;
+  cash_accepted: boolean;
   default_points: Points;
   default_rotation: Rotation;
   default_matchmaking: Matchmaking;
@@ -90,6 +106,11 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
   const gcashName = text(form, "gcash_name") || null;
   const gcashNumber = normalizeGcashNumber(text(form, "gcash_number"));
   const feeRaw = text(form, "default_fee");
+  const methodRaw = text(form, "payment_method");
+  const method: PaymentMethod = isPaymentMethod(methodRaw) ? methodRaw : "gcash";
+  const otherName = method === "other" ? text(form, "payment_method_other") || null : null;
+  const otherLength = otherName ? [...otherName].length : 0;
+  const cashRaw = text(form, "cash_accepted");
   const pointsRaw = Number(text(form, "default_points"));
   const rotationRaw = text(form, "default_rotation");
   const matchmakingRaw = text(form, "default_matchmaking");
@@ -101,8 +122,13 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
     name: validateClubName(name, t),
     city: maxLength(city, CITY_MAX, t.club.tooLong(CITY_MAX)),
     gcash_name: maxLength(gcashName, GCASH_NAME_MAX, t.club.tooLong(GCASH_NAME_MAX)),
-    gcash_number:
-      gcashNumber !== null && !isValidGcashNumber(gcashNumber) ? t.club.gcashNumberInvalid : undefined,
+    gcash_number: accountNumberError(method, gcashNumber, t),
+    payment_method: isPaymentMethod(methodRaw) ? undefined : t.club.paymentMethodInvalid,
+    payment_method_other:
+      method === "other" && (otherLength < OTHER_NAME_MIN || otherLength > OTHER_NAME_MAX)
+        ? t.club.otherNameInvalid(OTHER_NAME_MIN, OTHER_NAME_MAX)
+        : undefined,
+    cash_accepted: cashRaw === "on" || cashRaw === "off" ? undefined : t.club.cashAcceptedInvalid,
     default_fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
     default_points: (POINTS_OPTIONS as readonly number[]).includes(pointsRaw) ? undefined : t.club.pointsInvalid,
     default_rotation: (ROTATION_OPTIONS as readonly string[]).includes(rotationRaw) ? undefined : t.club.rotationInvalid,
@@ -117,6 +143,9 @@ export function parseClubSettings(form: FormLike, t: Dictionary): ParseResult<Cl
       gcash_name: gcashName,
       gcash_number: gcashNumber,
       default_fee: fee,
+      payment_method: method,
+      payment_method_other: otherName,
+      cash_accepted: cashRaw !== "off",
       default_points: pointsRaw as Points,
       default_rotation: rotationRaw as Rotation,
       default_matchmaking: matchmakingRaw as Matchmaking,
