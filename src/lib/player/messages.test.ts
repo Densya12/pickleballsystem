@@ -8,6 +8,7 @@ describe("player messages", () => {
     [{ message: "session_not_found", code: "P0001" }, en.player.notFound],
     [{ message: "session_not_live", code: "P0001" }, en.player.ended],
     [{ message: "invalid_player_status", code: "P0001" }, en.player.changed],
+    [{ message: "player_not_staying", code: "P0001" }, en.player.changed],
     [{ message: "player_not_found", code: "P0001" }, en.player.noRow],
     [{ message: "violates check constraint", code: "23514" }, en.player.invalidInput],
     // A failed fetch says so plainly.

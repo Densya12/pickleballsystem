@@ -387,6 +387,9 @@ isOneToOne: false
 "set_session_rotation":
 { Args: { "p_rotation": string,"p_session_id": string }; Returns: undefined
                            },
+"sit_out":
+{ Args: { "p_player_id": string }; Returns: string
+                           },
 "start_session":
 { Args: { "p_session_id": string }; Returns: undefined
                            },

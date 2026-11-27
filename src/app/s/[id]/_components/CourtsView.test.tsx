@@ -225,6 +225,32 @@ describe("Courts tab", () => {
       expect(frame.act).toHaveBeenCalledWith("call_next", { courtId: "c3" }, expect.any(String));
     });
 
+    it("a staying chip: tap it, then Send to line (queued in the outbox as sit_out); Cancel keeps them", async () => {
+      render(
+        <CourtsView
+          state={waiting(
+            { waitingSince: waitingSince(1), staying: [{ id: "x", name: "Xia Cruz" }, { id: "y", name: "Yul Tan" }] },
+            { preset: "fair_line", formats: {}, courts: { c3: { status: "ok", group: group(["g", "h"]) } } },
+          )}
+          rotation="winners_stay"
+          rules={{ payFirst: false, fee: 0 }}
+        />,
+      );
+      const c3 = court("Court 3");
+      const xia = within(c3).getByRole("button", { name: "Xia Cruz, staying. Tap to send to the line" });
+      expect(xia).toHaveAttribute("data-chip", "staying");
+      await userEvent.click(xia);
+      expect(xia).toHaveAttribute("aria-pressed", "true");
+      const ask = within(c3).getByRole("group", { name: "Send Xia Cruz to the line? They sit out the next game." });
+      await userEvent.click(within(ask).getByRole("button", { name: "Cancel" }));
+      expect(within(c3).queryByRole("group", { name: /Send Xia Cruz/ })).not.toBeInTheDocument();
+      expect(frame.act).not.toHaveBeenCalled();
+
+      await userEvent.click(within(c3).getByRole("button", { name: "Yul Tan, staying. Tap to send to the line" }));
+      await userEvent.click(within(c3).getByRole("button", { name: "Send to line" }));
+      expect(frame.act).toHaveBeenCalledWith("sit_out", { courtId: "c3", playerId: "y" }, "Send to line: Yul Tan");
+    });
+
     it("no newcomer fits the staying winners: they go back in line and Call takes a full group (D25 g)", () => {
       render(
         <CourtsView

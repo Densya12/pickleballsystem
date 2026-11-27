@@ -19,7 +19,7 @@ import { courtFormatLabel } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/client";
 import { PaymentRow } from "./PaymentPanel";
 
-type PlayerRpc = "player_pause" | "player_resume" | "player_leave" | "player_not_ready";
+type PlayerRpc = "player_pause" | "player_resume" | "player_leave" | "player_not_ready" | "sit_out";
 
 /** "My place": in line, called ("You're up"), playing, or resting. Updates live (NF9). */
 export function PlayerView({ code, view }: { code: string; view: PlayerSessionView }) {
@@ -41,7 +41,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [confirming, setConfirming] = useState<"leave" | "not_ready" | null>(null);
+  const [confirming, setConfirming] = useState<"leave" | "not_ready" | "sit_out" | null>(null);
 
   const playingGame = state.kind === "playing" ? state.gameId : null;
   const { acked, acknowledge } = useCalledAlert(playingGame);
@@ -262,6 +262,23 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         </ListGroup>
       </>
     );
+    // D26 follow-up: a staying winner can rest; they go to the back of the line.
+    footer =
+      confirming === "sit_out" ? (
+        <div role="group" aria-label={t.player.sitOutQuestion} className="flex w-full flex-col gap-2 rounded-group bg-surface p-4">
+          <p className="font-medium">{t.player.sitOutQuestion}</p>
+          <Button variant="outline" size="md" fullWidth disabled={busy} onClick={() => void act("sit_out")}>
+            {busy ? t.player.sittingOut : t.player.yesSitOut}
+          </Button>
+          <Button variant="ghost" size="md" fullWidth disabled={busy} onClick={() => setConfirming(null)}>
+            {t.common.cancel}
+          </Button>
+        </div>
+      ) : (
+        <Button variant="secondary" size="md" fullWidth disabled={busy} onClick={() => setConfirming("sit_out")}>
+          {t.player.sitOut}
+        </Button>
+      );
   } else if (state.kind === "playing") {
     const game = view.games.find((g) => g.id === state.gameId);
     title = t.player.playingOn(state.courtLabel);

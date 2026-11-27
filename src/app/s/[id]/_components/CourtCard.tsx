@@ -33,6 +33,8 @@ type Props = {
   onSwap: (courtId: string, playerId: string) => void;
   /** D25: move a player to the other side (swap with a player there). */
   onSwapSides: (courtId: string, playerId: string, otherId: string) => void;
+  /** D26 follow-up: send a staying winner to the line (they sit out the next game). */
+  onSendToLine?: (courtId: string, playerId: string) => void;
   /** Doubles <-> singles while the court is empty. */
   onSetFormat: (courtId: string, format: Format) => void;
   /** A game that started after the screen opened: highlight the card briefly. */
@@ -43,7 +45,7 @@ type Props = {
  * One court (D19): a mini court with the players' names in their service
  * boxes, the minutes since the game started, and the court's actions.
  */
-export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, preview, onCallMixed, onFinish, onSwap, onSwapSides, onSetFormat, fresh = false }: Props) {
+export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBusy, waiting = false, onCall, onNeedMore, preview, onCallMixed, onFinish, onSwap, onSwapSides, onSendToLine, onSetFormat, fresh = false }: Props) {
   const t = useT();
   // The card is keyed by game, so this runs once per new game (cleared when the 1 s highlight ends).
   const [highlight, setHighlight] = useState(fresh);
@@ -51,6 +53,8 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   const [confirmFormat, setConfirmFormat] = useState(false);
   // D25 team swap: the first chip tapped; the next tap on the other side swaps them.
   const [swapFrom, setSwapFrom] = useState<string | null>(null);
+  // A staying chip tapped: "Send to line?" (D26 follow-up).
+  const [stayerId, setStayerId] = useState<string | null>(null);
   const busy = actionBusy || waiting;
   const game = court.game;
   const headingId = `court-${court.id}`;
@@ -67,6 +71,7 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   const waitingCourt = !game && (staying.length > 0 || court.waitingSince !== null);
   const nextGroup = waitingCourt && preview?.status === "ok" && preview.group.length > 0 ? preview : null;
   const ready = !game && readyToCall(court.waitingSince, preview ?? null, now);
+  const stayer = staying.find((p) => p.id === stayerId) ?? null;
 
   return (
     <section
@@ -123,7 +128,13 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
                   }
                 },
               }
-            : undefined
+            : !game && staying.length > 0 && onSendToLine && !busy
+              ? {
+                  selectedId: stayerId,
+                  label: (name) => t.live.stayingChip(name),
+                  onTap: (playerId) => setStayerId(stayerId === playerId ? null : playerId),
+                }
+              : undefined
         }
       />
       {/* Shown while choosing, so the card keeps its height (and its skeleton's) otherwise. */}
@@ -155,7 +166,7 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
         <p className="text-sm text-secondary" data-testid="court-next">
           {[
             staying.length > 0
-              ? (released ? t.live.stayersOff : t.live.stayingOn)(chipLabels(staying.map((p) => p.name)).join(" + "))
+              ? (released ? t.live.stayersOff : t.live.stayingOn)(chipLabels(staying.map((p) => p.name)))
               : null,
             nextGroup
               ? t.live.nextOnCourt(nextGroup.group.map((p) => p.name).join(", ")) +
@@ -213,6 +224,26 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
             </Button>
           </div>
         )
+      ) : stayer && onSendToLine ? (
+        <div role="group" aria-label={t.live.sendToLineQuestion(stayer.name)} className="flex flex-col gap-2 rounded-control bg-info p-3">
+          <p className="text-sm font-medium">{t.live.sendToLineQuestion(stayer.name)}</p>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="pill" className="flex-1" disabled={busy} onClick={() => setStayerId(null)}>
+              {t.common.cancel}
+            </Button>
+            <Button
+              size="pill"
+              className="flex-1"
+              disabled={busy}
+              onClick={() => {
+                setStayerId(null);
+                onSendToLine(court.id, stayer.id);
+              }}
+            >
+              {t.live.sendToLine}
+            </Button>
+          </div>
+        </div>
       ) : confirmFormat ? (
         <div role="group" aria-label={t.live.makeFormatQuestion(court.label, otherLabel)} className="flex flex-col gap-2 rounded-control bg-info p-3">
           <p className="text-sm font-medium">{t.live.makeFormatQuestion(court.label, otherLabel)}</p>

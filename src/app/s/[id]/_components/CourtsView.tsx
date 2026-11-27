@@ -21,7 +21,7 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
   const { act, busy, pending, showError, runOnline, sessionId } = useSessionFrame();
   const courtById = new Map(state.courts.map((c) => [c.id, c]));
   const nameOf = (playerId: string) =>
-    state.courts.flatMap((c) => c.game?.players ?? []).find((p) => p.id === playerId)?.name ?? "player";
+    state.courts.flatMap((c) => [...(c.game?.players ?? []), ...c.staying]).find((p) => p.id === playerId)?.name ?? "player";
   // Courts with an action waiting for signal: their buttons wait too, so nobody taps twice.
   const waitingCourts = new Set(pending.map((item) => item.args.courtId).filter((id): id is string => typeof id === "string"));
   const next = nextPreview(state.preview, state.courts.map((c) => c.format));
@@ -63,6 +63,7 @@ export function CourtsView({ state, rotation, rules }: { state: LiveState; rotat
             // Not queued: a resend would swap them back. Needs signal (like Undo).
             void runOnline(() => swapSidesAction(sessionId, courtId, playerId, otherId))
           }
+          onSendToLine={(courtId, playerId) => void act("sit_out", { courtId, playerId }, t.live.outboxSitOut(nameOf(playerId)))}
           onSetFormat={(courtId, format) =>
             void act("set_court_format", { courtId, format }, t.live.outboxFormat(courtFormatLabel(format, t), court.label))
           }

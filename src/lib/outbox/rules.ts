@@ -20,6 +20,7 @@ export const QUEUEABLE_KINDS = [
   "set_matchmaking",
   "set_call_mode",
   "call_mixed",
+  "sit_out",
 ] as const;
 export type OutboxKind = (typeof QUEUEABLE_KINDS)[number];
 
@@ -56,6 +57,9 @@ const ALREADY_DONE: Record<OutboxKind, readonly string[]> = {
   set_call_mode: [],
   // Like call_next: a resend finds the court busy.
   call_mixed: ["court_busy"],
+  // Idempotent: sitting out again returns the same court (sit_out). A winner
+  // who was called meanwhile gets player_not_staying: NOT done (Discard).
+  sit_out: [],
 };
 
 export function isAlreadyDone(kind: OutboxKind, code: string | undefined): boolean {

@@ -28,8 +28,9 @@ const en = {
   waitingForCall: "Waiting for Call",
   /** D26: winners staying on court (a word on their chip, not color alone). */
   staying: "staying",
-  stayingOn: (names: string) => `${names} stay on`,
-  stayersOff: (names: string) => `${names} go back in line (no group fits them)`,
+  stayingOn: (names: string[]) => `${names.join(" + ")} ${names.length === 1 ? "stays" : "stay"} on`,
+  stayersOff: (names: string[]) =>
+    `${names.join(" + ")} ${names.length === 1 ? "goes back in line (no group fits)" : "go back in line (no group fits them)"}`,
   needMore: (n: number) => `Need ${n} more`,
   needMoreMessage: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call this court.`,
   notReadySwap: (name: string) => `${name} isn't ready · Swap`,
@@ -52,6 +53,12 @@ const en = {
   chipSwap: (name: string, side: string) => `${name}, ${side}. Tap to swap sides`,
   sidesSwapped: (a: string, b: string) => `${a} and ${b} swapped sides.`,
   sameSide: "They're on the same side. Tap a player on the other side.",
+  // A staying winner sits out the next game (D26 follow-up).
+  stayingChip: (name: string) => `${name}, staying. Tap to send to the line`,
+  sendToLine: "Send to line",
+  sendToLineQuestion: (name: string) => `Send ${name} to the line? They sit out the next game.`,
+  satOut: (name: string, spots: number) => `${name} is back in line. Call will fill ${spots} ${spots === 1 ? "spot" : "spots"}.`,
+  notStaying: "That player isn't staying on the court anymore.",
   pickMore: (n: number) => `Pick ${n} more.`,
   readyToConfirm: "Ready. Tap Confirm.",
   confirm: "Confirm",
@@ -83,7 +90,7 @@ const en = {
       `Game #${input.gameNumber} on ${input.courtLabel} is done.`,
       input.winners?.length ? `Won: ${input.winners.join(" and ")}.` : null,
       input.waiting
-        ? [input.waiting.staying.length ? `${input.waiting.staying.join(" and ")} stay on.` : null, `Tap Call on ${input.courtLabel} when you're ready.`]
+        ? [input.waiting.staying.length ? `${input.waiting.staying.join(" and ")} ${input.waiting.staying.length === 1 ? "stays" : "stay"} on.` : null, `Tap Call on ${input.courtLabel} when you're ready.`]
             .filter(Boolean)
             .join(" ")
         : input.next
@@ -207,6 +214,7 @@ const en = {
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
   outboxMatchmaking: (preset: string) => `Who plays together: ${preset}`,
   outboxCallMode: (mode: string) => `Next game: ${mode}`,
+  outboxSitOut: (name: string) => `Send to line: ${name}`,
   outboxPause: (name: string) => `Pause ${name}`,
   outboxResume: (name: string) => `Resume ${name}`,
   outboxRemove: (name: string) => `Remove ${name}`,
@@ -242,8 +250,8 @@ const fil: typeof en = {
   readyToCall: "Handa nang tawagin",
   waitingForCall: "Hinihintay ang Call",
   staying: "mananatili",
-  stayingOn: (names: string) => `Mananatili sina ${names}`,
-  stayersOff: (names: string) => `Babalik sa pila sina ${names} (walang bagay na grupo)`,
+  stayingOn: (names: string[]) => `Mananatili ${names.length === 1 ? "si" : "sina"} ${names.join(" + ")}`,
+  stayersOff: (names: string[]) => `Babalik sa pila ${names.length === 1 ? "si" : "sina"} ${names.join(" + ")} (walang bagay na grupo)`,
   needMore: (n: number) => `Kulang pa ng ${n}`,
   needMoreMessage: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notReadySwap: (name: string) => `Hindi pa handa si ${name} · Palitan`,
@@ -263,6 +271,11 @@ const fil: typeof en = {
   chipSwap: (name: string, side: string) => `${name}, ${side}. Pindutin para lumipat ng panig`,
   sidesSwapped: (a: string, b: string) => `Nagpalit ng panig sina ${a} at ${b}.`,
   sameSide: "Magkapanig sila. Pumili ng player sa kabilang panig.",
+  stayingChip: (name: string) => `${name}, mananatili. Pindutin para ibalik sa pila`,
+  sendToLine: "Ibalik sa pila",
+  sendToLineQuestion: (name: string) => `Ibalik si ${name} sa pila? Hindi siya kasali sa susunod na laro.`,
+  satOut: (name: string, spots: number) => `Nasa pila na ulit si ${name}. Pupunuin ng Call ang ${spots} na puwesto.`,
+  notStaying: "Hindi na nananatili sa court ang player na iyon.",
   pickMore: (n: number) => `Pumili ng ${n} pa.`,
   readyToConfirm: "Handa na. Pindutin ang Kumpirmahin.",
   confirm: "Kumpirmahin",
@@ -291,7 +304,7 @@ const fil: typeof en = {
       `Tapos ang Laro #${input.gameNumber} sa ${input.courtLabel}.`,
       input.winners?.length ? `Panalo: ${input.winners.join(" at ")}.` : null,
       input.waiting
-        ? [input.waiting.staying.length ? `Mananatili sina ${input.waiting.staying.join(" at ")}.` : null, `I-tap ang Call sa ${input.courtLabel} kapag handa na.`]
+        ? [input.waiting.staying.length ? `Mananatili ${input.waiting.staying.length === 1 ? "si" : "sina"} ${input.waiting.staying.join(" at ")}.` : null, `I-tap ang Call sa ${input.courtLabel} kapag handa na.`]
             .filter(Boolean)
             .join(" ")
         : input.next
@@ -404,6 +417,7 @@ const fil: typeof en = {
   outboxLevel: (name: string, level: string) => `${name}: ${level}`,
   outboxMatchmaking: (preset: string) => `Sino ang magkakasama: ${preset}`,
   outboxCallMode: (mode: string) => `Susunod na laro: ${mode}`,
+  outboxSitOut: (name: string) => `Ibalik sa pila: ${name}`,
   outboxPause: (name: string) => `I-pause si ${name}`,
   outboxResume: (name: string) => `Ituloy si ${name}`,
   outboxRemove: (name: string) => `Alisin si ${name} sa pila`,

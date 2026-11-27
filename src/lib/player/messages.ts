@@ -16,6 +16,7 @@ export function playerErrorMessage(error: DbErrorLike, t: Dictionary): string {
     case "session_not_live":
       return t.player.ended;
     case "invalid_player_status":
+    case "player_not_staying":
       return t.player.changed;
     case "player_not_found":
       return t.player.noRow;
