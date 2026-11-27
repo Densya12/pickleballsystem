@@ -180,4 +180,81 @@ describe("Courts tab", () => {
     render(<CourtsView state={ok} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
     expect(screen.getByText("Pa, Pc, Pd, Pf · levels 2–3")).toBeInTheDocument();
   });
+
+  describe("D26 Wait for me", () => {
+    const waitingSince = (minutesAgo: number) => new Date(Date.now() - minutesAgo * 60_000).toISOString();
+    const group = (ids: string[]) => ids.map((id) => ({ id, name: id.toUpperCase(), skill: 3 }));
+    const waiting = (court: Partial<LiveCourt>, preview: LiveState["preview"]): LiveState => ({
+      ...state(6),
+      courts: COURTS.map((c) => (c.id === "c3" ? { ...c, ...court } : c)),
+      preview,
+    });
+
+    it("a court after Done shows who Call would add, and Call (the D25 group)", async () => {
+      render(
+        <CourtsView
+          state={waiting({ waitingSince: waitingSince(0.5) }, { preset: "mixed", formats: { doubles: { status: "ok", group: group(["g", "h", "i", "j"]), lo: 3, hi: 3 } } })}
+          rotation="all_off"
+          rules={{ payFirst: false, fee: 0 }}
+        />,
+      );
+      expect(within(court("Court 3")).getByTestId("court-next")).toHaveTextContent("Next: G, H, I, J · level 3");
+      await userEvent.click(within(court("Court 3")).getByRole("button", { name: "Call next 4" }));
+      expect(frame.act).toHaveBeenCalledWith("call_next", { courtId: "c3" }, expect.any(String));
+      expect(court("Court 3")).not.toHaveAttribute("data-ready-to-call");
+    });
+
+    it("winners staying: their chips say staying, Call 2 fills the other side, the format can't change", async () => {
+      render(
+        <CourtsView
+          state={waiting(
+            { waitingSince: waitingSince(1), staying: [{ id: "x", name: "Xia Cruz" }, { id: "y", name: "Yul Tan" }] },
+            { preset: "fair_line", formats: {}, courts: { c3: { status: "ok", group: group(["g", "h"]) } } },
+          )}
+          rotation="winners_stay"
+          rules={{ payFirst: false, fee: 0 }}
+        />,
+      );
+      const c3 = court("Court 3");
+      expect(chips(c3).map((c) => c.textContent)).toEqual(["Xia· staying", "Yul· staying"]);
+      expect(within(c3).getByText("Doubles · Waiting for Call")).toBeInTheDocument();
+      expect(within(c3).getByRole("list", { name: "Playing on Court 3" })).toHaveTextContent("Xia Cruz, staying");
+      expect(within(c3).getByTestId("court-next")).toHaveTextContent("Xia + Yul stay on · Next: G, H");
+      expect(within(c3).queryByRole("button", { name: /Make it/ })).not.toBeInTheDocument();
+      await userEvent.click(within(c3).getByRole("button", { name: "Call 2 · Court 3" }));
+      expect(frame.act).toHaveBeenCalledWith("call_next", { courtId: "c3" }, expect.any(String));
+    });
+
+    it("no newcomer fits the staying winners: they go back in line and Call takes a full group (D25 g)", () => {
+      render(
+        <CourtsView
+          state={waiting(
+            { waitingSince: waitingSince(1), staying: [{ id: "x", name: "Xia Cruz" }, { id: "y", name: "Yul Tan" }] },
+            { preset: "mixed", formats: {}, courts: { c3: { status: "ok", group: group(["g", "h", "i", "j"]), lo: 5, hi: 5, release: true } } },
+          )}
+          rotation="winners_stay"
+          rules={{ payFirst: false, fee: 0 }}
+        />,
+      );
+      const c3 = court("Court 3");
+      expect(within(c3).getByTestId("court-next")).toHaveTextContent("Xia + Yul go back in line (no group fits them) · Next: G, H, I, J · level 5");
+      expect(within(c3).getByRole("button", { name: "Call next 4" })).toBeInTheDocument();
+    });
+
+    it("Ready to call: over 2 minutes waiting with a callable group (no group: no highlight)", () => {
+      const preview = { preset: "mixed", formats: { doubles: { status: "ok" as const, group: group(["g", "h", "i", "j"]) } } };
+      const { unmount } = render(<CourtsView state={waiting({ waitingSince: waitingSince(3) }, preview)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+      expect(court("Court 3")).toHaveAttribute("data-ready-to-call");
+      expect(within(court("Court 3")).getByTestId("ready-to-call")).toHaveTextContent("Ready to call");
+      unmount();
+      render(
+        <CourtsView
+          state={waiting({ waitingSince: waitingSince(3) }, { preset: "same_level", formats: { doubles: { status: "no_group", group: [], lo: 3, hi: 3 } } })}
+          rotation="all_off"
+          rules={{ payFirst: false, fee: 0 }}
+        />,
+      );
+      expect(court("Court 3")).not.toHaveAttribute("data-ready-to-call");
+    });
+  });
 });

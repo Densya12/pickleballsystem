@@ -429,6 +429,8 @@ $$;
 -- D23 at Call time: with staying winners and fewer than 2 waiting, everyone
 -- goes off (the losers are already ahead in the queue) and a fresh group is
 -- called. Returns the staying players still on the court.
+-- Used by Call mixed (levels are ignored there, so only D23 applies);
+-- Call uses private.call_selection (D23 and D25 g).
 create or replace function private.release_stayers_if_few(p_court public.courts)
 returns uuid[]
 language plpgsql
@@ -444,6 +446,33 @@ begin
     return '{}';
   end if;
   return p_court.staying_ids;
+end;
+$$;
+
+-- What Call does on a court, as auto-call does at Done (D25 g, D23): with
+-- staying winners, the newcomers must fit the level rule with them; if fewer
+-- than 2 wait, or no newcomers fit, the winners can't stay: they go to the back
+-- and a fresh group is chosen. Read-only: returns the selection, whether the
+-- winners go off ('release'), and the players who stay.
+create or replace function private.call_selection(p_session_id uuid, p_format text, p_staying uuid[])
+returns jsonb
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  v_res jsonb;
+begin
+  if cardinality(coalesce(p_staying, '{}')) > 0 and cardinality(private.next_eligible(p_session_id, 2)) >= 2 then
+    v_res := private.select_group(p_session_id, p_format, p_staying);
+    if v_res ->> 'status' = 'ok' then
+      return v_res || jsonb_build_object('release', false, 'staying', to_jsonb(p_staying));
+    end if;
+  end if;
+  -- No stayers, or they go off: a fresh group (with them at the back of the queue,
+  -- they can't be chosen ahead of anyone waiting; the window is the next 8).
+  v_res := private.select_group(p_session_id, p_format, '{}');
+  return v_res || jsonb_build_object('release', cardinality(coalesce(p_staying, '{}')) > 0, 'staying', '[]'::jsonb);
 end;
 $$;
 
@@ -465,7 +494,13 @@ begin
     raise exception 'court_busy' using errcode = 'P0001';
   end if;
 
-  v_stayed := private.release_stayers_if_few(v_court);
+  v_stayed := v_court.staying_ids;
+  if cardinality(v_stayed) > 0 and (private.call_selection(v_court.session_id, v_court.format, v_stayed) ->> 'release')::boolean then
+    -- The winners can't stay (D23 or D25 g): to the back, and a fresh group.
+    perform private.requeue(v_stayed);
+    update public.courts set staying_ids = '{}', winner_streak = 0 where id = p_court_id;
+    v_stayed := '{}';
+  end if;
   v_res := private.select_group(v_court.session_id, v_court.format, v_stayed);
   if v_res ->> 'status' = 'not_enough' then
     raise exception 'not_enough_players' using errcode = 'P0001', detail = v_res ->> 'missing';
@@ -580,6 +615,7 @@ end;
 $$;
 
 revoke execute on function private.release_stayers_if_few(public.courts) from public, anon, authenticated;
+revoke execute on function private.call_selection(uuid, text, uuid[]) from public, anon, authenticated;
 
 -- ===========================================================================
 -- 5. PREVIEW: per court with staying winners, who Call would add
@@ -632,18 +668,15 @@ begin
     v_result := v_result || jsonb_build_object(v_format, private.preview_entry(v_res));
   end loop;
 
-  -- D26: a court with staying winners: the newcomers Call would add next to them
-  -- (fewer than 2 waiting: D23 sends them off at Call, so the fresh group is shown).
+  -- D26: a court with staying winners: the newcomers Call would add next to them,
+  -- or (release: true) the fresh group when they go off at Call (D23, D25 g).
   for v_court in
     select c.id, c.format, c.staying_ids from public.courts c
     where c.session_id = p_session_id and cardinality(c.staying_ids) > 0 and c.current_game_id is null
   loop
-    if cardinality(private.next_eligible(p_session_id, 2)) < 2 then
-      v_res := private.select_group(p_session_id, v_court.format, '{}');
-    else
-      v_res := private.select_group(p_session_id, v_court.format, v_court.staying_ids);
-    end if;
-    v_courts := v_courts || jsonb_build_object(v_court.id::text, private.preview_entry(v_res));
+    v_res := private.call_selection(p_session_id, v_court.format, v_court.staying_ids);
+    v_courts := v_courts || jsonb_build_object(v_court.id::text,
+      private.preview_entry(v_res) || jsonb_build_object('release', (v_res ->> 'release')::boolean));
   end loop;
 
   return jsonb_build_object('preset', v_session.matchmaking, 'formats', v_result, 'courts', v_courts);

@@ -29,6 +29,7 @@ const en = {
   /** D26: winners staying on court (a word on their chip, not color alone). */
   staying: "staying",
   stayingOn: (names: string) => `${names} stay on`,
+  stayersOff: (names: string) => `${names} go back in line (no group fits them)`,
   needMore: (n: number) => `Need ${n} more`,
   needMoreMessage: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call this court.`,
   notReadySwap: (name: string) => `${name} isn't ready · Swap`,
@@ -242,6 +243,7 @@ const fil: typeof en = {
   waitingForCall: "Hinihintay ang Call",
   staying: "mananatili",
   stayingOn: (names: string) => `Mananatili sina ${names}`,
+  stayersOff: (names: string) => `Babalik sa pila sina ${names} (walang bagay na grupo)`,
   needMore: (n: number) => `Kulang pa ng ${n}`,
   needMoreMessage: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notReadySwap: (name: string) => `Hindi pa handa si ${name} · Palitan`,

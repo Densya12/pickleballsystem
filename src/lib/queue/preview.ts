@@ -13,6 +13,8 @@ export type FormatPreview = {
   hi?: number;
   repeats?: number;
   missing?: number;
+  /** D26 (a court with staying winners): they go back in line at Call (D23, D25 g); the group is a fresh one. */
+  release?: boolean;
 };
 export type QueuePreview = {
   preset: string;

@@ -61,7 +61,9 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   const notReady = game?.players.filter((p) => p.notReady) ?? [];
   // D26 Wait for me: winners staying on the empty court; Call fills the other side.
   const staying = game ? [] : court.staying;
-  const callSize = size - staying.length;
+  // The server says the staying winners go back in line at Call (D23, D25 g): Call takes a full group.
+  const released = staying.length > 0 && preview?.release === true;
+  const callSize = released ? size : size - staying.length;
   const waitingCourt = !game && (staying.length > 0 || court.waitingSince !== null);
   const nextGroup = waitingCourt && preview?.status === "ok" && preview.group.length > 0 ? preview : null;
   const ready = !game && readyToCall(court.waitingSince, preview ?? null, now);
@@ -152,7 +154,9 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
         // D26: who stays on, and who Call would add (the same selection as the call).
         <p className="text-sm text-secondary" data-testid="court-next">
           {[
-            staying.length > 0 ? t.live.stayingOn(chipLabels(staying.map((p) => p.name)).join(" + ")) : null,
+            staying.length > 0
+              ? (released ? t.live.stayersOff : t.live.stayingOn)(chipLabels(staying.map((p) => p.name)).join(" + "))
+              : null,
             nextGroup
               ? t.live.nextOnCourt(nextGroup.group.map((p) => p.name).join(", ")) +
                 (bandText(t, nextGroup.lo, nextGroup.hi) ? ` · ${bandText(t, nextGroup.lo, nextGroup.hi)}` : "")
@@ -253,10 +257,10 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
               variant="lime"
               size="pill"
               disabled={busy}
-              aria-label={staying.length > 0 ? `${t.live.callFill(callSize)} · ${court.label}` : undefined}
+              aria-label={staying.length > 0 && !released ? `${t.live.callFill(callSize)} · ${court.label}` : undefined}
               onClick={() => onCall(court.id)}
             >
-              {staying.length > 0 ? t.live.callFill(callSize) : t.live.callNext(size)}
+              {staying.length > 0 && !released ? t.live.callFill(callSize) : t.live.callNext(size)}
             </Button>
           ) : (
             <Button variant="outline" size="pill" className="text-muted" disabled={busy} onClick={() => onNeedMore(callSize - eligibleCount)}>

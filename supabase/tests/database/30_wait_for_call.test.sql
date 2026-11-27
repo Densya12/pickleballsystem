@@ -3,7 +3,7 @@
 -- tests run unchanged on auto_call sessions).
 -- Run: npm run test:db   (needs the local stack: npx supabase start)
 begin;
-select plan(41);
+select plan(44);
 
 create function pg_temp.as_user(p_sub uuid, p_extra jsonb default '{}') returns void language plpgsql as $$
 begin
@@ -198,6 +198,22 @@ select public.call_next(pg_temp.court(pg_temp.sid('d23b')));
 select pg_temp.win(pg_temp.sid('d23b'), pg_temp.team1(pg_temp.sid('d23b')));
 select is((select count(*)::int from public.session_players where session_id = pg_temp.sid('d23b') and status = 'queued'), 5,
   'D23 at Done: fewer than 2 waiting, everyone goes off (nobody stays)');
+
+-- D25 (g) at Call: no newcomer fits the staying winners' levels: they go to the back, a fresh group plays.
+select pg_temp.session('nf', 'wait', 'winners_stay', 'mixed', array['doubles'], array['A:1','B:1','C:2','D:2','E:5','F:5']);
+select public.call_next(pg_temp.court(pg_temp.sid('nf')));
+create temporary table nf_win as select pg_temp.team1(pg_temp.sid('nf')) as names;
+select pg_temp.win(pg_temp.sid('nf'), (select names from nf_win));
+reset role;
+-- Everyone waiting is level 5 now.
+update public.session_players set skill = 5 where session_id = pg_temp.sid('nf') and status = 'queued';
+select pg_temp.as_owner();
+select is((public.queue_preview(pg_temp.sid('nf')) -> 'courts' -> pg_temp.court(pg_temp.sid('nf'))::text ->> 'release')::boolean, true,
+  'Preview: the staying winners would go back in line (no newcomer fits)');
+select public.call_next(pg_temp.court(pg_temp.sid('nf')));
+select ok(not ((select player_ids from public.games where id = pg_temp.game(pg_temp.sid('nf'))) && (select array_agg(pg_temp.pid(pg_temp.sid('nf'), n)) from unnest((select names from nf_win)) n)),
+  'D25 (g) at Call: the winners go to the back and a fresh level-5 group plays, as auto-call does');
+select is(pg_temp.status_of(pg_temp.sid('nf'), (select names from nf_win)), 'queued', 'The winners are back in the queue');
 
 -- Preview: a court with staying winners shows who Call would add.
 select pg_temp.session('pv', 'wait', 'winners_stay', 'fair_line', array['doubles'], array['A','B','C','D','E','F']);
