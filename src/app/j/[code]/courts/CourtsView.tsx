@@ -28,11 +28,12 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
     callSize: callSizeFor(view.courtFormats),
     rules: view.rules,
     predicted: predictedIds(view.preview, view.courtFormats),
+    staying: view.courts.map((c) => ({ courtLabel: c.label, playerIds: c.staying ?? [] })),
   });
 
   // Called while looking at the courts: the same alert as on My place.
   const { acked, acknowledge } = useCalledAlert(state.kind === "playing" ? state.gameId : null);
-  const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing");
+  const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing" || state.kind === "staying");
 
   const cards = courtCards(view.courts, view.courtGames, view.players);
   const lineup = courtsLineup(view.players, view.courtFormats, view.rules, undefined, predictedIds(view.preview, view.courtFormats));
@@ -75,14 +76,27 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
                 </h2>
                 <span className="text-xs text-muted">
                   {courtFormatLabel(card.format, t)}
-                  {card.game ? ` · #${card.game.number}` : ` · ${t.live.empty}`}
+                  {card.game ? ` · #${card.game.number}` : card.staying.length > 0 ? ` · ${t.live.waitingForCall}` : ` · ${t.live.empty}`}
                 </span>
               </div>
-              <MiniCourt format={card.format} players={(card.game?.players ?? []).map((p) => ({ ...p, highlight: p.id === meId }))} />
+              <MiniCourt
+                format={card.format}
+                players={
+                  card.game
+                    ? card.game.players.map((p) => ({ ...p, highlight: p.id === meId }))
+                    : card.staying.map((p) => ({ ...p, highlight: p.id === meId, tag: t.live.staying }))
+                }
+              />
               {card.game ? (
                 <ul aria-label={t.live.playingOn(card.label)} className="sr-only">
                   {card.game.players.map((player) => (
                     <li key={player.id}>{player.id === meId ? `${player.name} (${t.player.you})` : player.name}</li>
+                  ))}
+                </ul>
+              ) : card.staying.length > 0 ? (
+                <ul aria-label={t.live.playingOn(card.label)} className="sr-only">
+                  {card.staying.map((player) => (
+                    <li key={player.id}>{`${player.id === meId ? `${player.name} (${t.player.you})` : player.name}, ${t.live.staying}`}</li>
                   ))}
                 </ul>
               ) : (
@@ -116,7 +130,7 @@ export function CourtsView({ code, view }: { code: string; view: PlayerSessionVi
           </Section>
         )}
 
-        {!wakeLock.supported && (state.kind === "queued" || state.kind === "playing") && (
+        {!wakeLock.supported && (state.kind === "queued" || state.kind === "playing" || state.kind === "staying") && (
           <p className="px-6 text-center text-xs text-muted">{t.player.keepScreenOn}</p>
         )}
       </div>

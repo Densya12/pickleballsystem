@@ -83,7 +83,7 @@ describe("D25 previews and call notes (presentation only)", () => {
       ["c", true, false],
       ["d", true, false],
     ]);
-    expect(parsePreview({ preset: "mixed" })).toEqual({ preset: "mixed", formats: {} });
+    expect(parsePreview({ preset: "mixed" })).toEqual({ preset: "mixed", formats: {}, courts: {} });
     expect(parsePreview(null)).toBeNull();
   });
 });

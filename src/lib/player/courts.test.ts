@@ -94,8 +94,8 @@ describe("courtCards", () => {
       players,
     );
     expect(cards).toEqual([
-      { id: "c1", label: "Court 1", format: "singles", game: { number: 3, players: [{ id: "ben", name: "Ben" }, { id: "ana", name: "Ana" }] } },
-      { id: "c2", label: "Court 2", format: "doubles", game: null },
+      { id: "c1", label: "Court 1", format: "singles", game: { number: 3, players: [{ id: "ben", name: "Ben" }, { id: "ana", name: "Ana" }] }, staying: [] },
+      { id: "c2", label: "Court 2", format: "doubles", game: null, staying: [] },
     ]);
   });
 });

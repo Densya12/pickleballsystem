@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MiniCourt } from "@/components/court/MiniCourt";
+import { chipLabels, MiniCourt } from "@/components/court/MiniCourt";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/client";
@@ -9,7 +9,7 @@ import type { LiveCourt } from "@/lib/queue/data";
 import { sideOf } from "@/lib/queue/winners";
 import { minutesSince } from "@/lib/session/time";
 import { courtFormatLabel, courtSize } from "@/lib/session/validation";
-import { noGroupText, type FormatPreview } from "@/lib/queue/preview";
+import { bandText, noGroupText, readyToCall, type FormatPreview } from "@/lib/queue/preview";
 import { WinnerPicker } from "./WinnerPicker";
 
 type Format = "doubles" | "singles";
@@ -25,7 +25,7 @@ type Props = {
   onCall: (courtId: string) => void;
   /** "Need N more": the button stays tappable and explains. */
   onNeedMore: (needed: number) => void;
-  /** D25: the server's preview for this court's format (no level group: "Call mixed"). */
+  /** D25: the server's preview for this court (its format's, or with staying winners its own: D26). */
   preview?: FormatPreview | null;
   onCallMixed?: (courtId: string) => void;
   onFinish: (courtId: string, gameId: string, winnerIds: string[] | null) => void;
@@ -59,26 +59,49 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
   const otherFormat: Format = court.format === "singles" ? "doubles" : "singles";
   const otherLabel = courtFormatLabel(otherFormat, t);
   const notReady = game?.players.filter((p) => p.notReady) ?? [];
+  // D26 Wait for me: winners staying on the empty court; Call fills the other side.
+  const staying = game ? [] : court.staying;
+  const callSize = size - staying.length;
+  const waitingCourt = !game && (staying.length > 0 || court.waitingSince !== null);
+  const nextGroup = waitingCourt && preview?.status === "ok" && preview.group.length > 0 ? preview : null;
+  const ready = !game && readyToCall(court.waitingSince, preview ?? null, now);
 
   return (
     <section
       aria-labelledby={headingId}
       data-new-game={highlight || undefined}
+      data-ready-to-call={ready || undefined}
       onAnimationEnd={() => setHighlight(false)}
-      className={cn("flex flex-col gap-2.5 rounded-card bg-surface p-3.5", highlight && "court-new-game")}
+      className={cn(
+        "flex flex-col gap-2.5 rounded-card bg-surface p-3.5",
+        highlight && "court-new-game",
+        // D26: a gentle, silent nudge (a word too, not color alone).
+        ready && "bg-accent-faint shadow-[0_0_0_2px_var(--background-color-accent)]",
+      )}
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2 id={headingId} className="text-lg font-semibold">
           {court.label}
         </h2>
-        <span className="text-xs text-muted">
-          {t.live.courtMeta(formatLabel, game ? { number: game.number, minutes: minutesSince(game.startedAt, now) } : null)}
+        <span className="flex items-center gap-2 text-xs text-muted">
+          {ready && (
+            <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent" data-testid="ready-to-call">
+              {t.live.readyToCall}
+            </span>
+          )}
+          {staying.length > 0
+            ? `${formatLabel} · ${t.live.waitingForCall}`
+            : t.live.courtMeta(formatLabel, game ? { number: game.number, minutes: minutesSince(game.startedAt, now) } : null)}
         </span>
       </div>
 
       <MiniCourt
         format={court.format}
-        players={(game?.players ?? []).map((p) => ({ id: p.id, name: p.name, notReady: p.notReady }))}
+        players={
+          game
+            ? game.players.map((p) => ({ id: p.id, name: p.name, notReady: p.notReady }))
+            : staying.map((p) => ({ id: p.id, name: p.name, tag: t.live.staying }))
+        }
         swap={
           game && game.format === "doubles" && !busy && !picking
             ? {
@@ -116,8 +139,28 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
             <li key={player.id}>{player.notReady ? `${player.name}, ${t.status.notReady}` : player.name}</li>
           ))}
         </ul>
+      ) : staying.length > 0 ? (
+        <ul className="sr-only" aria-label={t.live.playingOn(court.label)}>
+          {staying.map((player) => (
+            <li key={player.id}>{`${player.name}, ${t.live.staying}`}</li>
+          ))}
+        </ul>
       ) : (
         <p className="sr-only">{t.live.empty}</p>
+      )}
+      {!game && (staying.length > 0 || nextGroup) && (
+        // D26: who stays on, and who Call would add (the same selection as the call).
+        <p className="text-sm text-secondary" data-testid="court-next">
+          {[
+            staying.length > 0 ? t.live.stayingOn(chipLabels(staying.map((p) => p.name)).join(" + ")) : null,
+            nextGroup
+              ? t.live.nextOnCourt(nextGroup.group.map((p) => p.name).join(", ")) +
+                (bandText(t, nextGroup.lo, nextGroup.hi) ? ` · ${bandText(t, nextGroup.lo, nextGroup.hi)}` : "")
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
       )}
 
       {waiting && <p className="rounded-control bg-info px-3 py-2 text-sm font-medium">{t.live.waitingForSignal(1).replace(/\s*\(\d+\)$/, "")}</p>}
@@ -188,10 +231,14 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
         </div>
       ) : (
         <div className="flex items-center justify-between gap-2">
-          <Button variant="ghost" size="sm" className="-ml-2 font-medium" disabled={busy} onClick={() => setConfirmFormat(true)}>
-            {t.live.makeFormat(otherLabel)}
-          </Button>
-          {eligibleCount >= size && preview?.status === "no_group" && onCallMixed ? (
+          {staying.length === 0 ? (
+            <Button variant="ghost" size="sm" className="-ml-2 font-medium" disabled={busy} onClick={() => setConfirmFormat(true)}>
+              {t.live.makeFormat(otherLabel)}
+            </Button>
+          ) : (
+            <span />
+          )}
+          {eligibleCount >= callSize && preview?.status === "no_group" && onCallMixed ? (
             // D25 (f): no group fits the levels; the organizer can play queue order once.
             <div className="flex flex-col items-end gap-1">
               <p className="text-sm text-warn" data-no-level-group="">
@@ -201,13 +248,19 @@ export function CourtCard({ court, rotation, eligibleCount, now, busy: actionBus
                 {t.live.callMixed}
               </Button>
             </div>
-          ) : eligibleCount >= size ? (
-            <Button variant="lime" size="pill" disabled={busy} onClick={() => onCall(court.id)}>
-              {t.live.callNext(size)}
+          ) : eligibleCount >= callSize ? (
+            <Button
+              variant="lime"
+              size="pill"
+              disabled={busy}
+              aria-label={staying.length > 0 ? `${t.live.callFill(callSize)} · ${court.label}` : undefined}
+              onClick={() => onCall(court.id)}
+            >
+              {staying.length > 0 ? t.live.callFill(callSize) : t.live.callNext(size)}
             </Button>
           ) : (
-            <Button variant="outline" size="pill" className="text-muted" disabled={busy} onClick={() => onNeedMore(size - eligibleCount)}>
-              {t.live.needMore(size - eligibleCount)}
+            <Button variant="outline" size="pill" className="text-muted" disabled={busy} onClick={() => onNeedMore(callSize - eligibleCount)}>
+              {t.live.needMore(callSize - eligibleCount)}
             </Button>
           )}
         </div>

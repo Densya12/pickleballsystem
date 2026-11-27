@@ -98,7 +98,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       .eq("session_id", session.id)
       .neq("status", "left")
       .order("queue_pos"),
-    supabase.from("courts").select("id, label, format").eq("session_id", session.id).order("number"),
+    supabase.from("courts").select("id, label, format, staying_ids").eq("session_id", session.id).order("number"),
     supabase.from("games").select("id, number, court_id, format, player_ids").eq("session_id", session.id).is("ended_at", null),
     supabase.rpc("queue_preview", { p_session_id: session.id }),
   ]);
@@ -137,7 +137,7 @@ export async function getPlayerSessionView(code: string): Promise<PlayerSessionV
       playerIds: g.player_ids,
     })),
     courtFormats: (courts.data ?? []).map((c) => c.format),
-    courts: (courts.data ?? []).map((c) => ({ id: c.id, label: c.label, format: c.format })),
+    courts: (courts.data ?? []).map((c) => ({ id: c.id, label: c.label, format: c.format, staying: c.staying_ids ?? [] })),
     courtGames: (games.data ?? []).map((g) => ({ id: g.id, number: g.number, courtId: g.court_id, playerIds: g.player_ids })),
     rules: { payFirst: session.pay_first, fee: session.fee },
     gcash: { name: session.gcash_name, number: session.gcash_number },

@@ -24,7 +24,7 @@ const row = (id: string, name: string, level: string, position: number): QueueEn
 });
 
 const state: LiveState = {
-  courts: [{ id: "c1", number: 1, label: "Court 1", format: "doubles", game: null }],
+  courts: [{ id: "c1", number: 1, label: "Court 1", format: "doubles", game: null, staying: [], waitingSince: null }],
   queue: [row("a", "Ana", "3", 1), row("b", "Ben", "unsure", 2), row("c", "Cy", "5", 3), row("d", "Dee", "2", 4), row("e", "Eli", "3", 5)],
   playingCount: 0,
   eligibleCount: 5,

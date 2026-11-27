@@ -116,6 +116,8 @@ export type PwestoState =
   | { kind: "left" }
   | ({ kind: "queued" } & QueueInfo)
   | { kind: "paused"; position: number }
+  /** D26 Wait for me: won and stays on the court until the organizer calls the next game. */
+  | { kind: "staying"; courtLabel: string; partnerName: string | null }
   | {
       kind: "playing";
       gameId: string;
@@ -139,8 +141,10 @@ export function pickPwestoState(input: {
   rules?: CallRules;
   /** D25: the server's next group (queue_preview), when known. */
   predicted?: readonly string[] | null;
+  /** D26: winners staying on an empty court (Wait for me), per court. */
+  staying?: readonly { courtLabel: string; playerIds: readonly string[] }[];
 }): PwestoState {
-  const { sessionStatus, me, players, games, callSize = CALL_SIZE, rules = NO_PAYMENT_RULES, predicted = null } = input;
+  const { sessionStatus, me, players, games, callSize = CALL_SIZE, rules = NO_PAYMENT_RULES, predicted = null, staying = [] } = input;
   if (sessionStatus === "ended") return { kind: "ended" };
   if (!me || me.status === "left") return { kind: "left" };
 
@@ -159,6 +163,11 @@ export function pickPwestoState(input: {
         partnerName: game.format === "singles" ? null : (names.get(game.playerIds[partnerIndex(game.playerIds.indexOf(me.id))]) ?? null),
         notReady: me.notReady,
       };
+    }
+    const stay = staying.find((s) => s.playerIds.includes(me.id));
+    if (stay) {
+      const partner = stay.playerIds.find((id) => id !== me.id);
+      return { kind: "staying", courtLabel: stay.courtLabel, partnerName: partner ? (players.find((p) => p.id === partner)?.name ?? null) : null };
     }
   }
 

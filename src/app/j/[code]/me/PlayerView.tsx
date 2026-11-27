@@ -34,6 +34,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     callSize: callSizeFor(view.courtFormats),
     rules: view.rules,
     predicted: predictedIds(view.preview, view.courtFormats),
+    staying: view.courts.map((c) => ({ courtLabel: c.label, playerIds: c.staying ?? [] })),
   });
   const name = view.me?.name ?? "";
   const firstName = name.split(/\s+/)[0] ?? name;
@@ -45,7 +46,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
   const playingGame = state.kind === "playing" ? state.gameId : null;
   const { acked, acknowledge } = useCalledAlert(playingGame);
   // Screen stays on while waiting or playing; released when resting, left or ended.
-  const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing");
+  const wakeLock = useScreenWakeLock(state.kind === "queued" || state.kind === "playing" || state.kind === "staying");
 
   async function act(rpc: PlayerRpc) {
     if (!view.me) return;
@@ -243,6 +244,23 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         </Button>
         {leave}
       </div>
+    );
+  } else if (state.kind === "staying") {
+    // D26 Wait for me: won, stays on the court; the phone rings when the organizer calls.
+    title = t.player.stayingTitle(state.courtLabel);
+    body = (
+      <>
+        <Notice kind="success">
+          <span data-testid="staying" className="flex flex-col">
+            <span>{t.player.stayingBody}</span>
+            {state.partnerName && <span>{t.player.yourSide(0, state.partnerName)}</span>}
+          </span>
+        </Notice>
+        <ListGroup>
+          {paymentRow}
+          {courtsRow}
+        </ListGroup>
+      </>
     );
   } else if (state.kind === "playing") {
     const game = view.games.find((g) => g.id === state.gameId);

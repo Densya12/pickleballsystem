@@ -27,6 +27,8 @@ const COURTS: LiveCourt[] = [
     label: "Court 1",
     format: "doubles",
     game: { id: "g1", number: 1, format: "doubles", startedAt: STARTED, players: [p("a", "Ana Reyes"), p("b", "Ben Cruz"), p("c", "Carlo Diaz"), p("d", "Dina Lim", true)] },
+    staying: [],
+    waitingSince: null,
   },
   {
     id: "c2",
@@ -34,8 +36,10 @@ const COURTS: LiveCourt[] = [
     label: "Court 2",
     format: "singles",
     game: { id: "g2", number: 2, format: "singles", startedAt: STARTED, players: [p("e", "Ella Go"), p("f", "Fe Uy")] },
+    staying: [],
+    waitingSince: null,
   },
-  { id: "c3", number: 3, label: "Court 3", format: "doubles", game: null },
+  { id: "c3", number: 3, label: "Court 3", format: "doubles", game: null, staying: [], waitingSince: null },
 ];
 
 function state(eligibleCount: number): LiveState {
