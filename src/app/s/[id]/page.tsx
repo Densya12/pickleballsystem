@@ -131,7 +131,7 @@ async function Courts({ session }: { session: Session }) {
   const [state, t] = await Promise.all([getLiveState(session.id), getT()]);
   return (
     <SessionFrame
-      session={{ id: session.id, fee: session.fee, rotation: session.rotation }}
+      session={{ id: session.id, fee: session.fee, rotation: session.rotation, matchmaking: session.matchmaking }}
       tab="courts"
       title={session.name}
       subtitle={<LiveLine rotation={session.rotation} playing={state.playingCount} waiting={state.queue.length} t={t} />}

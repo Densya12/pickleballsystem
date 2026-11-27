@@ -59,7 +59,7 @@ describe("pickPwestoState", () => {
     expect(pickPwestoState({ sessionStatus: "live", me: me("paused"), players: paused, games: [] })).toEqual({ kind: "paused", position: 2 });
   });
 
-  it("called/playing: court and the other 3 names, in call order", () => {
+  it("called/playing: court, the other 3 names in position order, and the player's side and partner (D25)", () => {
     const playing = players.map((p) => (p.id === "me" ? { ...p, status: "playing" } : p));
     expect(pickPwestoState({ sessionStatus: "live", me: me("playing"), players: playing, games })).toEqual({
       kind: "playing",
@@ -67,6 +67,8 @@ describe("pickPwestoState", () => {
       courtLabel: "Court 2",
       format: "doubles",
       withNames: ["A", "B", "C"],
+      side: 1,
+      partnerName: "C",
       notReady: false,
     });
     expect(pickPwestoState({ sessionStatus: "live", me: me("playing", true), players: playing, games })).toMatchObject({ notReady: true });
@@ -89,6 +91,8 @@ describe("singles", () => {
       courtLabel: "Court 3",
       format: "singles",
       withNames: ["B"],
+      side: 1,
+      partnerName: null,
       notReady: false,
     });
   });

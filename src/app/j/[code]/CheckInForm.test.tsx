@@ -50,10 +50,10 @@ describe("CheckInForm", () => {
     auth.getSession.mockResolvedValue({ data: { session: { access_token: "t" } } });
     render(<CheckInForm code="ABC234" payment={FREE} />);
     await userEvent.type(screen.getByLabelText("Name"), "Ana");
-    await userEvent.click(screen.getByRole("radio", { name: "Advanced" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Level 4" }));
     await userEvent.click(screen.getByRole("button", { name: "Join queue" }));
     expect(auth.signInAnonymously).not.toHaveBeenCalled();
-    expect(rpc).toHaveBeenCalledWith("join_session", { p_join_code: "ABC234", p_display_name: "Ana", p_level: "advanced" });
+    expect(rpc).toHaveBeenCalledWith("join_session", { p_join_code: "ABC234", p_display_name: "Ana", p_level: "4" });
   });
 
   it("validates the name before any sign-in", async () => {
@@ -124,16 +124,16 @@ describe("CheckInForm", () => {
   });
 
   describe("returning player (D18)", () => {
-    const ANA = { name: "Ana Dela Cruz", level: "advanced" };
+    const ANA = { name: "Ana Dela Cruz", level: "4" };
 
     it("offers one tap: Join as …, keeping the level", async () => {
       auth.getSession.mockResolvedValue({ data: { session: { access_token: "t" } } });
       render(<CheckInForm code="ABC234" payment={FREE} lastProfile={ANA} />);
       expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
-      expect(screen.getByText("Advanced")).toBeInTheDocument();
+      expect(screen.getByText("Level 4")).toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "Join as Ana Dela Cruz" }));
       expect(auth.signInAnonymously).not.toHaveBeenCalled();
-      expect(rpc).toHaveBeenCalledWith("join_session", { p_join_code: "ABC234", p_display_name: "Ana Dela Cruz", p_level: "advanced" });
+      expect(rpc).toHaveBeenCalledWith("join_session", { p_join_code: "ABC234", p_display_name: "Ana Dela Cruz", p_level: "4" });
       expect(push).toHaveBeenCalledWith("/j/ABC234/me");
     });
 

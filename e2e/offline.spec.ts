@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addWalkIn, banner, court, endSession, onCourt, openMore, openTab, queueRows, startSession } from "./support/live";
+import { addWalkIn, banner, court, endSession, onCourt, openMore, openTab, queueRows, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // NF10: organizer taps without signal wait in the outbox and are applied once, in order.
@@ -29,7 +29,7 @@ test("offline: a finished game and a walk-in are saved, then applied exactly onc
   await expect(waiting.getByRole("listitem")).toHaveText(["Walk-in: Offline Olive"]);
 
   // Finish the game offline: it waits too, and the court shows it.
-  await page.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(page, "Court 1");
   await expect(waiting.getByRole("listitem")).toHaveText(["Walk-in: Offline Olive", "Done: Game #1 on Court 1"]);
   await expect(court(page, "Court 1")).toContainText("Waiting for signal");
   await expect(page.getByRole("button", { name: "Done on Court 1" })).toBeDisabled();

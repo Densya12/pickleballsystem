@@ -1,5 +1,7 @@
 "use client";
 
+import { LevelBadge } from "@/components/level/LevelBadge";
+import { LevelPicker } from "@/components/level/LevelPicker";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { Button, Card, Input, ListGroup, Notice, RadioGroup } from "@/components/ui";
@@ -10,8 +12,6 @@ import { matchesMember, type Member } from "@/lib/members/members";
 import { isNetworkError } from "@/lib/outbox/rules";
 import { useOutbox } from "@/lib/outbox/useOutbox";
 import {
-  levelChoices,
-  levelLabel,
   parseWalkIn,
   playerNameKey,
   parseWalkInPayment,
@@ -163,7 +163,7 @@ export function WalkInForm({
                           className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-left hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
                         >
                           <span className="font-medium [overflow-wrap:anywhere]">{member.name}</span>
-                          <span className="shrink-0 text-sm text-muted">{levelLabel(member.level, t)}</span>
+                          <LevelBadge level={member.level} />
                         </button>
                       </li>
                     ))}
@@ -185,12 +185,10 @@ export function WalkInForm({
           defaultValue={picked?.name}
           error={errors.display_name}
         />
-        <RadioGroup
+        <LevelPicker
           key={`level-${pickKey}`}
           legend={t.live.level}
           name="level"
-          look="chips"
-          options={levelChoices(t)}
           defaultValue={(picked?.level ?? "unsure") as Level}
           error={errors.level}
         />

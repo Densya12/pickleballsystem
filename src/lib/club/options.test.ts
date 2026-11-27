@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en, fil } from "@/lib/i18n/dictionary";
-import { allOffDescription, rotationChoices } from "./options";
+import { allOffDescription, matchmakingChoices, rotationChoices } from "./options";
 
 describe("QA-13: 'All off' says who leaves, by the courts' formats", () => {
   it("doubles: All four; singles: Both; mixed or unknown: Everyone on court", () => {
@@ -22,5 +22,21 @@ describe("QA-13: 'All off' says who leaves, by the courts' formats", () => {
     expect(allOff).toEqual({ value: "all_off", label: "All off", description: "Both go to the back of the queue" });
     expect(winners.value).toBe("winners_stay");
     expect(winners.description).toBe(en.choices.winnersStayDescription);
+  });
+});
+
+describe("D25: who plays together", () => {
+  it("Same level carries a note that courts may wait; the others don't", () => {
+    const [mixed, same, fair] = matchmakingChoices(en);
+    expect(same.note).toBe("Courts may wait for a same-level group. Mixed works best for most sessions.");
+    expect(mixed.note).toBeUndefined();
+    expect(fair.note).toBeUndefined();
+  });
+
+  it("in Taglish too", () => {
+    const same = matchmakingChoices(fil).find((choice) => choice.value === "same_level");
+    expect(same?.note).toBe(
+      "Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session.",
+    );
   });
 });

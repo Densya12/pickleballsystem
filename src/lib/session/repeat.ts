@@ -30,6 +30,7 @@ export type RepeatableSession = {
   court_formats: string[];
   points_to: number;
   rotation: string;
+  matchmaking: string;
   pay_first: boolean;
   fee: number;
 };
@@ -45,6 +46,7 @@ export function repeatDefaults(last: RepeatableSession, now: Date): Record<Sessi
     court_formats: last.court_formats.join(","),
     points_to: String(last.points_to),
     rotation: last.rotation,
+    matchmaking: last.matchmaking,
     pay_first: last.pay_first ? "on" : "",
     fee: String(last.fee),
   };

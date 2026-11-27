@@ -11,6 +11,7 @@ import { useT } from "@/lib/i18n/client";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { playerErrorMessage } from "@/lib/player/messages";
 import { callSizeFor, pickPwestoState } from "@/lib/player/state";
+import { playerBand, predictedIds } from "@/lib/queue/preview";
 import { useCalledAlert } from "@/lib/player/useCalledAlert";
 import { useScreenWakeLock } from "@/lib/player/useScreenWakeLock";
 import { useSessionSync } from "@/lib/realtime/useSessionSync";
@@ -32,6 +33,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
     games: view.games,
     callSize: callSizeFor(view.courtFormats),
     rules: view.rules,
+    predicted: predictedIds(view.preview, view.courtFormats),
   });
   const name = view.me?.name ?? "";
   const firstName = name.split(/\s+/)[0] ?? name;
@@ -128,6 +130,9 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
             <p className="font-display text-display-court leading-none font-semibold tracking-[-2px] text-accent">{state.courtLabel}</p>
           </div>
           <p className="mt-4 text-sm text-on-dark-muted">{t.player.highlighted(courtFormatLabel(state.format, t))}</p>
+          <p className="mt-1 text-body font-semibold" data-testid="my-side">
+            {t.player.yourSide(state.side, state.partnerName)}
+          </p>
           {game && (
             <MiniCourt
               className="mt-2.5"
@@ -193,6 +198,16 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
           <p className="mt-4 text-sm text-muted" data-testid="ahead">
             {state.ahead.length > 0 ? t.player.aheadOfYou(state.ahead.join(", ")) : t.player.firstInLine}
           </p>
+          {view.matchmaking !== "fair_line" && !state.nextUp && (
+            // D25: the level group the player waits for (Mixed / Same level).
+            <p className="mt-2 text-sm text-secondary" data-testid="wait-band">
+              {(() => {
+                const band = playerBand(view.matchmaking, view.mySkill);
+                const place = t.player.ordinal(state.position);
+                return band ? t.player.upWhenBand(t.levels.groupBand(band[0], band[1]), place) : t.player.upWhenAnyGroup(place);
+              })()}
+            </p>
+          )}
         </div>
         <ListGroup>
           {paymentRow}
@@ -236,7 +251,9 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
       <>
         {game && (
           <div className="flex flex-col gap-2 rounded-card bg-surface p-3.5">
-            <p className="text-xs text-muted">{courtFormatLabel(state.format, t)}</p>
+            <p className="text-xs text-muted">
+              {courtFormatLabel(state.format, t)} · {t.player.yourSide(state.side, state.partnerName)}
+            </p>
             <MiniCourt
               format={game.format}
               players={game.playerIds.map((id) => ({ id, name: view.players.find((p) => p.id === id)?.name ?? "?", highlight: id === view.me?.id }))}

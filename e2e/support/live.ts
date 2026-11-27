@@ -35,7 +35,8 @@ export async function endSession(page: Page) {
 export async function startSession(
   page: Page,
   name: string,
-  opts: { courts: number; winnersStay?: boolean; formats?: ("Doubles" | "Singles")[] },
+  /** preset (D25): "Fair line" by default, so the queue specs keep today's order. */
+  opts: { courts: number; winnersStay?: boolean; formats?: ("Doubles" | "Singles")[]; preset?: "Mixed" | "Same level" | "Fair line" },
 ) {
   await page.getByRole("link", { name: "New session" }).click();
   await page.getByLabel("Session name").fill(name);
@@ -45,6 +46,7 @@ export async function startSession(
     await page.getByRole("group", { name: `Court ${index + 1}` }).getByRole("radio", { name: format }).check();
   }
   if (opts.winnersStay) await page.getByRole("radio", { name: /^Winners stay/ }).check();
+  await page.getByRole("radio", { name: new RegExp(`^${opts.preset ?? "Fair line"}`) }).check();
   await page.getByRole("button", { name: "Start session" }).click();
   await expect(page).toHaveURL(SESSION_URL);
 }
@@ -72,10 +74,25 @@ export async function addWalkIn(page: Page, name: string, level = "Not sure", pa
   await expect(banner(page)).toContainText(`${name} is in the queue`);
 }
 
+/**
+ * Done on a court, then "Who won?" (D25): the side whose players are named
+ * (e.g. ["Ana", "Ben"]), or Skip when no winners are given.
+ */
+export async function finishGame(page: Page, label: string, winners?: string[]) {
+  await page.getByRole("button", { name: `Done on ${label}` }).click();
+  const picker = court(page, label).getByRole("group", { name: "Who won?" });
+  if (winners) {
+    const names = winners.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(" \\+ ");
+    await picker.getByRole("button", { name: new RegExp(`${names} won$`) }).click();
+  } else {
+    await picker.getByRole("button", { name: "Skip (no winner)" }).click();
+  }
+}
+
 export function banner(page: Page) {
   return page
     .getByRole("status")
-    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on|play again on|After a game:/ });
+    .filter({ hasText: /Called to|is done\.|is in the queue|is paused|is back in their place|was removed|replaced .* on|is now (singles|doubles)|is back on|play again on|After a game:|swapped sides|is now Level|Who plays together:/ });
 }
 
 export function court(page: Page, label: string) {

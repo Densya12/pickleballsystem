@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { Button, Card, Input, Notice, RadioGroup, Stepper, Toggle } from "@/components/ui";
 import { useFocusFirstError } from "@/lib/forms/useFocusFirstError";
-import { POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
-import type { Points, Rotation } from "@/lib/club/validation";
+import { matchmakingChoices, POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
+import type { Matchmaking, Points, Rotation } from "@/lib/club/validation";
 import { formatGcashNumber } from "@/lib/format";
 import { useT } from "@/lib/i18n/client";
 import { COURTS_MAX, COURTS_MIN, type CourtFormat, type SessionField } from "@/lib/session/validation";
@@ -105,6 +105,13 @@ export function NewSessionForm({ defaults, gcash, liveSession = null }: Props) {
           options={rotationChoices(t, Array.from({ length: courtCount }, (_, i) => formats[i] ?? "doubles"))}
           defaultValue={value("rotation") as Rotation}
           error={errors.rotation}
+        />
+        <RadioGroup
+          legend={t.session.matchmaking}
+          name="matchmaking"
+          options={matchmakingChoices(t)}
+          defaultValue={value("matchmaking") as Matchmaking}
+          error={errors.matchmaking}
         />
       </Card>
 

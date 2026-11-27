@@ -3,8 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LiveCourt, LiveState } from "@/lib/queue/data";
 
-const frame = { act: vi.fn(), busy: false, pending: [] as unknown[], showError: vi.fn() };
+const frame = {
+  act: vi.fn(),
+  busy: false,
+  pending: [] as unknown[],
+  showError: vi.fn(),
+  runOnline: vi.fn(),
+  sessionId: "s1",
+};
 vi.mock("./SessionFrame", () => ({ useSessionFrame: () => frame }));
+const swapSidesAction = vi.fn();
+vi.mock("../_lib/queue-actions", () => ({ swapSidesAction: (...args: unknown[]) => swapSidesAction(...args) }));
 
 import { CourtsView } from "./CourtsView";
 
@@ -35,6 +44,7 @@ function state(eligibleCount: number): LiveState {
     queue: [],
     playingCount: 6,
     eligibleCount,
+    preview: null,
     payments: { paid: 0, total: 0, toCheck: 0, unpaid: 0 },
   };
 }
@@ -45,6 +55,11 @@ const chips = (el: HTMLElement) => [...el.querySelectorAll("[data-chip]")];
 beforeEach(() => {
   frame.act.mockReset().mockResolvedValue(true);
   frame.showError.mockReset();
+  frame.runOnline.mockReset().mockImplementation(async (run: () => Promise<unknown>) => {
+    await run();
+    return true;
+  });
+  swapSidesAction.mockReset().mockResolvedValue({ banner: "swapped" });
 });
 
 describe("Courts tab", () => {
@@ -95,13 +110,70 @@ describe("Courts tab", () => {
     expect(court("Court 1")).not.toHaveAttribute("data-new-game");
   });
 
-  it("winners stay: Done opens the winner picker (2 in doubles, 1 in singles)", async () => {
+  it("Done always asks who won, one tap on a side (D25); Skip outside Winners stay", async () => {
+    render(<CourtsView state={state(0)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Done on Court 1" }));
+    const picker = within(court("Court 1")).getByRole("group", { name: "Who won?" });
+    // Sides as drawn: Ana + Ben on the left, Carlo + Dina on the right.
+    await userEvent.click(within(picker).getByRole("button", { name: /Carlo \+ Dina won/ }));
+    expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c1", gameId: "g1", winnerIds: ["c", "d"] }, expect.any(String));
+
+    await userEvent.click(screen.getByRole("button", { name: "Done on Court 2" }));
+    await userEvent.click(within(court("Court 2")).getByRole("button", { name: "Skip (no winner)" }));
+    expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c2", gameId: "g2", winnerIds: null }, expect.any(String));
+  });
+
+  it("winners stay: a winner is required (no Skip); singles has one name per side", async () => {
     render(<CourtsView state={state(0)} rotation="winners_stay" rules={{ payFirst: false, fee: 0 }} />);
     await userEvent.click(screen.getByRole("button", { name: "Done on Court 2" }));
     const picker = within(court("Court 2")).getByRole("group", { name: "Who won?" });
-    expect(picker).toHaveAccessibleDescription("Pick 1 more.");
-    await userEvent.click(within(picker).getByRole("button", { name: "Fe Uy" }));
-    await userEvent.click(within(picker).getByRole("button", { name: "Confirm" }));
+    expect(within(picker).queryByRole("button", { name: "Skip (no winner)" })).not.toBeInTheDocument();
+    await userEvent.click(within(picker).getByRole("button", { name: /Fe won/ }));
     expect(frame.act).toHaveBeenCalledWith("finish_game", { courtId: "c2", gameId: "g2", winnerIds: ["f"] }, expect.any(String));
+  });
+
+  it("team swap: tap a player, then one on the other side (online only, not queued)", async () => {
+    render(<CourtsView state={state(0)} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    const c1 = court("Court 1");
+    await userEvent.click(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" }));
+    expect(within(c1).getByRole("button", { name: "Ana Reyes, Left side. Tap to swap sides" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(c1).getAllByText("Now tap a player on the other side to swap with Ana Reyes.")).toHaveLength(2); // visible + announced
+    // Same side: the choice moves to Ben.
+    await userEvent.click(within(c1).getByRole("button", { name: "Ben Cruz, Left side. Tap to swap sides" }));
+    expect(swapSidesAction).not.toHaveBeenCalled();
+    await userEvent.click(within(c1).getByRole("button", { name: "Carlo Diaz, Right side. Tap to swap sides" }));
+    expect(swapSidesAction).toHaveBeenCalledWith("s1", "c1", "b", "c");
+    expect(frame.act).not.toHaveBeenCalledWith("swap_sides", expect.anything(), expect.anything());
+    // Singles courts have no team swap.
+    expect(within(court("Court 2")).queryByRole("button", { name: /Tap to swap sides/ })).not.toBeInTheDocument();
+  });
+  it("D25: an empty court with no level group says so and offers Call mixed; Up next says why", async () => {
+    const noGroup = {
+      ...state(5),
+      preview: { preset: "mixed", formats: { doubles: { status: "no_group" as const, group: [], lo: 2, hi: 4 } } },
+    };
+    render(<CourtsView state={noGroup} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    const c3 = court("Court 3");
+    expect(within(c3).getByText("No level 2–4 group yet")).toBeInTheDocument();
+    expect(within(c3).queryByRole("button", { name: "Call next 4" })).not.toBeInTheDocument();
+    await userEvent.click(within(c3).getByRole("button", { name: "Call mixed on Court 3" }));
+    expect(frame.act).toHaveBeenCalledWith("call_mixed", { courtId: "c3" }, expect.any(String));
+    expect(screen.getAllByText("No level 2–4 group yet")).toHaveLength(2);
+  });
+
+  it("D25: Up next is the server's group, with its level range", () => {
+    const ok = {
+      ...state(5),
+      queue: ["a", "c", "d", "f", "b"].map((id, i) => ({
+        id, name: `P${id}`, level: "3", status: "queued" as const, gamesPlayed: 0, notReady: false, paymentStatus: "unpaid",
+        memberId: null, joinedAt: STARTED, isWalkIn: true, position: i + 1,
+      })),
+      preview: {
+        preset: "mixed",
+        formats: { doubles: { status: "ok" as const, group: ["a", "c", "d", "f"].map((id) => ({ id, name: `P${id}`, skill: 3 })), lo: 2, hi: 3 } },
+      },
+    };
+    render(<CourtsView state={ok} rotation="all_off" rules={{ payFirst: false, fee: 0 }} />);
+    expect(screen.getByText("Pa, Pc, Pd, Pf · levels 2–3")).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { addWalkIn, court, endSession, PAYMENTS_URL, QUEUE_URL, SESSION_URL, startSession } from "./support/live";
+import { addWalkIn, court, endSession, PAYMENTS_URL, QUEUE_URL, SESSION_URL, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 /*
@@ -208,7 +208,7 @@ test.describe("skeleton loading", () => {
     // A new game on the court: the card gets the lime ring, and no skeleton comes back.
     await setDelay(context, page, 0);
     await resetSeen(page);
-    await page.getByRole("button", { name: "Done on Court 1" }).click();
+    await finishGame(page, "Court 1");
     await expect(court(page, "Court 1").getByText(/^Game 2 · \d+ min$/)).toBeVisible();
     await expect(court(page, "Court 1")).toHaveAttribute("data-new-game", "true");
     expect(await court(page, "Court 1").evaluate((el) => getComputedStyle(el).animationName)).toBe("court-new-game");

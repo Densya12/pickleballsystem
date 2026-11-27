@@ -1,6 +1,7 @@
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { paymentErrorMessage } from "@/lib/payments/messages";
 import { sessionErrorMessage } from "@/lib/session/messages";
+import { explainCall, type CallNote } from "./preview";
 
 /** Errors from the queue RPCs, in the device's language. Banners are in t.live. */
 
@@ -13,6 +14,10 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
     case "not_enough_players": {
       const needed = Number(error.details);
       return Number.isInteger(needed) && needed > 0 ? t.live.needPlayers(needed) : t.live.notEnough;
+    }
+    case "no_level_group": {
+      const [lo, hi] = (error.details ?? "").split("-").map(Number);
+      return Number.isInteger(lo) && Number.isInteger(hi) && lo > 0 ? t.live.noLevelGroup(lo, hi) : t.live.noLevelGroupAny;
     }
     case "game_already_finished":
       return t.live.alreadyFinished;
@@ -34,6 +39,12 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.playerPlayingGeneric;
     case "payment_required":
       return t.live.choosePayment;
+    case "same_side":
+      return t.live.sameSide;
+    case "invalid_matchmaking":
+      return t.club.matchmakingInvalid;
+    case "invalid_level":
+      return t.live.levelInvalid;
     case "player_not_flagged":
       return t.live.notFlagged;
     case "session_full":
@@ -71,16 +82,18 @@ export function finishedBanner(
     gameNumber: number;
     finishedPlayerIds: readonly string[];
     winners?: readonly string[] | null;
-    next: { playerIds: readonly string[]; names: readonly string[] } | null;
+    next: { playerIds: readonly string[]; names: readonly string[]; note?: CallNote | null } | null;
   },
 ): string {
   if (input.next && samePlayers(input.finishedPlayerIds, input.next.playerIds)) {
     return t.live.playAgain(input.next.names, input.courtLabel);
   }
-  return t.live.finished({
-    courtLabel: input.courtLabel,
-    gameNumber: input.gameNumber,
-    winners: input.winners,
-    next: input.next ? input.next.names : null,
-  });
+  return (
+    t.live.finished({
+      courtLabel: input.courtLabel,
+      gameNumber: input.gameNumber,
+      winners: input.winners,
+      next: input.next ? input.next.names : null,
+    }) + (input.next ? explainCall(t, input.next.note) : "")
+  );
 }

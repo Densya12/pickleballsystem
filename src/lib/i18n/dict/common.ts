@@ -114,17 +114,34 @@ const statusFil: typeof statusEn = {
   ended: "Tapos na",
 };
 
+/** Level 1-5 (D25): a pickleball rating like the stars in other club apps, or not set. */
 const levelsEn = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
+  level: (n: number) => `Level ${n}`,
+  /** The "Not sure" choice in the picker. */
   unsure: "Not sure",
+  /** A player with no level, on rows and badges. */
+  notSet: "Not set",
+  hint: "Same as your stars in your club app.",
+  /** Level ranges in banners and previews: "level 3", "levels 2–4". */
+  band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `levels ${lo}–${hi}`),
+  /** Before "group": "a level 2–4 group". */
+  groupBand: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
+  change: "Level",
+  changeTitle: (name: string) => `${name}'s level`,
+  save: "Save level",
+  changed: (name: string, level: string) => `${name} is now ${level}.`,
 };
 const levelsFil: typeof levelsEn = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
+  level: (n: number) => `Level ${n}`,
   unsure: "Hindi sigurado",
+  notSet: "Wala pang level",
+  hint: "Kapareho ng stars mo sa club app mo.",
+  band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
+  groupBand: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
+  change: "Level",
+  changeTitle: (name: string) => `Level ni ${name}`,
+  save: "I-save ang level",
+  changed: (name: string, level: string) => `${level} na si ${name}.`,
 };
 
 const choicesEn = {
@@ -137,6 +154,15 @@ const choicesEn = {
   allOffDescriptionMixed: "Everyone on court goes to the back of the queue",
   winnersStay: "Winners stay",
   winnersStayDescription: "Up to 2 games in a row",
+  /** D25 presets: who plays together. */
+  mixed: "Mixed",
+  mixedDescription: "Levels within 1 of each other, with new partners",
+  sameLevel: "Same level",
+  sameLevelDescription: "Everyone at the same level, with new partners",
+  /** Under Same level (New session, Settings, More): it can stall courts. */
+  sameLevelNote: "Courts may wait for a same-level group. Mixed works best for most sessions.",
+  fairLine: "Fair line",
+  fairLineDescription: "Strict queue order; levels aren't used",
   points: (n: number) => `${n} points`,
   duesPaid: "Dues paid",
   duesUnpaid: "Dues unpaid",
@@ -151,6 +177,13 @@ const choicesFil: typeof choicesEn = {
   allOffDescriptionMixed: "Babalik lahat ng nasa court sa dulo ng pila",
   winnersStay: "Mananatili ang nanalo",
   winnersStayDescription: "Hanggang 2 sunod na laro lang",
+  mixed: "Halo-halo",
+  mixedDescription: "Magkakalapit ang level (±1), iba-ibang kasama",
+  sameLevel: "Parehong level",
+  sameLevelDescription: "Pare-pareho ang level, iba-ibang kasama",
+  sameLevelNote: "Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session.",
+  fairLine: "Sunod sa pila",
+  fairLineDescription: "Sunod lang sa pila; hindi ginagamit ang level",
   points: (n: number) => `${n} points`,
   duesPaid: "Bayad ang dues",
   duesUnpaid: "Hindi pa bayad ang dues",

@@ -1,27 +1,29 @@
-import type { Dictionary } from "@/lib/i18n/dictionary";
-
 /**
- * Winner picker (winners stay, BR11): tap the winners — 2 in doubles, 1 in
- * singles. Tapping a picked name un-picks it; tapping one more name than
- * needed replaces the earliest pick, so a mis-tap is fixed with one more tap.
+ * Teams and winners (D25, amends D11): a game's players are two teams in
+ * position order. Doubles: positions 1-2 (left) vs 3-4 (right); singles:
+ * 1 vs 2. The organizer taps the side that won.
  */
-export const WINNERS_NEEDED = 2;
 
 export function winnersFor(format: string): number {
   return format === "singles" ? 1 : 2;
 }
 
-export function toggleWinner(picked: readonly string[], id: string, needed = WINNERS_NEEDED): string[] {
-  if (picked.includes(id)) return picked.filter((p) => p !== id);
-  const next = [...picked, id];
-  return next.length > needed ? next.slice(next.length - needed) : next;
+/** [left team, right team], in position order. */
+export function teamsOf<T>(players: readonly T[], format: string): [T[], T[]] {
+  const half = format === "singles" ? 1 : 2;
+  return [players.slice(0, half), players.slice(half, half * 2)];
 }
 
-export function canConfirmWinners(picked: readonly string[], needed = WINNERS_NEEDED): boolean {
-  return picked.length === needed;
+/** Which side a position is on: 0 = left (team 1), 1 = right (team 2). */
+export function sideOf(index: number, format: string): 0 | 1 {
+  return index < (format === "singles" ? 1 : 2) ? 0 : 1;
 }
 
-export function winnersHint(picked: readonly string[], needed: number, t: Dictionary): string {
-  const left = needed - picked.length;
-  return left > 0 ? t.live.pickMore(left) : t.live.readyToConfirm;
+/** The player's partner (doubles), or null. */
+export function partnerOf<T extends { id: string }>(players: readonly T[], meId: string, format: string): T | null {
+  if (format === "singles") return null;
+  const index = players.findIndex((p) => p.id === meId);
+  if (index < 0) return null;
+  const partnerIndex = index < 2 ? 1 - index : 5 - index;
+  return players[partnerIndex] ?? null;
 }

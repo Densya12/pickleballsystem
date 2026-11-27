@@ -1,11 +1,14 @@
 import type { OutboxItem } from "@/lib/outbox/rules";
 import {
+  callMixedAction,
   callNextAction,
   finishGameAction,
   pausePlayerAction,
   removePlayerAction,
   resumePlayerAction,
   setCourtFormatAction,
+  setMatchmakingAction,
+  setPlayerLevelAction,
   setRotationAction,
   swapNotReadyAction,
   type QueueActionResult,
@@ -26,6 +29,8 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
   switch (item.kind) {
     case "call_next":
       return callNextAction(sessionId, str(args.courtId));
+    case "call_mixed":
+      return callMixedAction(sessionId, str(args.courtId));
     case "finish_game":
       return finishGameAction(sessionId, str(args.courtId), str(args.gameId), Array.isArray(args.winnerIds) ? args.winnerIds : null);
     case "swap_not_ready":
@@ -34,6 +39,10 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
       return setCourtFormatAction(sessionId, str(args.courtId), args.format === "singles" ? "singles" : "doubles");
     case "set_rotation":
       return setRotationAction(sessionId, args.rotation === "winners_stay" ? "winners_stay" : "all_off");
+    case "set_matchmaking":
+      return setMatchmakingAction(sessionId, str(args.matchmaking));
+    case "set_player_level":
+      return setPlayerLevelAction(sessionId, str(args.playerId), str(args.level));
     case "pause_player":
       return pausePlayerAction(sessionId, str(args.playerId));
     case "resume_player":

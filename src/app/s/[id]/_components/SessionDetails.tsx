@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { rotationLabel } from "@/lib/club/options";
+import { matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { formatGcashNumber, formatPeso } from "@/lib/format";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { Session } from "@/lib/session/data";
@@ -22,6 +22,7 @@ export function SessionDetails({ session, t, framed = false }: { session: Sessio
       </Row>
       <Row term={t.session.detailPoints}>{t.choices.points(session.points_to)}</Row>
       <Row term={t.session.detailRotation}>{rotationLabel(session.rotation, t)}</Row>
+      <Row term={t.session.detailMatchmaking}>{matchmakingLabel(session.matchmaking, t)}</Row>
       <Row term={t.session.detailPayFirst}>{session.pay_first ? t.session.yes : t.session.no}</Row>
       <Row term={t.session.detailFee}>{formatPeso(session.fee)}</Row>
       <Row term={t.session.detailGcash}>{gcash}</Row>

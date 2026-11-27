@@ -9,7 +9,10 @@ import { useT } from "@/lib/i18n/client";
 import { courtsLineup, type LineupPlayer } from "@/lib/player/courts";
 import type { CallRules } from "@/lib/player/state";
 import type { LiveState, QueueEntry } from "@/lib/queue/data";
-import { isNewCheckIn, levelLabel } from "@/lib/queue/players";
+import { LevelBadge } from "@/components/level/LevelBadge";
+import { LevelPicker } from "@/components/level/LevelPicker";
+import { isNewCheckIn, levelLabel, type Level } from "@/lib/queue/players";
+import { predictedIds } from "@/lib/queue/preview";
 import { useNow } from "@/lib/useNow";
 import { useSessionFrame } from "./SessionFrame";
 
@@ -29,6 +32,8 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
     state.courts.map((c) => c.format),
     rules,
     Infinity,
+    // D25: "Up next" is the group the server will call; no group: everyone is in "After that".
+    predictedIds(state.preview, state.courts.map((c) => c.format)),
   );
 
   if (state.queue.length === 0) return <EmptyState>{t.live.queueEmpty}</EmptyState>;
@@ -60,7 +65,8 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
               <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-on-accent">{t.live.newPlayer}</span>
             )}
           </span>
-          {reason ? <StatusChip kind={reason} /> : entry && <span className="shrink-0 text-sm text-muted">{levelLabel(entry.level, t)}</span>}
+          {entry && <LevelBadge level={entry.level} />}
+          {reason && <StatusChip kind={reason} />}
         </button>
       </li>
     );
@@ -94,6 +100,12 @@ function PlayerSheet({ sessionId, player, onClose }: { sessionId: string; player
   const t = useT();
   const { act, busy } = useSessionFrame();
   const [confirming, setConfirming] = useState(false);
+  const [level, setLevel] = useState<Level | null>(null);
+
+  async function saveLevel() {
+    if (!player || level === null) return;
+    if (await act("set_player_level", { playerId: player.id, level }, t.live.outboxLevel(player.name, levelLabel(level, t)))) close();
+  }
 
   async function run(kind: "pause_player" | "resume_player" | "remove_player") {
     if (!player) return;
@@ -108,6 +120,7 @@ function PlayerSheet({ sessionId, player, onClose }: { sessionId: string; player
 
   function close() {
     setConfirming(false);
+    setLevel(null);
     onClose();
   }
 
@@ -119,7 +132,18 @@ function PlayerSheet({ sessionId, player, onClose }: { sessionId: string; player
       subtitle={player ? t.live.placeInLine(player.position, levelLabel(player.level, t)) : undefined}
     >
       {player &&
-        (confirming ? (
+        (level !== null ? (
+          // D25: the organizer sets a player's level mid-session (also saved on their member record).
+          <div className="flex flex-col gap-3 rounded-group bg-surface p-4">
+            <LevelPicker legend={t.levels.changeTitle(player.name)} name="sheet-level" value={level} onValueChange={setLevel} />
+            <Button size="md" fullWidth disabled={busy} onClick={() => void saveLevel()}>
+              {t.levels.save}
+            </Button>
+            <Button variant="ghost" size="md" fullWidth disabled={busy} onClick={() => setLevel(null)}>
+              {t.common.cancel}
+            </Button>
+          </div>
+        ) : confirming ? (
           <div className="flex flex-col gap-2 rounded-group bg-surface p-4">
             <p className="font-medium">{t.live.removeQuestion(player.name)}</p>
             <Button variant="danger-outline" size="md" fullWidth disabled={busy} onClick={() => void run("remove_player")}>
@@ -141,6 +165,10 @@ function PlayerSheet({ sessionId, player, onClose }: { sessionId: string; player
                 {t.live.pause}
               </Button>
             )}
+            <Button variant="secondary" size="md" fullWidth onClick={() => setLevel(player.level as Level)}>
+              {t.levels.change}
+              <LevelBadge level={player.level} />
+            </Button>
             <div className="rounded-group bg-surface p-3">
               <SaveAsMember key={player.id} sessionId={sessionId} playerId={player.id} playerName={player.name} isMember={player.memberId !== null} />
             </div>

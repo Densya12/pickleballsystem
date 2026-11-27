@@ -2,14 +2,14 @@
 
 import { useActionState, useState } from "react";
 import { Button, Card, Input, Notice, RadioGroup } from "@/components/ui";
-import { POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
-import type { Points, Rotation } from "@/lib/club/validation";
+import { matchmakingChoices, POINTS_CHOICES, rotationChoices } from "@/lib/club/options";
+import type { Matchmaking, Points, Rotation } from "@/lib/club/validation";
 import { useT } from "@/lib/i18n/client";
 import { saveSettingsAction, type SettingsState } from "./actions";
 import type { ClubValues } from "./data";
 
 const FIELDS: Record<"club" | "payments", (keyof ClubValues)[]> = {
-  club: ["name", "city", "default_points", "default_rotation"],
+  club: ["name", "city", "default_points", "default_rotation", "default_matchmaking"],
   payments: ["gcash_name", "gcash_number", "default_fee"],
 };
 
@@ -68,6 +68,13 @@ export function ClubSettingsForm({ section, club, isOwner }: { section: "club" |
                 options={rotationChoices(t)}
                 defaultValue={value("default_rotation") as Rotation}
                 error={errors.default_rotation}
+              />
+              <RadioGroup
+                legend={t.settings.defaultMatchmaking}
+                name="default_matchmaking"
+                options={matchmakingChoices(t)}
+                defaultValue={value("default_matchmaking") as Matchmaking}
+                error={errors.default_matchmaking}
               />
             </Card>
           </>

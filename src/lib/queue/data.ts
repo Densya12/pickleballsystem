@@ -1,4 +1,6 @@
 import "server-only";
+import { levelFromSkill } from "@/lib/queue/players";
+import { parsePreview, type CallNote, type QueuePreview } from "@/lib/queue/preview";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -9,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 export type LivePlayer = {
   id: string;
   name: string;
+  /** D25: "1".."5", or "unsure" (not set). */
   level: string;
   status: "queued" | "playing" | "paused";
   gamesPlayed: number;
@@ -40,6 +43,8 @@ export type LiveState = {
   playingCount: number;
   /** Players who can be called now (BR6), for "Kailangan pa ng N player". */
   eligibleCount: number;
+  /** D25: the server's preview of the next call (queue_preview). */
+  preview: QueuePreview | null;
   /**
    * Confirmed, everyone who owes the fee (not left, or left after paying),
    * and of those, how many are pending (to check) or unpaid: the Payments badge.
@@ -47,17 +52,19 @@ export type LiveState = {
   payments: { paid: number; total: number; toCheck: number; unpaid: number };
 };
 
-export async function getLiveState(sessionId: string): Promise<LiveState> {
+/** `withPreview: false` skips the D25 preview (Home's live card doesn't show it). */
+export async function getLiveState(sessionId: string, { withPreview = true }: { withPreview?: boolean } = {}): Promise<LiveState> {
   const supabase = await createClient();
-  const [courts, games, players, eligible] = await Promise.all([
+  const [courts, games, players, eligible, preview] = await Promise.all([
     supabase.from("courts").select("id, number, label, format, current_game_id").eq("session_id", sessionId).order("number"),
     supabase.from("games").select("id, court_id, number, format, player_ids, started_at").eq("session_id", sessionId).is("ended_at", null),
     supabase
       .from("session_players")
-      .select("id, display_name, level, status, games_played, queue_pos, not_ready_at, payment_status, member_id, created_at, is_walk_in")
+      .select("id, display_name, skill, status, games_played, queue_pos, not_ready_at, payment_status, member_id, created_at, is_walk_in")
       .eq("session_id", sessionId)
       .order("queue_pos"),
     supabase.rpc("session_eligible_count", { p_session_id: sessionId }),
+    withPreview ? supabase.rpc("queue_preview", { p_session_id: sessionId }) : Promise.resolve({ data: null, error: null }),
   ]);
   for (const result of [courts, games, players, eligible]) {
     if (result.error) throw new Error(`Could not load the live session: ${result.error.message}`);
@@ -73,7 +80,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
       {
         id: p.id,
         name: p.display_name,
-        level: p.level,
+        level: levelFromSkill(p.skill),
         status: p.status as LivePlayer["status"],
         gamesPlayed: p.games_played,
         notReady: p.not_ready_at !== null,
@@ -115,6 +122,7 @@ export async function getLiveState(sessionId: string): Promise<LiveState> {
     queue,
     playingCount: all.filter((p) => p.status === "playing").length,
     eligibleCount: eligible.data ?? 0,
+    preview: parsePreview(preview.data),
     payments: {
       paid: counted.filter((p) => p.payment_status === "confirmed").length,
       total: counted.length,
@@ -138,11 +146,20 @@ export async function getGame(gameId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("games")
-    .select("id, number, player_ids, court:courts!games_court_id_fkey(label)")
+    .select("id, number, player_ids, call_note, court:courts!games_court_id_fkey(label)")
     .eq("id", gameId)
     .maybeSingle();
   if (error) throw new Error(`Could not load game: ${error.message}`);
-  return data ? { id: data.id, number: data.number, playerIds: data.player_ids, courtLabel: data.court?.label ?? "" } : null;
+  return data
+    ? {
+        id: data.id,
+        number: data.number,
+        playerIds: data.player_ids,
+        courtLabel: data.court?.label ?? "",
+        // D25: why this group was called (for the banner).
+        note: (data.call_note ?? null) as CallNote | null,
+      }
+    : null;
 }
 
 export async function getJoinCode(sessionId: string): Promise<string | null> {

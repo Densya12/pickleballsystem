@@ -9,6 +9,8 @@ export type RadioOption<V extends string> = {
   label: string;
   /** Optional one-line explanation ("list" look only). */
   description?: string;
+  /** Optional caution under the description ("list" look only), e.g. a trade-off of this choice. */
+  note?: string;
 };
 
 export type RadioGroupProps<V extends string> = {
@@ -142,6 +144,7 @@ export function RadioGroup<V extends string>({
               <span className="flex min-w-0 flex-col">
                 <span className="text-body font-medium text-ink">{option.label}</span>
                 {option.description && <span className="text-sm text-muted">{option.description}</span>}
+                {option.note && <span className="mt-0.5 text-xs text-muted">{option.note}</span>}
               </span>
             </label>
           ))}

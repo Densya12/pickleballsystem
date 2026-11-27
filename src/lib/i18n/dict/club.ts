@@ -19,6 +19,7 @@ const en = {
   feeTooHigh: "That fee looks too high. Check it again.",
   pointsInvalid: "Pick 11, 15 or 21.",
   rotationInvalid: "Pick what happens after a game.",
+  matchmakingInvalid: "Pick who plays together.",
   // Errors
   generic: "Something went wrong. Try again.",
   ownerOnly: "Only the club owner can change this.",
@@ -60,6 +61,7 @@ const fil: typeof en = {
   feeTooHigh: "Masyadong malaki ang bayad. I-check ulit.",
   pointsInvalid: "Pumili ng 11, 15 o 21.",
   rotationInvalid: "Pumili ng rotation.",
+  matchmakingInvalid: "Pumili kung sino ang magkakasama.",
   generic: "May problema. Subukan ulit.",
   ownerOnly: "Ang owner lang ang pwedeng magbago nito.",
   invalidInput: "May mali sa nilagay. I-check ulit ang mga field.",

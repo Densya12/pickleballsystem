@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
-import { addMember, addMemberWalkIn, banner, court, endSession, openTab, sessionTabs, SESSION_URL } from "./support/live";
+import { addMember, addMemberWalkIn, banner, court, endSession, openTab, sessionTabs, SESSION_URL, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // Phase 7 acceptance: a compressed pilot night. 3 courts (Court 3 singles),
@@ -13,7 +13,7 @@ const PHONES = ["Pia Phone", "Quin Phone", "Rio Phone", "Sol Phone"];
 test("dry run: a full session from members and phones to the summary and CSV", async ({ page: organizer, browser }) => {
   test.setTimeout(300_000);
   await signInWithNewClub(organizer, "dryrun", "Dry Run Club");
-  for (const name of MEMBERS) await addMember(organizer, name, { level: "Intermediate" });
+  for (const name of MEMBERS) await addMember(organizer, name, { level: "Level 3" });
 
   // pay_first, ₱150, 3 courts with Court 3 singles.
   await organizer.goto("/");
@@ -22,6 +22,8 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   await organizer.getByRole("button", { name: "More courts" }).click();
   await organizer.getByRole("group", { name: "Court 3" }).getByRole("radio", { name: "Singles" }).check();
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
+  // D25: the queue order these checks expect (Fair line).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();
@@ -71,7 +73,7 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   let finished = 0;
   for (let i = 0; i < 16; i++) {
     const label = labels[i % 3];
-    await organizer.getByRole("button", { name: `Done on ${label}` }).click();
+    await finishGame(organizer, label);
     await expect(banner(organizer)).toContainText(new RegExp(`Game #\\d+ on ${label} is done\\.`));
     finished += 1;
     if (i === 4) {
@@ -111,9 +113,9 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   const lines = csv.slice(1).trimEnd().split("\r\n");
   expect(lines[0]).toBe("Name,Level,Joined by,Games,Payment,Method,Reference,Checked in");
   expect(lines).toHaveLength(20);
-  expect(lines[1]).toMatch(/^Pia Phone,Not sure,Phone,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-  expect(lines.filter((l) => /^Member \d\d,Intermediate,Walk-in,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);
-  expect(lines[4]).toMatch(/^Sol Phone,Not sure,Phone,0,Unpaid,,,/);
+  expect(lines[1]).toMatch(/^Pia Phone,Not set,Phone,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+  expect(lines.filter((l) => /^Member \d\d,Level 3,Walk-in,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);
+  expect(lines[4]).toMatch(/^Sol Phone,Not set,Phone,0,Unpaid,,,/);
   // The peso cell has commas, so it is quoted.
   expect(lines[19]).toMatch(/^Total,,18 players,\d+,14 paid · 3 to check · 0 unpaid,"₱2,100 of ₱2,550",,$/);
 

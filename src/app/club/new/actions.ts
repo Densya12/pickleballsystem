@@ -28,11 +28,14 @@ export async function createClubAction(
   if (!parsed.ok) return { fieldErrors: parsed.errors, values };
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("create_club", {
+  const { data: clubId, error } = await supabase.rpc("create_club", {
     p_name: parsed.data.name,
     p_city: parsed.data.city ?? undefined,
   });
   if (error) return { error: clubErrorMessage(error, t), values };
+  // D25: new clubs start on Mixed. (The column's default stays Fair line, so a club
+  // created by an older app keeps today's behavior.) A failure here keeps Fair line.
+  if (clubId) await supabase.from("clubs").update({ default_matchmaking: "mixed" }).eq("id", clubId);
 
   redirect("/");
 }

@@ -29,6 +29,18 @@ const en = {
   nobodyWaiting: "Nobody waiting",
   // Winner picker
   whoWon: "Who won?",
+  /** D25: one tap on a side. */
+  sideWon: (names: string[]) => `${names.join(" + ")} won`,
+  whoWonHint: "Tap the side that won.",
+  skipWinner: "Skip (no winner)",
+  leftSide: "Left side",
+  rightSide: "Right side",
+  /** Team swap on the mini court (organizer). */
+  swapSidesHint: "Tap a player to move them to the other side.",
+  swapWith: (name: string) => `Now tap a player on the other side to swap with ${name}.`,
+  chipSwap: (name: string, side: string) => `${name}, ${side}. Tap to swap sides`,
+  sidesSwapped: (a: string, b: string) => `${a} and ${b} swapped sides.`,
+  sameSide: "They're on the same side. Tap a player on the other side.",
   pickMore: (n: number) => `Pick ${n} more.`,
   readyToConfirm: "Ready. Tap Confirm.",
   confirm: "Confirm",
@@ -67,9 +79,23 @@ const en = {
   /** After Done, when the new game has exactly the same players. */
   playAgain: (names: readonly string[], court: string) => `Nobody else is waiting, so ${list(names, "and")} play again on ${court}.`,
   rotationChanged: (rotation: string) => `After a game: ${rotation}. It applies from the next Done.`,
+  matchmakingChanged: (preset: string) => `Who plays together: ${preset}. It applies from the next call.`,
   // Errors
   needPlayers: (n: number) => `Need ${n} more ${n === 1 ? "player" : "players"} to call.`,
   notEnough: "Not enough players waiting to call.",
+  /** D25: no group fits the level rule; Call mixed plays anyway. */
+  noLevelGroup: (lo: number, hi: number) =>
+    `No ${lo === hi ? `level ${lo}` : `level ${lo}–${hi}`} group yet. Tap Call mixed to play anyway.`,
+  noLevelGroupAny: "No group fits the levels yet. Tap Call mixed to play anyway.",
+  callMixed: "Call mixed",
+  /** D25 banners and previews. */
+  freshGroup: "haven't played together",
+  someRepeat: "some played together recently",
+  mixedCallNote: "mixed levels",
+  noLevelGroupShort: (band: string) => `No ${band} group yet`,
+  noGroupShort: "No group fits the levels yet",
+  callMixedOn: (court: string) => `Call mixed on ${court}`,
+  outboxCallMixed: (court: string) => `Call mixed: ${court}`,
   alreadyFinished: "That game is already done. Check the court for the new one.",
   courtBusy: "That court is still playing.",
   invalidWinners: "Pick the winners from the players on court.",
@@ -149,6 +175,8 @@ const en = {
   outboxSwap: (name: string, court: string) => `Swap ${name} on ${court}`,
   outboxFormat: (format: string, court: string) => `Make ${court} ${format.toLowerCase()}`,
   outboxRotation: (rotation: string) => `After a game: ${rotation}`,
+  outboxLevel: (name: string, level: string) => `${name}: ${level}`,
+  outboxMatchmaking: (preset: string) => `Who plays together: ${preset}`,
   outboxPause: (name: string) => `Pause ${name}`,
   outboxResume: (name: string) => `Resume ${name}`,
   outboxRemove: (name: string) => `Remove ${name}`,
@@ -160,6 +188,8 @@ const en = {
   // More › After a game (rotation while live)
   afterGame: "After a game",
   afterGameHint: "Takes effect at the next Done.",
+  matchmaking: "Who plays together",
+  matchmakingHint: "Takes effect at the next call.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "and")}.` : `${court}.`),
 };
 
@@ -184,6 +214,16 @@ const fil: typeof en = {
   upNext: "Susunod:",
   nobodyWaiting: "Walang nakapila",
   whoWon: "Sino ang nanalo?",
+  sideWon: (names: string[]) => `Panalo sina ${names.join(" + ")}`,
+  whoWonHint: "Pindutin ang panig na nanalo.",
+  skipWinner: "Laktawan (walang panalo)",
+  leftSide: "Kaliwa",
+  rightSide: "Kanan",
+  swapSidesHint: "Pindutin ang player para ilipat sa kabilang panig.",
+  swapWith: (name: string) => `Pindutin ang player sa kabila para ipalit kay ${name}.`,
+  chipSwap: (name: string, side: string) => `${name}, ${side}. Pindutin para lumipat ng panig`,
+  sidesSwapped: (a: string, b: string) => `Nagpalit ng panig sina ${a} at ${b}.`,
+  sameSide: "Magkapanig sila. Pumili ng player sa kabilang panig.",
   pickMore: (n: number) => `Pumili ng ${n} pa.`,
   readyToConfirm: "Handa na. Pindutin ang Kumpirmahin.",
   confirm: "Kumpirmahin",
@@ -221,8 +261,20 @@ const fil: typeof en = {
   playAgain: (names: readonly string[], court: string) =>
     `Walang ibang naghihintay, kaya ${list(names, "at")} ulit ang maglalaro sa ${court}.`,
   rotationChanged: (rotation: string) => `Pagkatapos ng laro: ${rotation}. Simula sa susunod na Tapos na.`,
+  matchmakingChanged: (preset: string) => `Sino ang magkakasama: ${preset}. Simula sa susunod na tawag.`,
   needPlayers: (n: number) => `Kailangan pa ng ${n} player bago makatawag.`,
   notEnough: "Kulang pa ang nakapila para makatawag.",
+  noLevelGroup: (lo: number, hi: number) =>
+    `Wala pang grupong ${lo === hi ? `level ${lo}` : `level ${lo}–${hi}`}. Pindutin ang Tawagin kahit halo para makalaro pa rin.`,
+  noLevelGroupAny: "Wala pang grupong bagay ang level. Pindutin ang Tawagin kahit halo para makalaro pa rin.",
+  callMixed: "Tawagin kahit halo",
+  freshGroup: "hindi pa nagkakasama",
+  someRepeat: "may nagkasama na kanina",
+  mixedCallNote: "halo-halong level",
+  noLevelGroupShort: (band: string) => `Wala pang grupong ${band}`,
+  noGroupShort: "Wala pang grupong bagay ang level",
+  callMixedOn: (court: string) => `Tawagin kahit halo sa ${court}`,
+  outboxCallMixed: (court: string) => `Tawagin kahit halo: ${court}`,
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
   courtBusy: "May naglalaro pa sa court na ito.",
   invalidWinners: "Pumili ng nanalo mula sa mga naglaro.",
@@ -294,6 +346,8 @@ const fil: typeof en = {
   outboxSwap: (name: string, court: string) => `Palitan si ${name} sa ${court}`,
   outboxFormat: (format: string, court: string) => `Gawing ${format} ang ${court}`,
   outboxRotation: (rotation: string) => `Pagkatapos ng laro: ${rotation}`,
+  outboxLevel: (name: string, level: string) => `${name}: ${level}`,
+  outboxMatchmaking: (preset: string) => `Sino ang magkakasama: ${preset}`,
   outboxPause: (name: string) => `I-pause si ${name}`,
   outboxResume: (name: string) => `Ituloy si ${name}`,
   outboxRemove: (name: string) => `Alisin si ${name} sa pila`,
@@ -303,6 +357,8 @@ const fil: typeof en = {
   readAloudDescription: "Sa phone na ito lang. I-off kung may ibang phone na nagbabasa.",
   afterGame: "Pagkatapos ng laro",
   afterGameHint: "Magsisimula sa susunod na Tapos na.",
+  matchmaking: "Sino ang magkakasama",
+  matchmakingHint: "Magsisimula sa susunod na tawag.",
   announcement: (court: string, names: readonly string[]) => (names.length ? `${court}: ${list(names, "at")}.` : `${court}.`),
 };
 

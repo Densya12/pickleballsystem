@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addWalkIn, court, onCourt, openPlayer, openTab, queueRows, startSession } from "./support/live";
+import { addWalkIn, court, onCourt, openPlayer, openTab, queueRows, startSession, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // QA-02 (NF10): a Remove saved offline on phone 1, while phone 2 calls that
@@ -30,7 +30,7 @@ test("offline Remove of a player who was called meanwhile: 'Not sent' with the r
   await expect(page.getByRole("region", { name: "Waiting for signal" }).getByRole("listitem")).toHaveText(["Remove O5"]);
 
   // Phone 2 taps Done: O5-O8 are called.
-  await phone2.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(phone2, "Court 1");
   await expect(onCourt(phone2, "Court 1")).toHaveText(["O5", "O6", "O7", "O8"]);
 
   // Phone 1 is back: the Remove isn't dropped silently.

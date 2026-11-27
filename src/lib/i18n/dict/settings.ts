@@ -20,6 +20,7 @@ const en = {
   defaultsSection: "Defaults for new sessions",
   defaultPoints: "Games to",
   defaultRotation: "After each game",
+  defaultMatchmaking: "Who plays together",
   // GCash and fee page
   gcashName: "Name on GCash",
   gcashNumber: "GCash number",
@@ -72,6 +73,7 @@ const fil: typeof en = {
   defaultsSection: "Default para sa bagong session",
   defaultPoints: "Points bawat laro",
   defaultRotation: "Rotation",
+  defaultMatchmaking: "Sino ang magkakasama",
   gcashName: "Pangalan sa GCash",
   gcashNumber: "GCash number",
   gcashNumberHint: "Hal. 0917 123 4567",

@@ -2,8 +2,10 @@
 
 import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
-import { rotationLabel } from "@/lib/club/options";
+import { matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
+import { explainCall, type CallNote } from "@/lib/queue/preview";
+import { levelLabel, levelNumber } from "@/lib/queue/players";
 import { courtFormatLabel } from "@/lib/session/validation";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeSession } from "./authorize";
@@ -17,10 +19,12 @@ export type QueueActionResult = {
   undo?: { banner: string };
 };
 
-async function nextGamePlayers(gameId: string | null): Promise<{ playerIds: string[]; names: string[] } | null> {
+async function nextGamePlayers(
+  gameId: string | null,
+): Promise<{ playerIds: string[]; names: string[]; note: CallNote | null } | null> {
   if (!gameId) return null;
   const game = await getGame(gameId);
-  return game ? { playerIds: game.playerIds, names: await playerNames(game.playerIds) } : null;
+  return game ? { playerIds: game.playerIds, names: await playerNames(game.playerIds), note: game.note } : null;
 }
 
 export async function callNextAction(sessionId: string, courtId: string): Promise<QueueActionResult> {
@@ -33,7 +37,35 @@ export async function callNextAction(sessionId: string, courtId: string): Promis
 
   const game = await getGame(gameId);
   refresh();
-  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) : undefined };
+  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) + explainCall(t, game.note) : undefined };
+}
+
+/** D25 (f): no group fits the levels; the organizer plays the next in queue order once (logged). */
+export async function callMixedAction(sessionId: string, courtId: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { data: gameId, error } = await supabase.rpc("call_mixed", { p_court_id: courtId });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  const game = await getGame(gameId);
+  refresh();
+  return { banner: game ? t.live.called(game.courtLabel, await playerNames(game.playerIds)) + explainCall(t, game.note) : undefined };
+}
+
+/** D25: the organizer moves a player to the other side (swaps them with a player there). Not undoable. */
+export async function swapSidesAction(sessionId: string, courtId: string, playerId: string, otherId: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("swap_sides", { p_court_id: courtId, p_player_id: playerId, p_other_id: otherId });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  const [a, b] = await playerNames([playerId, otherId]);
+  refresh();
+  return { banner: t.live.sidesSwapped(a, b) };
 }
 
 export async function finishGameAction(
@@ -117,6 +149,34 @@ export async function setRotationAction(sessionId: string, rotation: "all_off" |
 
   refresh();
   return { banner: t.live.rotationChanged(rotationLabel(rotation, t)) };
+}
+
+/** D25: More › Who plays together, while live. It applies from the next call. */
+export async function setMatchmakingAction(sessionId: string, matchmaking: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_session_matchmaking", { p_session_id: sessionId, p_matchmaking: matchmaking });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.live.matchmakingChanged(matchmakingLabel(matchmaking, t)) };
+}
+
+/** D25: the organizer changes a player's level (also on their member record). "unsure" clears it. */
+export async function setPlayerLevelAction(sessionId: string, playerId: string, level: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const n = levelNumber(level);
+  const [name] = await playerNames([playerId]);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_player_level", { p_player_id: playerId, p_skill: n as number });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.levels.changed(name, levelLabel(level, t)) };
 }
 
 type PlayerRpc = "pause_player" | "resume_player" | "remove_player";

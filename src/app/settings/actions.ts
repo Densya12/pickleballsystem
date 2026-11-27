@@ -24,6 +24,7 @@ const FIELDS = [
   "default_fee",
   "default_points",
   "default_rotation",
+  "default_matchmaking",
 ] as const;
 
 export async function saveSettingsAction(

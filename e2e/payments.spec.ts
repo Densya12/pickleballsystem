@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { addWalkIn, banner, court, onCourt, openTab, queueSection, sessionTabs, SESSION_URL } from "./support/live";
+import { addWalkIn, banner, court, onCourt, openTab, queueSection, sessionTabs, SESSION_URL, finishGame } from "./support/live";
 import { signInWithNewClub } from "./support/organizer";
 
 // "Remind" falls back to copying when there is no share sheet; read the clipboard.
@@ -62,15 +62,17 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
   await organizer.getByLabel("Session name").fill("Pay First Night");
   await organizer.getByRole("button", { name: "Fewer courts" }).click();
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
+  // D25: the queue order these checks expect (Fair line).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   const courtsUrl = organizer.url();
 
   // Walk-ins with each payment choice (one GCash walk-in reuses Ana's reference).
-  await addWalkIn(organizer, "Cash Walk", "Beginner", { choice: "Paid cash" });
-  await addWalkIn(organizer, "GCash Walk", "Beginner", { choice: "GCash", reference: "1234-5678-90" });
-  await addWalkIn(organizer, "Later Walk", "Beginner", { choice: "Pay later" });
-  await addWalkIn(organizer, "Cash Two", "Beginner", { choice: "Paid cash" });
+  await addWalkIn(organizer, "Cash Walk", "Level 2", { choice: "Paid cash" });
+  await addWalkIn(organizer, "GCash Walk", "Level 2", { choice: "GCash", reference: "1234-5678-90" });
+  await addWalkIn(organizer, "Later Walk", "Level 2", { choice: "Pay later" });
+  await addWalkIn(organizer, "Cash Two", "Level 2", { choice: "Paid cash" });
 
   await organizer.getByRole("link", { name: "Show QR" }).click();
   const path = new URL((await organizer.getByText(/\/j\/[A-Z2-9]{6}(?:[A-Z2-9]{2})?$/).textContent())!).pathname;
@@ -152,7 +154,7 @@ test("pay first: GCash (to check) gets called, cash is held until received on Pa
 
   // Back on Courts: the next call takes Ben (now paid) and still skips Later Walk.
   await openTab(organizer, "Courts");
-  await organizer.getByRole("button", { name: "Done on Court 1" }).click();
+  await finishGame(organizer, "Court 1");
   await expect(banner(organizer)).toHaveText(/Called: Ben Phone, Cash Walk, GCash Walk, Ana Phone/);
   await expect(ben.getByRole("heading", { name: "Your turn, Ben!" })).toBeVisible({ timeout: 2_000 });
   await openTab(organizer, "Queue");
@@ -167,6 +169,8 @@ test("a free session has no payment step", async ({ page: organizer, browser }) 
   await organizer.getByRole("link", { name: "New session" }).click();
   await organizer.getByLabel("Session name").fill("Free Night");
   await organizer.getByLabel("Fee per player (₱)").fill("0");
+  // D25: the queue order these checks expect (Fair line).
+  await organizer.getByRole("radio", { name: /^Fair line/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
   // No Payments tab for a free session.

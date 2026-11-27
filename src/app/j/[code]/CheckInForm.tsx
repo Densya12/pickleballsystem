@@ -9,7 +9,9 @@ import { useT } from "@/lib/i18n/client";
 import { normalizeReference, REFERENCE_MAX, REFERENCE_MIN } from "@/lib/payments/reference";
 import { unlockAudio } from "@/lib/player/alert";
 import { playerErrorMessage } from "@/lib/player/messages";
-import { levelChoices, levelLabel, parseWalkIn, PLAYER_NAME_MAX, type Level } from "@/lib/queue/players";
+import { LevelBadge } from "@/components/level/LevelBadge";
+import { LevelPicker } from "@/components/level/LevelPicker";
+import { parseWalkIn, PLAYER_NAME_MAX } from "@/lib/queue/players";
 import { createClient } from "@/lib/supabase/client";
 
 export type CheckInPayment = {
@@ -116,7 +118,7 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
           <div className="flex flex-col">
             <p className="text-sm text-muted">{t.player.rememberedAs}</p>
             <p className="text-lg font-semibold [overflow-wrap:anywhere]">{remembered.name}</p>
-            <p className="text-sm text-muted">{levelLabel(remembered.level, t)}</p>
+            <LevelBadge level={remembered.level} className="mt-0.5" />
           </div>
         ) : (
           <>
@@ -129,12 +131,7 @@ export function CheckInForm({ code, payment, lastProfile = null }: { code: strin
               placeholder={t.player.namePlaceholder}
               error={errors.display_name}
             />
-            <RadioGroup<Level>
-              legend={`${t.player.level} ${t.common.optional}`}
-              name="level"
-              look="chips"
-              options={levelChoices(t, { withUnsure: false })}
-            />
+            <LevelPicker legend={`${t.player.level} ${t.common.optional}`} name="level" />
           </>
         )}
       </Card>
