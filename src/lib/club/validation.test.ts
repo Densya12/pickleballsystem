@@ -23,6 +23,7 @@ const validSettings = {
   default_points: "11",
   default_rotation: "all_off",
   default_matchmaking: "same_level",
+  default_call_mode: "wait",
 };
 
 describe("normalizeGcashNumber", () => {
@@ -92,6 +93,7 @@ describe("parseClubSettings", () => {
         default_points: 11,
         default_rotation: "all_off",
         default_matchmaking: "same_level",
+        default_call_mode: "wait",
       },
     });
   });
@@ -131,7 +133,7 @@ describe("parseClubSettings", () => {
   });
 
   it("reports every invalid field at once", () => {
-    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay", default_matchmaking: "mixed" }), en);
+    const result = parseClubSettings(form({ default_points: "15", default_rotation: "winners_stay", default_matchmaking: "mixed", default_call_mode: "auto_call" }), en);
     expect(result.ok).toBe(false);
     expect(!result.ok && Object.keys(result.errors).sort()).toEqual(["default_fee", "name"]);
   });

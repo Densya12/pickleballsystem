@@ -11,6 +11,7 @@ function form(overrides: Record<string, string | null> = {}) {
     points_to: "11",
     rotation: "all_off",
     matchmaking: "mixed",
+    call_mode: "wait",
     pay_first: null,
     fee: "150",
     ...overrides,
@@ -38,6 +39,7 @@ describe("parseNewSession", () => {
         points_to: 11,
         rotation: "all_off",
         matchmaking: "mixed",
+        call_mode: "wait",
         pay_first: false,
         fee: 150,
         court_formats: ["doubles", "doubles", "doubles"],
@@ -89,6 +91,7 @@ describe("parseNewSession", () => {
     [{ rotation: "random" }, "rotation", en.club.rotationInvalid],
     // D25: who plays together.
     [{ matchmaking: "random" }, "matchmaking", en.club.matchmakingInvalid],
+    [{ call_mode: "sometimes" }, "call_mode", en.club.callModeInvalid],
     [{ fee: "" }, "fee", en.club.feeInvalid],
     [{ fee: "-5" }, "fee", en.club.feeInvalid],
     [{ fee: "12.50" }, "fee", en.club.feeInvalid],

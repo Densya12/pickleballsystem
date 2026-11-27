@@ -36,7 +36,14 @@ export async function startSession(
   page: Page,
   name: string,
   /** preset (D25): "Fair line" by default, so the queue specs keep today's order. */
-  opts: { courts: number; winnersStay?: boolean; formats?: ("Doubles" | "Singles")[]; preset?: "Mixed" | "Same level" | "Fair line" },
+  /** callMode (D26): "Call next automatically" by default, so the queue specs keep today's flow. */
+  opts: {
+    courts: number;
+    winnersStay?: boolean;
+    formats?: ("Doubles" | "Singles")[];
+    preset?: "Mixed" | "Same level" | "Fair line";
+    callMode?: "Wait for me" | "Call next automatically";
+  },
 ) {
   await page.getByRole("link", { name: "New session" }).click();
   await page.getByLabel("Session name").fill(name);
@@ -47,6 +54,7 @@ export async function startSession(
   }
   if (opts.winnersStay) await page.getByRole("radio", { name: /^Winners stay/ }).check();
   await page.getByRole("radio", { name: new RegExp(`^${opts.preset ?? "Fair line"}`) }).check();
+  await page.getByRole("radio", { name: new RegExp(`^${opts.callMode ?? "Call next automatically"}`) }).check();
   await page.getByRole("button", { name: "Start session" }).click();
   await expect(page).toHaveURL(SESSION_URL);
 }

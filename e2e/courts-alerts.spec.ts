@@ -29,6 +29,8 @@ test("player Courts: who plays, who's next, holds, and 'You', live within 2 seco
   await organizer.getByRole("switch", { name: "Pay before queueing" }).check();
   // D25: the queue order these checks expect (Fair line).
   await organizer.getByRole("radio", { name: /^Fair line/ }).check();
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await organizer.getByRole("radio", { name: /^Call next automatically/ }).check();
   await organizer.getByRole("button", { name: "Start session" }).click();
   await expect(organizer).toHaveURL(SESSION_URL);
 

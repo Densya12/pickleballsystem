@@ -35,7 +35,8 @@ export async function createClubAction(
   if (error) return { error: clubErrorMessage(error, t), values };
   // D25: new clubs start on Mixed. (The column's default stays Fair line, so a club
   // created by an older app keeps today's behavior.) A failure here keeps Fair line.
-  if (clubId) await supabase.from("clubs").update({ default_matchmaking: "mixed" }).eq("id", clubId);
+  // D26: new clubs start on "Wait for me" (the column default stays auto-call for the same reason).
+  if (clubId) await supabase.from("clubs").update({ default_matchmaking: "mixed", default_call_mode: "wait" }).eq("id", clubId);
 
   redirect("/");
 }

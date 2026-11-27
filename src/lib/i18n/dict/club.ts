@@ -20,6 +20,7 @@ const en = {
   pointsInvalid: "Pick 11, 15 or 21.",
   rotationInvalid: "Pick what happens after a game.",
   matchmakingInvalid: "Pick who plays together.",
+  callModeInvalid: "Pick how the next game is called.",
   // Errors
   generic: "Something went wrong. Try again.",
   ownerOnly: "Only the club owner can change this.",
@@ -62,6 +63,7 @@ const fil: typeof en = {
   pointsInvalid: "Pumili ng 11, 15 o 21.",
   rotationInvalid: "Pumili ng rotation.",
   matchmakingInvalid: "Pumili kung sino ang magkakasama.",
+  callModeInvalid: "Pumili kung paano tatawagin ang susunod na laro.",
   generic: "May problema. Subukan ulit.",
   ownerOnly: "Ang owner lang ang pwedeng magbago nito.",
   invalidInput: "May mali sa nilagay. I-check ulit ang mga field.",

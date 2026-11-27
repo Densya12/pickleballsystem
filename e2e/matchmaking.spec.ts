@@ -29,6 +29,8 @@ async function newSession(page: Page, name: string, preset: "Mixed" | "Same leve
     await presets.scrollIntoViewIfNeeded();
     await shot(page, screenshot);
   }
+  // D26: these checks expect the next group to be called at Done (auto-call).
+  await page.getByRole("radio", { name: /^Call next automatically/ }).check();
   await page.getByRole("button", { name: "Start session" }).click();
   await expect(page).toHaveURL(/\/s\/[0-9a-f-]{36}$/);
 }

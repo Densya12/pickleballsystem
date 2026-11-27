@@ -18,6 +18,7 @@ export const QUEUEABLE_KINDS = [
   "set_rotation",
   "set_player_level",
   "set_matchmaking",
+  "set_call_mode",
   "call_mixed",
 ] as const;
 export type OutboxKind = (typeof QUEUEABLE_KINDS)[number];
@@ -51,6 +52,8 @@ const ALREADY_DONE: Record<OutboxKind, readonly string[]> = {
   set_player_level: [],
   // Idempotent like set_rotation (set_session_matchmaking).
   set_matchmaking: [],
+  // Idempotent like set_rotation (set_session_call_mode).
+  set_call_mode: [],
   // Like call_next: a resend finds the court busy.
   call_mixed: ["court_busy"],
 };

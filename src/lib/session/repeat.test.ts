@@ -66,6 +66,7 @@ describe("repeatDefaults", () => {
           points_to: 15,
           rotation: "winners_stay",
           matchmaking: "same_level",
+          call_mode: "wait",
           pay_first: true,
           fee: 200,
         },
@@ -80,6 +81,7 @@ describe("repeatDefaults", () => {
       points_to: "15",
       rotation: "winners_stay",
       matchmaking: "same_level",
+      call_mode: "wait",
       pay_first: "on",
       fee: "200",
     });
@@ -96,6 +98,7 @@ describe("repeatDefaults", () => {
         points_to: 11,
         rotation: "all_off",
         matchmaking: "fair_line",
+        call_mode: "auto_call",
         pay_first: false,
         fee: 0,
       },

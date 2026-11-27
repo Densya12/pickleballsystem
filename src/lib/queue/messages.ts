@@ -43,6 +43,8 @@ export function queueErrorMessage(error: DbErrorLike, t: Dictionary): string {
       return t.live.sameSide;
     case "invalid_matchmaking":
       return t.club.matchmakingInvalid;
+    case "invalid_call_mode":
+      return t.club.callModeInvalid;
     case "invalid_level":
       return t.live.levelInvalid;
     case "player_not_flagged":
@@ -83,6 +85,8 @@ export function finishedBanner(
     finishedPlayerIds: readonly string[];
     winners?: readonly string[] | null;
     next: { playerIds: readonly string[]; names: readonly string[]; note?: CallNote | null } | null;
+    /** D26 Wait for me: nothing was called (names of any winners staying on court). */
+    waiting?: { staying: readonly string[] } | null;
   },
 ): string {
   if (input.next && samePlayers(input.finishedPlayerIds, input.next.playerIds)) {
@@ -94,6 +98,7 @@ export function finishedBanner(
       gameNumber: input.gameNumber,
       winners: input.winners,
       next: input.next ? input.next.names : null,
+      waiting: input.next ? null : (input.waiting ?? null),
     }) + (input.next ? explainCall(t, input.next.note) : "")
   );
 }

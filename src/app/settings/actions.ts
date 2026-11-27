@@ -25,6 +25,7 @@ const FIELDS = [
   "default_points",
   "default_rotation",
   "default_matchmaking",
+  "default_call_mode",
 ] as const;
 
 export async function saveSettingsAction(

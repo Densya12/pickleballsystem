@@ -60,5 +60,12 @@ export async function createSessionAction(_prev: NewSessionState, formData: Form
   });
   if (presetError) return { error: sessionErrorMessage(presetError, t), values };
 
+  // D26: what Done does next (create_session takes the club's default; same signature as before).
+  const { error: callModeError } = await supabase.rpc("set_session_call_mode", {
+    p_session_id: sessionId,
+    p_call_mode: input.call_mode,
+  });
+  if (callModeError) return { error: sessionErrorMessage(callModeError, t), values };
+
   redirect(start ? `/s/${sessionId}` : "/");
 }

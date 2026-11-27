@@ -31,6 +31,7 @@ export type RepeatableSession = {
   points_to: number;
   rotation: string;
   matchmaking: string;
+  call_mode: string;
   pay_first: boolean;
   fee: number;
 };
@@ -47,6 +48,7 @@ export function repeatDefaults(last: RepeatableSession, now: Date): Record<Sessi
     points_to: String(last.points_to),
     rotation: last.rotation,
     matchmaking: last.matchmaking,
+    call_mode: last.call_mode,
     pay_first: last.pay_first ? "on" : "",
     fee: String(last.fee),
   };

@@ -7,9 +7,11 @@ import {
   FEE_MAX,
   POINTS_OPTIONS,
   MATCHMAKING_OPTIONS,
+  CALL_MODE_OPTIONS,
   ROTATION_OPTIONS,
   toParseResult,
   type Matchmaking,
+  type CallMode,
   type ParseResult,
   type Points,
   type Rotation,
@@ -51,6 +53,7 @@ export const SESSION_FIELDS = [
   "points_to",
   "rotation",
   "matchmaking",
+  "call_mode",
   "pay_first",
   "fee",
   /** Comma-separated, one per court (form fields court_format_1..N). */
@@ -67,6 +70,7 @@ export type NewSessionInput = {
   points_to: Points;
   rotation: Rotation;
   matchmaking: Matchmaking;
+  call_mode: CallMode;
   pay_first: boolean;
   fee: number;
   court_formats: CourtFormat[];
@@ -89,6 +93,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
   const points = Number(text(form, "points_to"));
   const rotation = text(form, "rotation");
   const matchmaking = text(form, "matchmaking");
+  const callMode = text(form, "call_mode");
   const feeRaw = text(form, "fee");
   const fee = /^\d+$/.test(feeRaw) ? Number(feeRaw) : Number.NaN;
   // A checkbox sends "on" when checked and nothing when not.
@@ -121,6 +126,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
       ? undefined
       : t.club.rotationInvalid,
     matchmaking: (MATCHMAKING_OPTIONS as readonly string[]).includes(matchmaking) ? undefined : t.club.matchmakingInvalid,
+    call_mode: (CALL_MODE_OPTIONS as readonly string[]).includes(callMode) ? undefined : t.club.callModeInvalid,
     fee: Number.isNaN(fee) ? t.club.feeInvalid : fee > FEE_MAX ? t.club.feeTooHigh : undefined,
     court_formats: courtFormats.every((f) => (COURT_FORMATS as readonly string[]).includes(f))
       ? undefined
@@ -136,6 +142,7 @@ export function parseNewSession(form: FormLike, t: Dictionary): ParseResult<NewS
       points_to: points as Points,
       rotation: rotation as Rotation,
       matchmaking: matchmaking as Matchmaking,
+      call_mode: callMode as CallMode,
       pay_first: payFirst,
       fee,
       court_formats: courtFormats as CourtFormat[],

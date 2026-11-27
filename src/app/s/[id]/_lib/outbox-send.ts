@@ -8,6 +8,7 @@ import {
   resumePlayerAction,
   setCourtFormatAction,
   setMatchmakingAction,
+  setCallModeAction,
   setPlayerLevelAction,
   setRotationAction,
   swapNotReadyAction,
@@ -41,6 +42,8 @@ export async function sendOrganizerAction(item: Pick<OutboxItem, "kind" | "sessi
       return setRotationAction(sessionId, args.rotation === "winners_stay" ? "winners_stay" : "all_off");
     case "set_matchmaking":
       return setMatchmakingAction(sessionId, str(args.matchmaking));
+    case "set_call_mode":
+      return setCallModeAction(sessionId, str(args.callMode));
     case "set_player_level":
       return setPlayerLevelAction(sessionId, str(args.playerId), str(args.level));
     case "pause_player":

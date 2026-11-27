@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 import { getGame, playerNames } from "@/lib/queue/data";
-import { matchmakingLabel, rotationLabel } from "@/lib/club/options";
+import { callModeLabel, matchmakingLabel, rotationLabel } from "@/lib/club/options";
 import { finishedBanner, queueErrorMessage } from "@/lib/queue/messages";
 import { explainCall, type CallNote } from "@/lib/queue/preview";
 import { levelLabel, levelNumber } from "@/lib/queue/players";
@@ -86,10 +86,13 @@ export async function finishGameAction(
   });
   if (error) return { error: queueErrorMessage(error, t), code: error.message };
 
-  const [next, winners] = await Promise.all([
+  const [next, winners, courtRow] = await Promise.all([
     nextGamePlayers(nextGameId),
     winnerIds ? playerNames(winnerIds) : Promise.resolve(null),
+    // D26 Wait for me: nothing was called; the court waits (with any staying winners).
+    nextGameId ? Promise.resolve(null) : supabase.from("courts").select("staying_ids, waiting_since").eq("id", courtId).maybeSingle().then((r) => r.data),
   ]);
+  const waiting = courtRow?.waiting_since ? { staying: courtRow.staying_ids.length ? await playerNames(courtRow.staying_ids) : [] } : null;
   refresh();
   return {
     banner: finished
@@ -99,6 +102,7 @@ export async function finishGameAction(
           finishedPlayerIds: finished.playerIds,
           winners,
           next,
+          waiting,
         })
       : undefined,
     undo: { banner: finished ? t.live.undoneFinish(finished.courtLabel, finished.number) : t.live.undoneFinish("", 0) },
@@ -162,6 +166,19 @@ export async function setMatchmakingAction(sessionId: string, matchmaking: strin
 
   refresh();
   return { banner: t.live.matchmakingChanged(matchmakingLabel(matchmaking, t)) };
+}
+
+/** D26: More › Next game (Wait for me / Call next automatically), while live. It applies from the next Done. */
+export async function setCallModeAction(sessionId: string, callMode: string): Promise<QueueActionResult> {
+  const { t, error: denied } = await authorizeSession(sessionId);
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_session_call_mode", { p_session_id: sessionId, p_call_mode: callMode });
+  if (error) return { error: queueErrorMessage(error, t), code: error.message };
+
+  refresh();
+  return { banner: t.live.callModeChanged(callModeLabel(callMode, t)) };
 }
 
 /** D25: the organizer changes a player's level (also on their member record). "unsure" clears it. */
