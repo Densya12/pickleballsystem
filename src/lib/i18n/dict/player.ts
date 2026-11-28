@@ -71,6 +71,8 @@ const en = {
   /** D25: passed over for the next group: their true place, and the level group they wait for. */
   passedOverBand: (place: string, band: string) => `You're ${place} in line. Waiting for a ${band} group.`,
   passedOverAny: (place: string) => `You're ${place} in line. Waiting for a group.`,
+  /** D29 Balanced teams */
+  passedOverEven: (place: string) => `You're ${place} in line. Skipped to keep teams even.`,
   /** Courts: the players in the group called next, tagged in place (names stay in queue order). */
   nextTag: "Next",
   ordinal: (n: number) => {
@@ -185,6 +187,7 @@ const fil: typeof en = {
   highlighted: (format: string) => `${format} · naka-highlight ka`,
   passedOverBand: (place: string, band: string) => `${place} ka sa pila. Hinihintay ang grupong ${band}.`,
   passedOverAny: (place: string) => `${place} ka sa pila. Hinihintay ang mabubuong grupo.`,
+  passedOverEven: (place: string) => `${place} ka sa pila. Nilaktawan para pantay ang teams.`,
   nextTag: "Susunod",
   ordinal: (n: number) => `Pang-${n}`,
   yourSide: (side: 0 | 1, partner: string | null) =>

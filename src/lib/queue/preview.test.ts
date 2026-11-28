@@ -35,6 +35,14 @@ describe("D25 previews and call notes (presentation only)", () => {
   it("no group: 'No level 2–4 group yet'", () => {
     expect(noGroupText(en, preview.formats.singles!)).toBe("No level 2–4 group yet");
     expect(noGroupText(en, { status: "no_group", group: [] })).toBe("No group fits the levels yet");
+    // D29: Balanced teams (doubles) has no band; singles keeps the Mixed band.
+    expect(noGroupText(en, { status: "no_group", group: [], preset: "balanced" })).toBe("No even teams right now. Call mixed to start anyway.");
+    expect(noGroupText(fil, { status: "no_group", group: [], preset: "balanced" })).toBe(
+      "Walang pantay na teams ngayon. I-tap ang Call mixed para magsimula pa rin.",
+    );
+    expect(noGroupText(en, { status: "no_group", group: [], preset: "balanced", lo: 2, hi: 4 })).toBe("No level 2–4 group yet");
+    // parsePreview copies the preset onto each entry.
+    expect(parsePreview({ preset: "balanced", formats: { doubles: { status: "no_group", group: [] } } })?.formats.doubles?.preset).toBe("balanced");
   });
 
   it("a player's band: Mixed +-1, Same level equal, none for Fair line or no level", () => {
@@ -43,6 +51,8 @@ describe("D25 previews and call notes (presentation only)", () => {
     expect(playerBand("same_level", 4)).toEqual([4, 4]);
     expect(playerBand("fair_line", 3)).toBeNull();
     expect(playerBand("mixed", null)).toBeNull();
+    // D29: Balanced teams has no level band (any levels within 3 that make even teams).
+    expect(playerBand("balanced", 3)).toBeNull();
     expect(bandText(en, 2, 4)).toBe("levels 2–4");
     expect(en.player.passedOverBand(en.player.ordinal(2), en.levels.groupBand(2, 4))).toBe("You're 2nd in line. Waiting for a level 2–4 group.");
     expect(fil.player.passedOverBand(fil.player.ordinal(2), fil.levels.groupBand(4, 5))).toBe("Pang-2 ka sa pila. Hinihintay ang grupong level 4–5.");

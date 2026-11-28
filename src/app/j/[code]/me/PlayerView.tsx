@@ -218,6 +218,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
               {(() => {
                 const band = playerBand(view.matchmaking, view.mySkill);
                 const place = t.player.ordinal(state.position);
+                if (view.matchmaking === "balanced") return t.player.passedOverEven(place);
                 return band ? t.player.passedOverBand(place, t.levels.groupBand(band[0], band[1])) : t.player.passedOverAny(place);
               })()}
             </p>

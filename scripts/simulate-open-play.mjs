@@ -6,6 +6,7 @@
 //   node scripts/simulate-open-play.mjs --out docs/qa/2026-11-matchmaking-sim.md
 //   node scripts/simulate-open-play.mjs --call-mode wait   # D26 "Wait for me": the organizer taps Call 30-60 s after Done
 //   node scripts/simulate-open-play.mjs --call-mode both   # auto-call and Wait for me side by side
+//   node scripts/simulate-open-play.mjs --presets mixed,balanced   # D29: only these presets (Fair line is always run as the baseline)
 //
 // A simulated clock drives each 3-hour session: staggered arrivals, a few breaks and
 // leavers, games of 8-15 random minutes, a random side wins each game. The script
@@ -27,6 +28,8 @@ const SEED = args.includes("--seed") ? Number(args[args.indexOf("--seed") + 1]) 
 // --call-mode auto | wait | both (D26). Default auto (today's behavior).
 const CALL_MODE = args.includes("--call-mode") ? args[args.indexOf("--call-mode") + 1] : "auto";
 const CALL_MODES = CALL_MODE === "both" ? ["auto_call", "wait"] : CALL_MODE === "wait" ? ["wait"] : ["auto_call"];
+// --presets mixed,balanced : the presets to run besides Fair line (default: all).
+const PRESET_ARG = args.includes("--presets") ? args[args.indexOf("--presets") + 1].split(",") : null;
 const DURATION = 180;
 const MIXED_CALL_AFTER = 2; // minutes a court waits for a level group before the organizer taps Call mixed
 
@@ -102,7 +105,8 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
   await must(org.rpc("set_session_call_mode", { p_session_id: sessionId, p_call_mode: callMode }), "set_session_call_mode");
   const courtRows = await must(org.from("courts").select("id, number").eq("session_id", sessionId).order("number"), "courts");
 
-  const players = people.map((p) => ({ ...p, id: null, state: "away", wait: 0, longest: 0, pendingBreak: false, pendingLeave: false, resumeAt: null }));
+  // queuedAt: when the player last joined the line (minutes); waits: minutes in line before each call.
+  const players = people.map((p) => ({ ...p, id: null, state: "away", wait: 0, longest: 0, pendingBreak: false, pendingLeave: false, resumeAt: null, queuedAt: null, waits: [] }));
   const byId = new Map();
   // callAt (D26): when the organizer will tap Call after a Done; staying: winners left on the court.
   const court = courtRows.map((c) => ({ id: c.id, gameId: null, playerIds: [], endsAt: null, blockedSince: null, callAt: null, staying: [] }));
@@ -136,6 +140,9 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
       const p = byId.get(id);
       p.longest = Math.max(p.longest, p.wait);
       p.wait = 0;
+      // Staying winners never left the court: no wait.
+      if (p.state === "queued" && p.queuedAt !== null) p.waits.push(t - p.queuedAt);
+      p.queuedAt = null;
       p.state = "playing";
     }
     const partners = [key(ids[0], ids[1]), key(ids[2], ids[3])];
@@ -208,6 +215,7 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
         );
         byId.set(p.id, p);
         p.state = "queued";
+        p.queuedAt = t;
       }
       if (p.breakAt !== null && p.breakAt <= t && p.resumeAt === null && p.state !== "left") {
         p.resumeAt = p.breakAt + p.breakLen;
@@ -222,6 +230,7 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
         await must(org.rpc("resume_player", { p_player_id: p.id }), "resume");
         p.state = "queued";
         p.wait = 0;
+        p.queuedAt = t;
       }
       if (p.leaveAt !== null && p.leaveAt <= t && p.state !== "left") {
         if (p.state === "playing") p.pendingLeave = true;
@@ -243,6 +252,7 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
           if (p && p.state === "playing") {
             p.state = "queued";
             p.wait = 0;
+            p.queuedAt = t;
           }
         }
         c.gameId = null;
@@ -314,6 +324,12 @@ async function runOne(clubId, { courts, n, preset, rotation, seed, callMode = "a
     partnerRepeat: stats.partnerPairs ? stats.partnerRepeats / stats.partnerPairs : 0,
     opponentRepeat: stats.oppPairs ? stats.oppRepeats / stats.oppPairs : 0,
     maxSkip: stats.maxSkip,
+    // Minutes in line before being called (every call, every player): average and longest.
+    avgWaitMin: (() => {
+      const all = players.flatMap((p) => p.waits);
+      return all.length ? Math.round((all.reduce((a, b) => a + b, 0) / all.length) * 10) / 10 : 0;
+    })(),
+    maxWaitMin: Math.round(Math.max(0, ...players.flatMap((p) => p.waits)) * 10) / 10,
   };
 }
 
@@ -323,7 +339,7 @@ const clubId = await must(org.rpc("create_club", { p_name: `Simulation ${stamp}`
 
 const COURTS = ONLY ? [Number(ONLY[0])] : QUICK ? [2] : [2, 5];
 const PLAYERS = ONLY ? [Number(ONLY[1])] : QUICK ? [12, 24] : [12, 24, 40];
-const PRESETS = ONLY ? ["fair_line", ONLY[2]] : ["fair_line", "mixed", "same_level"];
+const PRESETS = ONLY ? ["fair_line", ONLY[2]] : PRESET_ARG ? ["fair_line", ...PRESET_ARG.filter((x) => x !== "fair_line")] : ["fair_line", "mixed", "balanced", "same_level"];
 const ROTATIONS = ONLY ? [ONLY[3]] : ["all_off", "winners_stay"];
 const results = [];
 for (const courts of COURTS) {
@@ -341,9 +357,10 @@ for (const courts of COURTS) {
   }
 }
 
-// Pass bar (D25): Mixed and Same level never skip anyone more than 2 times; their spread of
-// games among full-time players is at most Fair line + 1; Mixed repeats partners less than
-// Fair line. Court idle time from "no level group" is reported per run.
+// Pass bar (D25): Mixed, Balanced teams and Same level never skip anyone more than 2 times;
+// their spread of games among full-time players is at most Fair line + 1; Mixed repeats
+// partners less than Fair line. D29: Balanced teams' longest wait (minutes) is at most
+// Mixed's + 5 on the same roster. Court idle time from "no level group" is reported per run.
 const pct = (x) => `${Math.round(x * 100)}%`;
 const fairOf = (r) =>
   results.find((x) => x.courts === r.courts && x.n === r.n && x.rotation === r.rotation && x.callMode === r.callMode && x.preset === "fair_line");
@@ -354,14 +371,16 @@ const checks = results.map((r) => {
   if (r.maxSkip > 2) why.push(`skips ${r.maxSkip} > 2`);
   if (r.spread > fair.spread + 1) why.push(`spread ${r.spread} > Fair ${fair.spread} + 1`);
   if (r.preset === "mixed" && !(r.partnerRepeat < fair.partnerRepeat)) why.push(`partner repeats ${pct(r.partnerRepeat)} not below Fair ${pct(fair.partnerRepeat)}`);
+  const mixed = results.find((x) => x.courts === r.courts && x.n === r.n && x.rotation === r.rotation && x.callMode === r.callMode && x.preset === "mixed");
+  if (r.preset === "balanced" && mixed && r.maxWaitMin > mixed.maxWaitMin + 5) why.push(`longest wait ${r.maxWaitMin} min > Mixed ${mixed.maxWaitMin} + 5`);
   return { r, pass: why.length === 0, why: why.join("; ") || "ok" };
 });
-const label = { fair_line: "Fair line", mixed: "Mixed", same_level: "Same level", all_off: "All off", winners_stay: "Winners stay", auto_call: "Auto", wait: "Wait for me" };
+const label = { fair_line: "Fair line", mixed: "Mixed", balanced: "Balanced teams", same_level: "Same level", all_off: "All off", winners_stay: "Winners stay", auto_call: "Auto", wait: "Wait for me" };
 const lines = [
-  "| Courts | Players | Rotation | Preset | Next game | Games | Longest wait (games) | Games per full-timer (spread) | Idle, no level group (min · times · Call mixed) | Idle, not enough players (min) | Idle, waiting for Call (min) | Repeat partners | Repeat opponents | Max skips | Pass |",
-  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+  "| Courts | Players | Rotation | Preset | Next game | Games | Wait in line, avg · max (min) | Longest wait (games) | Games per full-timer (spread) | Idle, no level group (min · times · Call mixed) | Idle, not enough players (min) | Idle, waiting for Call (min) | Repeat partners | Repeat opponents | Max skips | Pass |",
+  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
   ...checks.map(({ r, pass, why }) =>
-    `| ${r.courts} | ${r.n} | ${label[r.rotation]} | ${label[r.preset]} | ${label[r.callMode]} | ${r.games} | ${r.longestWait} | ${r.fullTimeRange} (${r.spread}) | ${r.idleNoGroup} · ${r.noGroupEpisodes} · ${r.mixedCalls} | ${r.idleNotEnough} | ${r.idleWaitCall} | ${pct(r.partnerRepeat)} | ${pct(r.opponentRepeat)} | ${r.maxSkip} | ${pass ? "✅" : "❌"} ${why} |`,
+    `| ${r.courts} | ${r.n} | ${label[r.rotation]} | ${label[r.preset]} | ${label[r.callMode]} | ${r.games} | ${r.avgWaitMin} · ${r.maxWaitMin} | ${r.longestWait} | ${r.fullTimeRange} (${r.spread}) | ${r.idleNoGroup} · ${r.noGroupEpisodes} · ${r.mixedCalls} | ${r.idleNotEnough} | ${r.idleWaitCall} | ${pct(r.partnerRepeat)} | ${pct(r.opponentRepeat)} | ${r.maxSkip} | ${pass ? "✅" : "❌"} ${why} |`,
   ),
 ];
 const table = lines.join("\n");

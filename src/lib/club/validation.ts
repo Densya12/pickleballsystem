@@ -21,8 +21,8 @@ export type Points = (typeof POINTS_OPTIONS)[number];
 export const ROTATION_OPTIONS = ["all_off", "winners_stay"] as const;
 export type Rotation = (typeof ROTATION_OPTIONS)[number];
 
-/** D25: who plays together. New clubs start on Mixed; existing ones were moved to Fair line. */
-export const MATCHMAKING_OPTIONS = ["mixed", "same_level", "fair_line"] as const;
+/** D25: who plays together. New clubs start on Mixed; existing ones were moved to Fair line. D29 adds Balanced teams. */
+export const MATCHMAKING_OPTIONS = ["mixed", "balanced", "same_level", "fair_line"] as const;
 export type Matchmaking = (typeof MATCHMAKING_OPTIONS)[number];
 
 /** D26: after Done, wait for the organizer's Call (new clubs) or call the next group at once (existing ones). */

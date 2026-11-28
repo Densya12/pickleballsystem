@@ -43,6 +43,8 @@ export function QueueView({ state, rules, sessionId }: { state: LiveState; rules
 
   const preset = state.preview?.preset ?? "fair_line";
   const waitingFor = (level: string | undefined) => {
+    // D29: under Balanced teams any level can be skipped to keep the teams even.
+    if (preset === "balanced") return t.live.skippedEven;
     const band = playerBand(preset, levelNumber(level));
     return band ? t.live.waitingBand(t.levels.groupBand(band[0], band[1])) : t.live.waitingAnyGroup;
   };

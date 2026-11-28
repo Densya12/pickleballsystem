@@ -126,6 +126,8 @@ const en = {
   mixedCallNote: "mixed levels",
   noLevelGroupShort: (band: string) => `No ${band} group yet`,
   noGroupShort: "No group fits the levels yet",
+  /** D29 Balanced teams: no band to wait for. */
+  noEvenTeams: "No even teams right now. Call mixed to start anyway.",
   callMixedOn: (court: string) => `Call mixed on ${court}`,
   outboxCallMixed: (court: string) => `Call mixed: ${court}`,
   alreadyFinished: "That game is already done. Check the court for the new one.",
@@ -151,6 +153,8 @@ const en = {
   nextTag: "Next",
   waitingBand: (band: string) => `Waiting for a ${band} group`,
   waitingAnyGroup: "Waiting for a group",
+  /** D29: the skip reason under Balanced teams. */
+  skippedEven: "Skipped to keep teams even.",
   // Walk-in
   walkInPageTitle: "Add walk-in",
   walkInTitle: "Add walk-in",
@@ -337,6 +341,7 @@ const fil: typeof en = {
   mixedCallNote: "halo-halong level",
   noLevelGroupShort: (band: string) => `Wala pang grupong ${band}`,
   noGroupShort: "Wala pang grupong bagay ang level",
+  noEvenTeams: "Walang pantay na teams ngayon. I-tap ang Call mixed para magsimula pa rin.",
   callMixedOn: (court: string) => `Tawagin kahit halo sa ${court}`,
   outboxCallMixed: (court: string) => `Tawagin kahit halo: ${court}`,
   alreadyFinished: "Tapos na ang larong iyon. Tingnan ang court para sa bagong laro.",
@@ -358,6 +363,7 @@ const fil: typeof en = {
   nextTag: "Susunod",
   waitingBand: (band: string) => `Hinihintay ang grupong ${band}`,
   waitingAnyGroup: "Hinihintay ang mabubuong grupo",
+  skippedEven: "Nilaktawan para pantay ang teams.",
   walkInPageTitle: "Magdagdag ng walk-in",
   walkInTitle: "Magdagdag ng walk-in",
   walkInSubtitle: "Para sa player na walang phone o hindi makapag-scan.",
