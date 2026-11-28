@@ -122,6 +122,14 @@ const levelsEn = {
   /** A player with no level, on rows and badges. */
   notSet: "Not set",
   hint: "Same as your stars in your club app.",
+  /** D30: what each level means, 1-5 (one shared source for every level picker). */
+  descriptions: [
+    "New to pickleball: learning to serve and keep a rally going.",
+    "Can rally and keep score; still learning the kitchen.",
+    "Steady rallies; dinks and plays at the net on purpose.",
+    "Strong all-round: places shots, quick at the net, few errors.",
+    "Tournament level: plays in leagues or tournaments.",
+  ] as readonly string[],
   /** Level ranges in banners and previews: "level 3", "levels 2–4". */
   band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `levels ${lo}–${hi}`),
   /** Before "group": "a level 2–4 group". */
@@ -136,6 +144,13 @@ const levelsFil: typeof levelsEn = {
   unsure: "Hindi sigurado",
   notSet: "Wala pang level",
   hint: "Kapareho ng stars mo sa club app mo.",
+  descriptions: [
+    "Bago pa lang: nag-aaral pa mag-serve at magtuloy ng rally.",
+    "Kaya nang mag-rally at magbilang ng score; inaaral pa ang kitchen.",
+    "Tuloy-tuloy ang rally; marunong mag-dink at maglaro sa net.",
+    "Malakas sa lahat: may direksyon ang tira, mabilis sa net, kaunti ang mali.",
+    "Pang-tournament: sumasali sa liga o tournament.",
+  ],
   band: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
   groupBand: (lo: number, hi: number) => (lo === hi ? `level ${lo}` : `level ${lo}–${hi}`),
   change: "Level",
@@ -157,6 +172,9 @@ const choicesEn = {
   /** D25 presets: who plays together. */
   mixed: "Mixed",
   mixedDescription: "Levels within 1 of each other, with new partners",
+  /** D29 */
+  balanced: "Balanced teams",
+  balancedDescription: "Levels can mix. Teams are made even.",
   sameLevel: "Same level",
   sameLevelDescription: "Everyone at the same level, with new partners",
   /** Under Same level (New session, Settings, More): it can stall courts. */
@@ -184,6 +202,8 @@ const choicesFil: typeof choicesEn = {
   winnersStayDescription: "Hanggang 2 sunod na laro lang",
   mixed: "Halo-halo",
   mixedDescription: "Magkakalapit ang level (±1), iba-ibang kasama",
+  balanced: "Pantay na teams",
+  balancedDescription: "Puwedeng magkahalo ang level. Pinapantay ang dalawang team.",
   sameLevel: "Parehong level",
   sameLevelDescription: "Pare-pareho ang level, iba-ibang kasama",
   sameLevelNote: "Puwedeng maghintay ang court hanggang may grupong pareho ang level. Mas bagay ang Halo-halo sa karamihan ng session.",

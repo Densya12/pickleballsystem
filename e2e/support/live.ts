@@ -41,7 +41,7 @@ export async function startSession(
     courts: number;
     winnersStay?: boolean;
     formats?: ("Doubles" | "Singles")[];
-    preset?: "Mixed" | "Same level" | "Fair line";
+    preset?: "Mixed" | "Balanced teams" | "Same level" | "Fair line";
     callMode?: "Wait for me" | "Call next automatically";
   },
 ) {

@@ -22,6 +22,11 @@ export function levelFromSkill(skill: number | null | undefined): Level {
 }
 
 /** The level as a number, or null when not set. */
+/** D30: what a level means ("Steady rallies; ..."), or null for no level. One source: the dictionary. */
+export function levelDescription(t: Dictionary, level: number | null | undefined): string | null {
+  return typeof level === "number" && level >= 1 && level <= 5 ? (t.levels.descriptions[level - 1] ?? null) : null;
+}
+
 export function levelNumber(level: string | null | undefined): number | null {
   return level && /^[1-5]$/.test(level) ? Number(level) : null;
 }

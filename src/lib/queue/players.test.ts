@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { en, fil } from "@/lib/i18n/dictionary";
 import {
+  levelDescription,
   levelLabel,
   parseWalkIn,
   parseWalkInPayment,
@@ -102,5 +103,30 @@ describe("QA-07: names in parseWalkIn (check-in and walk-in)", () => {
     expect(parseWalkIn(f("Ana‮abc 2"), en)).toEqual({ ok: true, data: { display_name: "Anaabc 2", level: "unsure" } });
     expect(parseWalkIn(f("​​​"), en)).toMatchObject({ ok: false, errors: { display_name: en.live.nameRequired } });
     expect(parseWalkIn(f("🏓🏓"), en)).toMatchObject({ ok: false, errors: { display_name: "Use at least one letter or number." } });
+  });
+});
+
+describe("D30: level descriptions (one source, English and Taglish)", () => {
+  it("says what each level 1-5 means", () => {
+    expect([1, 2, 3, 4, 5].map((n) => levelDescription(en, n))).toEqual([
+      "New to pickleball: learning to serve and keep a rally going.",
+      "Can rally and keep score; still learning the kitchen.",
+      "Steady rallies; dinks and plays at the net on purpose.",
+      "Strong all-round: places shots, quick at the net, few errors.",
+      "Tournament level: plays in leagues or tournaments.",
+    ]);
+    expect([1, 2, 3, 4, 5].map((n) => levelDescription(fil, n))).toEqual([
+      "Bago pa lang: nag-aaral pa mag-serve at magtuloy ng rally.",
+      "Kaya nang mag-rally at magbilang ng score; inaaral pa ang kitchen.",
+      "Tuloy-tuloy ang rally; marunong mag-dink at maglaro sa net.",
+      "Malakas sa lahat: may direksyon ang tira, mabilis sa net, kaunti ang mali.",
+      "Pang-tournament: sumasali sa liga o tournament.",
+    ]);
+  });
+
+  it("no description without a level", () => {
+    expect(levelDescription(en, null)).toBeNull();
+    expect(levelDescription(en, 0)).toBeNull();
+    expect(levelDescription(en, 6)).toBeNull();
   });
 });

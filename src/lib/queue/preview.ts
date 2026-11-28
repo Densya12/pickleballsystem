@@ -15,6 +15,8 @@ export type FormatPreview = {
   missing?: number;
   /** D26 (a court with staying winners): they go back in line at Call (D23, D25 g); the group is a fresh one. */
   release?: boolean;
+  /** The session's preset (copied from the preview), for the no-group message. */
+  preset?: string;
 };
 export type QueuePreview = {
   preset: string;
@@ -29,7 +31,10 @@ export type CallNote = { preset?: string; lo?: number; hi?: number; repeats?: nu
 export function parsePreview(raw: unknown): QueuePreview | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as QueuePreview;
-  return typeof value.preset === "string" ? { preset: value.preset, formats: value.formats ?? {}, courts: value.courts ?? {} } : null;
+  if (typeof value.preset !== "string") return null;
+  const withPreset = (entries: Partial<Record<string, FormatPreview>> | undefined) =>
+    Object.fromEntries(Object.entries(entries ?? {}).map(([key, entry]) => [key, entry && { ...entry, preset: value.preset }]));
+  return { preset: value.preset, formats: withPreset(value.formats), courts: withPreset(value.courts) };
 }
 
 /** The preview for the next court: doubles when any court is doubles, else singles. */
@@ -58,18 +63,24 @@ export function explainCall(t: Dictionary, note: CallNote | null | undefined): s
   return parts.length > 0 ? ` · ${parts.join(" · ")}` : "";
 }
 
-/** The levels a player can be grouped with: Mixed +-1, Same level equal; null for Fair line or no level. */
+/**
+ * The levels a player can be grouped with: Mixed +-1, Same level equal; null
+ * for Fair line, Balanced teams (any levels within 3 that make even teams,
+ * D29) or no level.
+ */
 export function playerBand(preset: string, skill: number | null | undefined): [number, number] | null {
-  if (typeof skill !== "number" || preset === "fair_line") return null;
+  if (typeof skill !== "number" || preset === "fair_line" || preset === "balanced") return null;
   if (preset === "same_level") return [skill, skill];
   return [Math.max(1, skill - 1), Math.min(5, skill + 1)];
 }
 
-/** "No level 2–4 group yet" (or without a range when nobody has a level). */
+/**
+ * "No level 2–4 group yet" (or without a range when nobody has a level).
+ * Balanced teams (doubles) has no range: "No even teams right now" (D29).
+ */
 export function noGroupText(t: Dictionary, preview: FormatPreview): string {
-  return typeof preview.lo === "number" && typeof preview.hi === "number"
-    ? t.live.noLevelGroupShort(t.levels.groupBand(preview.lo, preview.hi))
-    : t.live.noGroupShort;
+  if (typeof preview.lo === "number" && typeof preview.hi === "number") return t.live.noLevelGroupShort(t.levels.groupBand(preview.lo, preview.hi));
+  return preview.preset === "balanced" ? t.live.noEvenTeams : t.live.noGroupShort;
 }
 
 /**

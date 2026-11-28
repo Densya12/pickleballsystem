@@ -39,6 +39,8 @@ export function rotationLabel(rotation: string, t: Dictionary): string {
 export function matchmakingChoices(t: Dictionary): { value: Matchmaking; label: string; description: string; note?: string }[] {
   return [
     { value: "mixed", label: t.choices.mixed, description: t.choices.mixedDescription },
+    // D29: levels may be far apart as long as the two teams are about even.
+    { value: "balanced", label: t.choices.balanced, description: t.choices.balancedDescription },
     // Same level can leave courts waiting (the simulation): say so where it's picked.
     { value: "same_level", label: t.choices.sameLevel, description: t.choices.sameLevelDescription, note: t.choices.sameLevelNote },
     { value: "fair_line", label: t.choices.fairLine, description: t.choices.fairLineDescription },
