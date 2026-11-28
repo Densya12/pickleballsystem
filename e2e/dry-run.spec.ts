@@ -113,13 +113,13 @@ test("dry run: a full session from members and phones to the summary and CSV", a
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv.charCodeAt(0)).toBe(0xfeff);
   const lines = csv.slice(1).trimEnd().split("\r\n");
-  expect(lines[0]).toBe("Name,Level,Joined by,Games,Payment,Method,Reference number,Checked in");
+  expect(lines[0]).toBe("Name,Level,Joined by,Games,Wins,Losses,Payment,Method,Reference number,Checked in");
   expect(lines).toHaveLength(20);
-  expect(lines[1]).toMatch(/^Pia Phone,Not set,Phone,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-  expect(lines.filter((l) => /^Member \d\d,Level 3,Walk-in,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);
-  expect(lines[4]).toMatch(/^Sol Phone,Not set,Phone,0,Unpaid,,,/);
+  expect(lines[1]).toMatch(/^Pia Phone,Not set,Phone,\d+,\d+,\d+,To check,GCash,9000000010,\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+  expect(lines.filter((l) => /^Member \d\d,Level 3,Walk-in,\d+,\d+,\d+,Paid,Cash,,/.test(l))).toHaveLength(14);
+  expect(lines[4]).toMatch(/^Sol Phone,Not set,Phone,0,0,0,Unpaid,,,/);
   // The peso cell has commas, so it is quoted.
-  expect(lines[19]).toMatch(/^Total,,18 players,\d+,14 paid · 3 to check · 0 unpaid,"₱2,100 of ₱2,550",,$/);
+  expect(lines[19]).toMatch(/^Total,,18 players,\d+,,,14 paid · 3 to check · 0 unpaid,"₱2,100 of ₱2,550",,$/);
 
   // Home: the past session with its players and ₱ collected.
   await organizer.getByRole("link", { name: "Home" }).click();

@@ -142,3 +142,33 @@ export function PlayerCourtsSkeleton() {
     </PageShell>
   );
 }
+
+/** Standings (players, D27): the table rows. */
+export function PlayerStandingsSkeleton() {
+  const t = useT();
+  const code = String(useParams<{ code: string }>().code ?? "");
+  return (
+    <PageShell
+      top={
+        <>
+          <BackLink href={`/j/${code}/me`} label={t.player.backToPlace} />
+          <LanguageSwitch />
+        </>
+      }
+      eyebrow={<SkeletonLine size="inherit" width={150} />}
+      title={t.games.standingsTitle}
+    >
+      <SkeletonRegion className="flex flex-col gap-2">
+        <SkeletonLine size="sm" width="85%" className="mx-1" />
+        <ListGroup className="skeleton-card">
+          {[60, 48, 66, 52, 44].map((w) => (
+            <li key={w} className="flex items-center gap-3 px-4 py-3">
+              <SkeletonLine width={16} />
+              <SkeletonLine width={`${w}%`} />
+            </li>
+          ))}
+        </ListGroup>
+      </SkeletonRegion>
+    </PageShell>
+  );
+}

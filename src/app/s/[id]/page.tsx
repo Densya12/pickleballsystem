@@ -9,6 +9,7 @@ import {
   EmptyState,
   FeedbackRow,
   ListGroup,
+  ListRow,
   Notice,
   PageShell,
   Section,
@@ -232,6 +233,10 @@ async function Summary({ session }: { session: Session }) {
             />
           </Section>
         )}
+
+        <ListGroup>
+          <ListRow href={`/s/${session.id}/games`}>{t.games.link}</ListRow>
+        </ListGroup>
 
         <Section id="games-per-player" label={t.session.gamesPerPlayer}>
           {summary.gamesPerPlayer.length > 0 ? (

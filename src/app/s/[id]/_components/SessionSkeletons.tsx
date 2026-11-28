@@ -264,3 +264,40 @@ export function SessionQrSkeleton() {
     </PageShell>
   );
 }
+
+/** Games & standings (D27): the match log rows and the standings table. */
+export function GamesSkeleton() {
+  const t = useT();
+  const id = useSessionId();
+  return (
+    <PageShell top={<BackLink href={`/s/${id}`} label={t.nav.courts} />} title={t.games.pageTitle}>
+      <SkeletonRegion className="flex flex-col gap-5">
+        <Section id="match-log-loading" label={t.games.logTitle}>
+          <ListGroup className="skeleton-card">
+            {[0, 1, 2].map((i) => (
+              <li key={i} className="flex items-center gap-3 px-4 py-3">
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <SkeletonLine size="sm" width="55%" />
+                  <SkeletonLine width="80%" />
+                  <SkeletonLine size="sm" width="40%" />
+                </span>
+                <Skeleton width={76} height={36} rounded="full" />
+              </li>
+            ))}
+          </ListGroup>
+        </Section>
+        <Section id="standings-loading" label={t.games.standingsTitle}>
+          <SkeletonLine size="sm" width="85%" className="mx-1 mb-2" />
+          <ListGroup className="skeleton-card">
+            {[60, 48, 66, 52].map((w) => (
+              <li key={w} className="flex items-center gap-3 px-4 py-3">
+                <SkeletonLine width={16} />
+                <SkeletonLine width={`${w}%`} />
+              </li>
+            ))}
+          </ListGroup>
+        </Section>
+      </SkeletonRegion>
+    </PageShell>
+  );
+}

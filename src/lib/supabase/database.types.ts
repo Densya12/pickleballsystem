@@ -272,6 +272,9 @@ isOneToOne: false
 "confirm_payment":
 { Args: { "p_player_id": string }; Returns: undefined
                            },
+"correct_game":
+{ Args: { "p_game_id": string,"p_player_ids": (string)[],"p_winner_ids"?: (string)[] }; Returns: undefined
+                           },
 "create_club":
 { Args: { "p_city"?: string,"p_name": string }; Returns: string
                            },
@@ -371,6 +374,11 @@ isOneToOne: false
                            },
 "session_eligible_count":
 { Args: { "p_session_id": string }; Returns: number
+                           },
+"session_standings":
+{ Args: { "p_session_id": string }; Returns: {
+              "display_name": string,"games": number,"losses": number,"rank": number,"session_player_id": string,"wins": number
+            }[]
                            },
 "set_court_format":
 { Args: { "p_court_id": string,"p_format": string }; Returns: undefined

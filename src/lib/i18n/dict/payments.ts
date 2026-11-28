@@ -57,7 +57,7 @@ const en = {
   statusPending: "Waiting for the organizer",
   statusUnpaid: "Not paid yet",
   // CSV (Excel)
-  csvHeader: ["Name", "Level", "Joined by", "Games", "Payment", "Method", "Reference number", "Checked in"],
+  csvHeader: ["Name", "Level", "Joined by", "Games", "Wins", "Losses", "Payment", "Method", "Reference number", "Checked in"],
   csvWalkIn: "Walk-in",
   csvPhone: "Phone",
   csvTotal: "Total",
@@ -124,7 +124,7 @@ const fil: typeof en = {
   statusPaid: "Bayad na",
   statusPending: "Hinihintay ang kumpirmasyon ng organizer",
   statusUnpaid: "Hindi pa bayad",
-  csvHeader: ["Pangalan", "Level", "Paano pumila", "Laro", "Bayad", "Paraan", "Reference number", "Oras ng check-in"],
+  csvHeader: ["Pangalan", "Level", "Paano pumila", "Laro", "Panalo", "Talo", "Bayad", "Paraan", "Reference number", "Oras ng check-in"],
   csvWalkIn: "Walk-in",
   csvPhone: "Phone",
   csvTotal: "Kabuuan",

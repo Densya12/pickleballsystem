@@ -6,7 +6,7 @@ import { useState, type ReactNode } from "react";
 import { MiniCourt } from "@/components/court/MiniCourt";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { Button, ListGroup, Notice, PageShell } from "@/components/ui";
-import { BellIcon, CheckIcon, ChevronRightIcon, GridIcon, PauseIcon } from "@/components/ui/icons";
+import { BellIcon, CheckIcon, ChevronRightIcon, GridIcon, ListIcon, PauseIcon } from "@/components/ui/icons";
 import { useT } from "@/lib/i18n/client";
 import type { PlayerSessionView } from "@/lib/player/data";
 import { playerErrorMessage } from "@/lib/player/messages";
@@ -89,6 +89,19 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
       >
         <GridIcon className="size-5 text-muted" />
         <span className="flex-1 font-medium">{t.player.viewCourts}</span>
+        <ChevronRightIcon className="size-4 text-[#9aa09c]" />
+      </Link>
+    </li>
+  );
+  // D27: the session's standings (read-only).
+  const standingsRow = (
+    <li>
+      <Link
+        href={`/j/${code}/standings`}
+        className="flex min-h-12 items-center gap-3 px-4 py-3 hover:bg-info focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus"
+      >
+        <ListIcon className="size-5 text-muted" />
+        <span className="flex-1 font-medium">{t.games.playerLink}</span>
         <ChevronRightIcon className="size-4 text-[#9aa09c]" />
       </Link>
     </li>
@@ -213,6 +226,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         <ListGroup>
           {paymentRow}
           {courtsRow}
+          {standingsRow}
         </ListGroup>
         {keepOpen}
       </>
@@ -234,6 +248,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         <ListGroup>
           {paymentRow}
           {courtsRow}
+          {standingsRow}
         </ListGroup>
       </>
     );
@@ -259,6 +274,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         <ListGroup>
           {paymentRow}
           {courtsRow}
+          {standingsRow}
         </ListGroup>
       </>
     );
@@ -304,6 +320,7 @@ export function PlayerView({ code, view }: { code: string; view: PlayerSessionVi
         <ListGroup>
           {paymentRow}
           {courtsRow}
+          {standingsRow}
         </ListGroup>
       </>
     );

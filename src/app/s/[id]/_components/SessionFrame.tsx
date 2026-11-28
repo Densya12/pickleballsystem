@@ -251,7 +251,7 @@ export function SessionFrame({
   );
 }
 
-/** More: Show QR, After a game, Read calls aloud, Session details, End session (with its confirm step). */
+/** More: Show QR, Games & standings, After a game, Read calls aloud, Session details, End session (with its confirm step). */
 function MoreSheet({
   open,
   onClose,
@@ -326,6 +326,7 @@ function MoreSheet({
     <BottomSheet open={open} onClose={close} title={t.session.moreTitle}>
       <ListGroup>
         <ListRow href={`/s/${sessionId}/qr`}>{t.session.showQr}</ListRow>
+        <ListRow href={`/s/${sessionId}/games`}>{t.games.link}</ListRow>
         <li className="px-4 py-3">
           <RadioGroup
             legend={t.live.afterGame}

@@ -21,6 +21,12 @@ export function BottomSheet({ open, onClose, title, subtitle, children }: Props)
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal?.();
     else if (!open && dialog.open) dialog.close();
+    // A link in the sheet navigates away; Next keeps the old page mounted but
+    // hidden (its effects are cleaned up). A modal dialog left open there would
+    // keep the new page inert, so close it whenever this effect is cleaned up.
+    return () => {
+      if (dialog.open) dialog.close();
+    };
   }, [open]);
 
   return (
